@@ -351,7 +351,14 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .chalk.note { color: #FFB3C7; font-size: 24px; transform: rotate(-2deg); align-self: flex-end; }
 .chalk .cur { display: inline-block; width: 2px; height: 0.9em; background: #F3F1E8; margin-left: 2px; vertical-align: -2px; animation: blinkc 0.7s steps(1) infinite; }
 @keyframes blinkc { 50% { opacity: 0; } }
-.teacher { position: absolute; right: -6px; bottom: -6px; width: 92px; height: 85px; z-index: 2; }
+.teacher-rig { position: absolute; right: -6px; bottom: -6px; width: 92px; height: 85px; z-index: 2; transform-origin: 0 0; transition: transform 0.22s ease-out; }
+.teacher-rig.going-home { transition: transform 0.7s cubic-bezier(.3,1.3,.5,1); }
+.teacher { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* the chalk Nibb holds while he writes; its tip touches the letter being written */
+.chalk-stick { position: absolute; left: -10px; top: 46%; width: 18px; height: 5px; border-radius: 2px; background: #F3F1E8; box-shadow: 0 0 4px rgba(255,255,255,0.5); transform: rotate(-24deg); transform-origin: 100% 50%; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+.teacher-rig.writing .chalk-stick { opacity: 1; animation: scribble 0.18s ease-in-out infinite alternate; }
+@keyframes scribble { from { transform: rotate(-30deg) translateY(-1px); } to { transform: rotate(-18deg) translateY(1px); } }
+@media (prefers-reduced-motion: reduce) { .teacher-rig, .teacher-rig.going-home { transition: none; } .teacher-rig.writing .chalk-stick { animation: none; } }
 .teacher.talking { filter: drop-shadow(0 0 10px rgba(124,245,200,0.6)); }
 .board-ctrl { display: flex; align-items: center; gap: 10px; }
 .playbtn { width: 56px; height: 56px; border-radius: 50%; background: var(--amber); color: #2A1A05; display: grid; place-items: center; box-shadow: inset 0 -4px 0 var(--amber-deep), 0 8px 20px var(--amber-glow); flex-shrink: 0; }
@@ -513,7 +520,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       <div id="watchPane" style="display:flex;flex-direction:column;gap:12px">
         <div class="board-wrap">
           <div class="board" id="board"><div class="board-lines" id="boardLines"></div></div>
-          <svg class="teacher" id="teacher" data-nibb data-mood="happy" viewBox="0 0 120 110" aria-hidden="true"></svg>
+          <div class="teacher-rig" id="teacherRig"><svg class="teacher" id="teacher" data-nibb data-mood="happy" viewBox="0 0 120 110" aria-hidden="true"></svg><i class="chalk-stick" aria-hidden="true"></i></div>
         </div>
         <div class="board-ctrl">
           <button class="playbtn" id="playBtn" aria-label="Play lesson"></button>
@@ -1526,6 +1533,24 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     t.classList.toggle('talking', on);
     t.setAttribute('data-mood', on ? 'cheer' : 'happy');
   }
+  // Nibb writes the board himself: he floats beside the chalk cursor while a line is written,
+  // then glides back to his corner to rest when the writing stops (end of step, pause or skip).
+  var WRITE_SCALE = 0.8;
+  function teacherTo(cur) {
+    var rig = document.getElementById('teacherRig'), wrap = rig.parentNode;
+    var wr = wrap.getBoundingClientRect(), cr = cur.getBoundingClientRect();
+    var w = 92 * WRITE_SCALE, h = 85 * WRITE_SCALE;
+    var x = cr.right - wr.left + 12, y = cr.top - wr.top + cr.height / 2 - h * 0.46;
+    if (x + w > wr.width - 2) { x = wr.width - 2 - w; y += cr.height * 0.9; } // no room on the right: write from just below the line
+    y = Math.max(0, Math.min(y, wr.height - h));
+    rig.classList.remove('going-home'); rig.classList.add('writing');
+    rig.style.transform = 'translate(' + (x - rig.offsetLeft).toFixed(1) + 'px,' + (y - rig.offsetTop).toFixed(1) + 'px) scale(' + WRITE_SCALE + ')';
+  }
+  function teacherRest() {
+    var rig = document.getElementById('teacherRig');
+    if (!rig.classList.contains('writing') && !rig.style.transform) return;
+    rig.classList.remove('writing'); rig.classList.add('going-home'); rig.style.transform = '';
+  }
   async function writeLine(box, kind, text, tok) {
     var el = document.createElement('div');
     el.className = 'chalk ' + kind;
@@ -1534,6 +1559,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     for (var i = 1; i <= text.length; i++) {
       if (tok !== lesson.token) return false;
       span.textContent = text.slice(0, i);
+      if (i === 1 || i % 2 === 0 || i === text.length) teacherTo(cur);
       await sleep(kind === 'code' ? 55 : 48, tok);
     }
     cur.remove();
@@ -1545,6 +1571,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     lesson.step = i; lesson.seen[i] = true; renderSteps();
     var board = document.getElementById('board');
     var box = document.getElementById('boardLines');
+    teacherRest();
     if (box.children.length) { board.classList.add('wipe'); if (!(await sleep(450, tok))) return; board.classList.remove('wipe'); }
     box.innerHTML = '';
     var step = BOARD[i];
@@ -1555,6 +1582,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       if (!(await writeLine(box, step.lines[k][0], step.lines[k][1], tok))) return;
       if (!(await sleep(380, tok))) return;
     }
+    teacherRest(); // writing done: back to the corner while he finishes talking
     await talk;
     if (tok !== lesson.token) return;
     setTalking(false);
@@ -1566,6 +1594,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     lesson.token++; lesson.playing = false;
     if (hasTTS) try { speechSynthesis.cancel(); } catch (e) {}
     voiceEl.pause();
+    teacherRest();
     setTalking(false); renderPlay();
   }
   function renderPlay() {
