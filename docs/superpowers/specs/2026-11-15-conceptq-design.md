@@ -83,3 +83,16 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
 - Framework choice for the production app (React + Vite proposed).
 - Exact level-file schema (decide after one full floor is played, then version it).
 - Accessibility pass (contrast in light worlds, reduced motion already respected).
+
+## Production notes from the prototype review (2026-11-15)
+
+- **Fonts:** bundle fonts with the app instead of loading Google Fonts, so no child's IP address
+  or browser details go to a third party (matches "personal data stays on the device").
+- **Accessibility:** real tab panels (`aria-controls`), status badges that screen readers announce,
+  Nibb exposed as a button, and step buttons that keep keyboard focus when they re-render.
+  The prototype's topic tiles and bottom navigation are not wired yet.
+- **Audio:** recorded clip first; if the device refuses or cannot decode it, fall back to device speech.
+  Turning the voice off finishes the current step immediately.
+- **Saved settings:** treat anything read from storage as untrusted; accept only known values.
+- **Wires:** every wire is tappable and states its Python fact (prototype: Mailbox ↔ Bookshelf,
+  Switches ↔ Doors, Foundation ↔ Walls).

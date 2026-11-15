@@ -3,15 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ConceptQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>ConceptQ Lantern Quest</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>
-/* Layout: one phone-sized app, a night scene on top, warm glowing cards below. Single dark world by design. */
+/* Layout: one phone-sized app, a live world scene on top, translucent cards below that adapt to the world. */
 :root {
   --night: #2A1330;
   --deep: #1A0B1F;
@@ -358,6 +357,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .scene { overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
 /* ---------- house ---------- */
+.wire-hit { cursor: pointer; }
 .wire { stroke-dasharray: 4 5; animation: wireFlow 0.9s linear infinite; filter: drop-shadow(0 0 3px rgba(255,255,255,0.6)); }
 @keyframes wireFlow { to { stroke-dashoffset: -18; } }
 .lamp-glow { animation: pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -454,7 +454,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     </nav>
 
     <div class="picker-wrap" id="picker" hidden>
-      <div class="picker" role="dialog" aria-label="World and weather">
+      <div class="picker" role="dialog" aria-modal="true" aria-label="World and weather">
         <div class="picker-head"><h2>Your world</h2><button class="iconbtn" id="pickerClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
         <div class="picker-group"><span>Place</span><div class="picker-row" id="pick-world"></div></div>
         <div class="picker-group"><span>Weather</span><div class="picker-row" id="pick-weather"></div></div>
@@ -731,7 +731,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('svg[data-nibb]')) { e.preventDefault(); playAct(e.target); }
   });
-  document.getElementById('homeLumi').innerHTML = lumiSVG('happy', true);
+  document.getElementById('homeLumi').innerHTML = lumiSVG('happy');
   document.querySelectorAll('.lumi-mini').forEach(function (el) { el.innerHTML = lumiSVG('happy'); });
 
   // ---------- state ----------
@@ -749,7 +749,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   var state = { current: 3, embers: 120 };
 
   // ---------- path lanterns ----------
-  var nodePos = [[70, 316], [150, 280], [130, 232], [240, 204], [220, 152], [300, 118]];
   // ================= the house: one part per topic =================
   // Ground floor = Beginner (B1-B8 + boss). Upper floor and roof show as blueprints.
   var demoProgress = null;
@@ -852,10 +851,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     g += part(8, porch, '<circle cx="372" cy="253" r="4" data-spark="translate(372 253)"/>');
 
     // interconnecting wires when both ends are built
-    if (st(3) === 'done' && st(4) === 'done') g += '<path class="wire" d="M138 262 C 170 222, 222 226, 248 246" fill="none" stroke="#7CF5C8" stroke-width="2.2" stroke-linecap="round"/>';
-    if (st(5) === 'done' && st(6) === 'done') g += '<path class="wire" d="M290 260 C 270 238, 246 238, 232 252" fill="none" stroke="#FFC861" stroke-width="2.2" stroke-linecap="round"/>';
+    if (st(3) === 'done' && st(4) === 'done') g += '<g class="wire-hit" data-fact="input() always gives you a string, even when you type a number." role="button" tabindex="0" aria-label="Connection: input() always gives you a string, even when you type a number."><title>input() always gives you a string, even when you type a number.</title><path d="M138 262 C 170 222, 222 226, 248 246" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M138 262 C 170 222, 222 226, 248 246" fill="none" stroke="#7CF5C8" stroke-width="2.4" stroke-linecap="round"/></g>';
+    if (st(5) === 'done' && st(6) === 'done') g += '<g class="wire-hit" data-fact="An if statement opens a door when its condition is True." role="button" tabindex="0" aria-label="Connection: An if statement opens a door when its condition is True."><title>An if statement opens a door when its condition is True.</title><path d="M290 260 C 270 238, 246 238, 232 252" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M290 260 C 270 238, 246 238, 232 252" fill="none" stroke="#FFC861" stroke-width="2.4" stroke-linecap="round"/></g>';
     // foundation pillars glow once walls stand on it
-    if (st(1) === 'done' && st(2) === 'done') g += '<path class="wire" d="M168 296 v-4 M255 296 v-4 M342 296 v-4" stroke="#C3A6FF" stroke-width="2" stroke-linecap="round"/>';
+    if (st(1) === 'done' && st(2) === 'done') g += '<g class="wire-hit" data-fact="Operators work on values stored in variables, like total = price * 2." role="button" tabindex="0" aria-label="Connection: Operators work on values stored in variables, like total = price * 2."><title>Operators work on values stored in variables, like total = price * 2.</title><path d="M168 296 v-4 M255 296 v-4 M342 296 v-4" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M168 296 v-4 M255 296 v-4 M342 296 v-4" fill="none" stroke="#C3A6FF" stroke-width="2.4" stroke-linecap="round"/></g>';
 
     document.getElementById('nodes').innerHTML = g;
 
@@ -1035,7 +1034,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 
   // ================= dynamic scene: world x weather x time =================
   var scene = { world: 'canyon', weather: 'clear', time: 'auto' };
-  try { var saved = JSON.parse(localStorage.getItem('cq-scene') || 'null'); if (saved) scene = saved; } catch (e) {}
+  try { var saved = JSON.parse(localStorage.getItem('cq-scene') || 'null'); if (saved && typeof saved === 'object' && !Array.isArray(saved)) scene = Object.assign({ world: 'canyon', weather: 'clear', time: 'auto' }, saved); } catch (e) {}
 
   function clockTime() {
     var h = new Date().getHours();
@@ -1372,10 +1371,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       });
     });
   }
-  document.getElementById('sceneBtn').addEventListener('click', function () { renderPicker(); document.getElementById('picker').hidden = false; });
-  document.getElementById('pickerClose').addEventListener('click', function () { document.getElementById('picker').hidden = true; });
-  document.getElementById('picker').addEventListener('click', function (e) { if (e.target.id === 'picker') e.target.hidden = true; });
-  setInterval(function () { if (scene.time === 'auto') { var was = document.getElementById('greet').textContent; buildScene(); drawNodes(); } }, 300000);
+  function openPicker() { renderPicker(); document.getElementById('picker').hidden = false; var f = document.querySelector('#picker .pchip[aria-pressed="true"]') || document.getElementById('pickerClose'); f.focus(); }
+  function closePicker() { var p = document.getElementById('picker'); if (p.hidden) return; p.hidden = true; document.getElementById('sceneBtn').focus(); }
+  document.getElementById('sceneBtn').addEventListener('click', openPicker);
+  document.getElementById('pickerClose').addEventListener('click', closePicker);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePicker(); });
+  document.getElementById('picker').addEventListener('click', function (e) { if (e.target.id === 'picker') closePicker(); });
+  setInterval(function () { if (scene.time === 'auto') { buildScene(); drawNodes(); } }, 300000);
   ['world', 'weather', 'time'].forEach(function (k) { if (!PICK[k].some(function (o) { return o[0] === scene[k]; })) scene[k] = PICK[k][0][0]; });
 
   // ================= animated topic icons =================
@@ -1458,7 +1460,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   // ================= chalkboard lesson with voice =================
   var BOARD = [
     {
-      lines: [['title', 'Strings = text'], ['chalk', 'Text lives inside "quotes"'], ['code', 'name = "Nova"'], ['out', '→ Nova']],
+      lines: [['title', 'Strings = text'], ['chalk', 'Text lives inside "quotes"'], ['code', 'name = "Nova"'], ['code', 'print(name)'], ['out', '→ Nova']],
       say: 'A string is just text. To tell Python that something is text, we wrap it in quotes. Here, the variable name holds the string Nova.'
     },
     {
@@ -1500,6 +1502,22 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   function speak(text, tok, idx) {
     return new Promise(function (resolve) {
       var est = Math.max(2600, text.length * 62);
+      var finished = false;
+      function done() { if (!finished) { finished = true; voiceEl._end = null; resolve(); } }
+      voiceEl._end = done;
+      function deviceVoice() {
+        if (finished) return;
+        if (!lesson.voice || !hasTTS) { setTimeout(done, est); return; }
+        try {
+          speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(text);
+          var v = pickVoice(); if (v) u.voice = v;
+          u.rate = 0.98; u.pitch = 1.0;
+          u.onend = done; u.onerror = done;
+          setTimeout(done, est + 4000);
+          speechSynthesis.speak(u);
+        } catch (e) { setTimeout(done, est); }
+      }
       if (lesson.voice && VOICE[idx]) {
         try {
           voiceEl._unlockTok = null;
@@ -1507,26 +1525,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
           voiceEl.muted = false;
           voiceEl.src = VOICE[idx];
           voiceEl.currentTime = 0;
-          var fin2 = false; function end2() { if (!fin2) { fin2 = true; resolve(); } }
-          voiceAudio.onended = end2; voiceAudio.onerror = end2;
-          setTimeout(end2, est + 6000);
-          var pr = voiceAudio.play(); if (pr && pr.catch) pr.catch(function () { setTimeout(end2, est); });
+          var usedFallback = false;
+          function fallback() { if (!usedFallback && !finished) { usedFallback = true; deviceVoice(); } }
+          voiceEl.onended = done;
+          voiceEl.onerror = fallback;
+          setTimeout(done, est + 6000);
+          var pr = voiceEl.play();
+          if (pr && pr.catch) pr.catch(fallback);
           return;
-        } catch (e) {}
+        } catch (e) { /* fall through to the device voice */ }
       }
-      if (!lesson.voice || !hasTTS) { setTimeout(resolve, est); return; }
-      try {
-        speechSynthesis.cancel();
-        var u = new SpeechSynthesisUtterance(text);
-        var v = pickVoice(); if (v) u.voice = v;
-        u.rate = 0.98; u.pitch = 1.25;
-        var done = false; function fin() { if (!done) { done = true; resolve(); } }
-        u.onend = fin; u.onerror = fin;
-        setTimeout(fin, est + 4000);
-        speechSynthesis.speak(u);
-      } catch (e) { setTimeout(resolve, est); }
+      deviceVoice();
     });
   }
+
   function setTalking(on) {
     var t = document.getElementById('teacher');
     t.classList.toggle('talking', on);
@@ -1605,7 +1617,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   });
   document.getElementById('replayBtn').addEventListener('click', function () { unlockAudio(); lesson.playing = true; renderPlay(); playStep(0); });
   document.getElementById('voiceBtn').addEventListener('click', function (e) {
-    lesson.voice = !lesson.voice; e.currentTarget.setAttribute('aria-pressed', lesson.voice); if (!lesson.voice) { if (hasTTS) speechSynthesis.cancel(); if (voiceAudio) voiceAudio.pause(); }
+    lesson.voice = !lesson.voice; e.currentTarget.setAttribute('aria-pressed', lesson.voice); if (!lesson.voice) { if (hasTTS) speechSynthesis.cancel(); voiceEl.pause(); if (voiceEl._end) voiceEl._end(); }
     e.currentTarget.querySelector('span').textContent = lesson.voice ? 'Voice on' : 'Voice off';
   });
   document.getElementById('ccBtn').addEventListener('click', function (e) {
@@ -1626,6 +1638,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   if (hasTTS) try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function () {}; } catch (e) {}
   renderPlay(); renderSteps();
 
+  // tap a glowing wire: Nibb says the Python fact it stands for
+  function sayFact(el) {
+    var bubble = document.getElementById('homeBubble');
+    if (bubble._rest == null) bubble._rest = bubble.innerHTML;
+    clearTimeout(bubble._timer);
+    bubble.textContent = el.getAttribute('data-fact');
+    bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
+    bubble._timer = setTimeout(function () { bubble.innerHTML = bubble._rest; bubble._rest = null; bubble.classList.remove('pop'); }, 4500);
+  }
+  document.addEventListener('click', function (e) { var w = e.target.closest && e.target.closest('.wire-hit'); if (w) sayFact(w); });
+  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.wire-hit')) { e.preventDefault(); sayFact(e.target.closest('.wire-hit')); } });
   window.addEventListener('resize', drawNodes);
   show('home');
 })();

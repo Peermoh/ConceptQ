@@ -76,7 +76,7 @@ Each floor also has a garage mini-project: number-guessing game (Beginner), to-d
 |---|---|
 | Mailbox ↔ Bookshelf | `input()` always gives a string |
 | Light switches ↔ Hallway doors | `if` checks a True/False value |
-| Foundation ↔ Walls | everything stands on variables |
+| Foundation ↔ Walls | operators work on values stored in variables (`total = price * 2`) |
 | Staircase ↔ Wardrobe | loops walk through a list one item at a time |
 | Kitchen ↔ Toolbox | modules are full of ready-made functions |
 | Key rack ↔ Antenna | JSON from the internet arrives as dictionaries |
