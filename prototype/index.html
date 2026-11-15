@@ -816,11 +816,16 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   ];
   var state = { current: 0, embers: 0 };
   // lessons finished (0-9) and embers live in 'cq-progress'; the House tab reads the same key
-  try { var sp = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
+  // Saves carry a version. Saves from the earlier demos (which started at lesson 4) have none,
+  // so they are thrown away along with their placed furniture: everyone starts on empty land.
+  var SAVE_VERSION = 2;
+  try { var sp = JSON.parse(localStorage.getItem('cq-progress') || 'null');
+    if (sp && (typeof sp !== 'object' || sp.v !== SAVE_VERSION)) { sp = null; localStorage.removeItem('cq-progress'); localStorage.removeItem('cq-iso'); }
+    if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
     if (typeof sp.current === 'number' && sp.current >= 0 && sp.current <= 9) state.current = Math.floor(sp.current);
     if (typeof sp.embers === 'number' && sp.embers >= 0) state.embers = Math.floor(sp.embers);
   } } catch (e) {}
-  function saveProgress() { try { localStorage.setItem('cq-progress', JSON.stringify({ current: state.current, embers: state.embers })); } catch (e) {} }
+  function saveProgress() { try { localStorage.setItem('cq-progress', JSON.stringify({ v: SAVE_VERSION, current: state.current, embers: state.embers })); } catch (e) {} }
 
   // ---------- path lanterns ----------
 

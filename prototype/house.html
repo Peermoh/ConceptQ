@@ -203,8 +203,8 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   // ---------- what the lessons have earned ----------
   // The main app saves how many lessons are finished in 'cq-progress' (same site, so we can read it here).
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
-  var PROGRESS = 3;
-  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 9) PROGRESS = Math.floor(pr.current); } catch (e) {}
+  var PROGRESS = 0; // nothing saved yet = empty land
+  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 9) PROGRESS = Math.floor(pr.current); } catch (e) {}
   var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss'];
   var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5 }; // rug: streak bonus, always earned in this demo
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
