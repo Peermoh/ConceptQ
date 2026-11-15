@@ -1,14 +1,7 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ConceptQ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
-<style>body{margin:0}[hidden]{display:none!important}</style>
-</head>
-<body>
 <style>
 /* Layout: one phone-sized app, a live world scene on top, translucent cards below that adapt to the world. */
 :root {
@@ -109,6 +102,27 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .cta.mint { background: var(--mint); color: #08281C; box-shadow: inset 0 -5px 0 var(--mint-deep), 0 10px 26px rgba(110,231,183,0.35); }
 .cta.coral { background: var(--coral); color: #2E0A05; box-shadow: inset 0 -5px 0 var(--coral-deep), 0 10px 26px rgba(255,122,107,0.35); }
 
+.house-card { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: linear-gradient(135deg, rgba(110,231,183,0.16), rgba(255,255,255,0.06)); border: 1px solid rgba(110,231,183,0.35); border-radius: 22px; padding: 12px 14px; color: var(--cream); }
+.house-mini { width: 76px; height: 57px; flex: none; }
+.hc-text { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.hc-text b { font-family: var(--font-display); font-weight: 400; font-size: 19px; }
+.hc-text span { color: var(--muted); font-size: 13px; line-height: 1.3; }
+.courses { display: flex; flex-direction: column; gap: 10px; }
+.course { display: flex; align-items: center; gap: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 12px 14px; }
+.course.soon { opacity: 0.6; }
+.c-ic { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; font-family: var(--font-code); font-weight: 700; font-size: 15px; color: #2A1330; }
+.c-ic.py { background: var(--amber); } .c-ic.web { background: #8FD3FF; } .c-ic.math { background: #C3A6FF; }
+.c-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.c-body b { font-size: 16px; }
+.c-body > span { color: var(--muted); font-size: 13px; }
+.levels { display: flex; flex-wrap: wrap; gap: 4px; }
+.lv { font-style: normal; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,0.08); color: var(--muted); }
+.lv.on { background: var(--amber); color: #2A1A05; }
+.bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--mint); border-radius: inherit; }
+.soon-tag { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+#house { background: var(--deep); }
+#houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .tile .num { font-family: var(--font-display); font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -432,6 +446,24 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         <div class="topics" id="topics"></div>
       </section>
 
+      <button class="house-card" id="houseCard" data-nav="house">
+        <svg class="house-mini" id="houseMini" viewBox="0 0 120 90" aria-hidden="true"></svg>
+        <span class="hc-text"><b>My House</b><span id="houseStatus">3 items waiting to be placed</span></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+
+      <section class="courses" aria-label="Courses">
+        <div class="path-row-head"><b>Courses</b><span>for age 12</span></div>
+        <div class="course on">
+          <span class="c-ic py" aria-hidden="true">Py</span>
+          <span class="c-body"><b>Python</b><span id="pyLevel">Beginner · ground floor</span>
+            <span class="levels" aria-label="Levels"><i class="lv on">Beginner</i><i class="lv">Intermediate</i><i class="lv">Advanced</i><i class="lv">Expert</i></span>
+            <span class="bar"><i id="pyBar" style="width: 33%"></i></span></span>
+        </div>
+        <div class="course soon"><span class="c-ic web" aria-hidden="true">&lt;/&gt;</span><span class="c-body"><b>Web pages</b><span>HTML and CSS · builds a shop next door</span></span><span class="soon-tag">Soon</span></div>
+        <div class="course soon"><span class="c-ic math" aria-hidden="true">÷</span><span class="c-body"><b>Maths with code</b><span>Builds a garden and a greenhouse</span></span><span class="soon-tag">Soon</span></div>
+      </section>
+
       <div class="tiles">
         <button class="tile">
           <span class="row"><span class="num" id="cardsDue">8</span>
@@ -446,12 +478,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     </div>
 
     </div>
-    <nav class="nav" aria-label="Main">
-      <button aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 3h6M10 3v2M14 3v2"/><rect x="6" y="5" width="12" height="14" rx="4"/><path d="M10 21h4"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>Path</button>
-      <button><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2.5"/><path d="M8 3h9a3 3 0 0 1 3 3v11"/></svg>Cards</button>
-      <button><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h6M9 14h6"/></svg>Notes</button>
-      <button><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Me</button>
-    </nav>
+    <nav class="nav" aria-label="Main" data-navbar></nav>
 
     <div class="picker-wrap" id="picker" hidden>
       <div class="picker" role="dialog" aria-modal="true" aria-label="World and weather">
@@ -459,9 +486,15 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         <div class="picker-group"><span>Place</span><div class="picker-row" id="pick-world"></div></div>
         <div class="picker-group"><span>Weather</span><div class="picker-row" id="pick-weather"></div></div>
         <div class="picker-group"><span>Time of day</span><div class="picker-row" id="pick-time"></div></div>
-        <div class="picker-group"><span>Preview house (demo)</span><div class="picker-row" id="pick-demo"></div></div>
+        <div class="picker-group"><span>Lessons finished (demo)</span><div class="picker-row" id="pick-demo"></div></div>
       </div>
     </div>
+  </section>
+
+  <!-- ================= HOUSE (its own page, shown in a frame so its styles stay separate) ================= -->
+  <section class="screen" id="house" aria-label="My House" hidden>
+    <iframe id="houseFrame" title="My House"></iframe>
+    <nav class="nav" aria-label="Main" data-navbar></nav>
   </section>
 
   <!-- ================= LEARN ================= -->
@@ -551,14 +584,15 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       <rect x="54" y="158" width="62" height="14" rx="6" fill="#7A4A1E"/>
       <path d="M85 172 v18" stroke="#FFDDA6" stroke-width="3"/>
     </svg>
-    <h1 class="title-xl">Your bookshelf is built!</h1>
+    <h1 class="title-xl">You earned a bookshelf!</h1>
     <p style="margin:0; color: var(--muted); max-width: 30ch; line-height: 1.4; font-weight: 600;">You learned strings. Nibb saved 3 flashcards so you remember them next week.</p>
     <div class="stats">
       <div class="stat"><b id="dRight">3/3</b><span>first try</span></div>
       <div class="stat"><b id="dEmbers">+30</b><span>embers</span></div>
       <div class="stat"><b>3</b><span>new cards</span></div>
     </div>
-    <button class="cta" style="width:100%" id="backHome">Back to the path</button>
+    <button class="cta mint" style="width:100%" data-nav="house">Place it in My House</button>
+    <button class="cta" style="width:100%" id="backHome">Back home</button>
   </section>
 
 </div>
@@ -741,122 +775,24 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     { title: 'Numbers', part: 'walls', card: 'Numbers and operators', text: 'Add, divide and measure, brick by brick.' },
     { title: 'Strings', part: 'bookshelf', card: 'Strings: words your code can hold', text: 'Learn to store text, glue words together and count letters.' },
     { title: 'Input', part: 'mailbox', card: 'Input: messages from outside', text: 'Ask a question, read the answer and convert it.' },
-    { title: 'True or False', part: 'light switches', card: 'True or False: switching on logic', text: 'Compare values and combine them with and, or and not.' },
+    { title: 'True or False', part: 'lamps', card: 'True or False: switching on logic', text: 'Compare values and combine them with and, or and not.' },
     { title: 'Decisions', part: 'hallway doors', card: 'Decisions: which door opens?', text: 'Use if, elif and else to choose a path.' },
     { title: 'Loops', part: 'staircase', card: 'Loops: climb the stairs', text: 'Repeat steps with while and for, and reach the next floor.' },
     { title: 'the Boss', part: 'porch light', card: 'Boss: the Porch-Light Moth', text: 'Use everything on the ground floor to light the porch.' }
   ];
   var state = { current: 3, embers: 120 };
+  // lessons finished (0-9) and embers live in 'cq-progress'; the House tab reads the same key
+  try { var sp = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
+    if (typeof sp.current === 'number' && sp.current >= 0 && sp.current <= 9) state.current = Math.floor(sp.current);
+    if (typeof sp.embers === 'number' && sp.embers >= 0) state.embers = Math.floor(sp.embers);
+  } } catch (e) {}
+  function saveProgress() { try { localStorage.setItem('cq-progress', JSON.stringify({ current: state.current, embers: state.embers })); } catch (e) {} }
 
   // ---------- path lanterns ----------
-  // ================= the house: one part per topic =================
-  // Ground floor = Beginner (B1-B8 + boss). Upper floor and roof show as blueprints.
-  var demoProgress = null;
-  function houseProgress() { return demoProgress === null ? state.current : demoProgress; }
 
+  // The home scene is just the world and Nibb now; the house lives in the House tab.
   function drawNodes() {
-    var prog = houseProgress();
-    function st(i) { return i < prog ? 'done' : i === prog ? 'build' : 'plan'; }
-    var INK = '#2A1330';
-    function bp(shape) {
-      return shape.replace('/>', ' fill="none" stroke="' + INK + '" stroke-opacity="0.35" stroke-width="3"/>') +
-             shape.replace('/>', ' fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.4" stroke-dasharray="4 4"/>');
-    }
-    function part(i, built, outline) {
-      var s = st(i);
-      if (s === 'plan') return bp(outline);
-      if (s === 'done') return '<g>' + built + '</g>';
-      return '<g opacity="0.6">' + built + '</g>' +
-        '<g class="twinkle"><path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" fill="#FFE7A8" transform="' + outline.match(/data-spark="([^"]+)"/)[1] + '"/></g>';
-    }
-    var g = '';
-
-    // upper floor + roof: blueprints for Intermediate / Advanced
-    g += bp('<path d="M138 166 L255 128 L372 166 Z"/>');
-    g += bp('<rect x="146" y="166" width="218" height="44"/>');
-    g += bp('<rect x="160" y="174" width="22" height="32"/>') + bp('<rect x="300" y="186" width="48" height="20"/>');
-    g += '<text x="255" y="158" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="8" fill="#FFFFFF" opacity="0.9" stroke="' + INK + '" stroke-width="2.4" stroke-opacity="0.35" paint-order="stroke">ROOF · ADVANCED</text>';
-    g += '<text x="240" y="192" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="8" fill="#FFFFFF" opacity="0.9" stroke="' + INK + '" stroke-width="2.4" stroke-opacity="0.35" paint-order="stroke">2ND FLOOR · INTERMEDIATE</text>';
-
-    // B2 foundation with labelled boxes (index 1)
-    var found = '<rect x="146" y="296" width="218" height="18" rx="3" fill="#8E8287" stroke="' + INK + '" stroke-width="1.5"/>' +
-      [['age', 158], ['name', 196], ['score', 236], ['x', 278]].map(function (b) {
-        return '<rect x="' + b[1] + '" y="299" width="32" height="12" rx="2" fill="#D9A86C" stroke="' + INK + '" stroke-width="1"/><text x="' + (b[1] + 16) + '" y="308" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" font-weight="700" fill="' + INK + '">' + b[0] + '</text>';
-      }).join('');
-    g += part(1, found, '<rect x="146" y="296" width="218" height="18" data-spark="translate(255 305)"/>');
-
-    // B3 walls, ceiling, floor, partitions (index 2)
-    var bricks = '';
-    for (var y = 214; y < 296; y += 6) bricks += '<path d="M146 ' + y + ' h8 M356 ' + y + ' h8" stroke="#9E4A3A" stroke-width="0.8"/>';
-    var walls = '<rect x="150" y="216" width="210" height="80" fill="#F6E7CF"/>' +
-      '<rect x="146" y="210" width="8" height="86" fill="#C8664F"/><rect x="356" y="210" width="8" height="86" fill="#C8664F"/>' + bricks +
-      '<rect x="144" y="208" width="222" height="8" rx="2" fill="#E2CDB0" stroke="' + INK + '" stroke-width="1.2"/>' +
-      '<rect x="150" y="291" width="210" height="5" fill="#B98A5E"/>' +
-      '<rect x="220" y="216" width="6" height="30" fill="#E2CDB0"/><rect x="292" y="216" width="6" height="30" fill="#E2CDB0"/>';
-    var scaffold = st(2) === 'build' ? '<g stroke="#8A5A35" stroke-width="2.4"><path d="M140 300 V200 M370 300 V200"/><path d="M136 236 H374 M136 266 H374" stroke-width="3"/></g>' : '';
-    g += part(2, walls, '<rect x="146" y="208" width="218" height="88" data-spark="translate(255 250)"/>') + scaffold;
-
-    // B1 front door with "Hello!" sign (index 0)
-    var door = '<rect x="166" y="238" width="32" height="9" rx="2" fill="#FFE7A8" stroke="' + INK + '" stroke-width="1"/><text x="182" y="245" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="6.5" fill="' + INK + '">Hello!</text>' +
-      '<rect x="170" y="250" width="24" height="41" rx="3" fill="#B5533F" stroke="' + INK + '" stroke-width="1.3"/><rect x="174" y="255" width="16" height="12" rx="2" fill="#9C4535"/><circle cx="189" cy="272" r="1.8" fill="#FFC861"/>' +
-      '<circle class="bell" cx="203" cy="268" r="2.6" fill="#FFC861" stroke="' + INK + '" stroke-width="1"/>';
-    g += part(0, door, '<rect x="170" y="250" width="24" height="41" data-spark="translate(182 262)"/>');
-
-    // B4 study bookshelf (index 3)
-    var colors = ['#FF7A6B', '#7CF5C8', '#FFC861', '#8FD3FF', '#C3A6FF', '#FF8FC7'];
-    var books = '';
-    [[244, 252], [244, 270]].forEach(function (row, r) {
-      for (var k = 0; k < 6; k++) books += '<rect x="' + (row[0] + 4 + k * 5.4) + '" y="' + (row[1] - (k % 3 === 0 ? 11 : 9)) + '" width="4.4" height="' + (k % 3 === 0 ? 11 : 9) + '" fill="' + colors[(k + r * 2) % 6] + '"/>';
-    });
-    var shelf = '<rect x="242" y="238" width="40" height="53" rx="2" fill="#8A5A35" stroke="' + INK + '" stroke-width="1.2"/><rect x="245" y="241" width="34" height="47" fill="#6E4526"/>' +
-      '<path d="M245 253 h34 M245 271 h34" stroke="#8A5A35" stroke-width="2"/>' + books +
-      '<text x="262" y="286" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="6" font-weight="700" fill="#FFE7A8">"abc"</text>';
-    g += part(3, shelf, '<rect x="242" y="238" width="40" height="53" data-spark="translate(262 262)"/>');
-
-    // B5 mailbox outside (index 4)
-    var mail = '<rect x="126" y="270" width="4" height="26" fill="#8A5A35"/><rect x="114" y="258" width="28" height="14" rx="7" fill="#4F7FD1" stroke="' + INK + '" stroke-width="1.3"/>' +
-      '<rect x="138" y="252" width="2.5" height="10" fill="#FF7A6B"/><rect x="138" y="252" width="7" height="4" fill="#FF7A6B"/>' +
-      '<g class="letter-in"><rect x="104" y="262" width="12" height="7" rx="1" fill="#FFFFFF" stroke="' + INK + '" stroke-width="0.8"/><path d="M104 262 l6 4 l6 -4" fill="none" stroke="' + INK + '" stroke-width="0.8"/></g>';
-    g += part(4, mail, '<rect x="114" y="258" width="28" height="14" data-spark="translate(128 265)"/>');
-
-    // B6 light switches + ceiling lamps (index 5)
-    var lit = st(5) === 'done';
-    var lamps = [186, 258, 326].map(function (x) {
-      return (lit ? '<circle class="lamp-glow" cx="' + x + '" cy="228" r="16" fill="url(#halo)"/>' : '') +
-        '<path d="M' + x + ' 216 v5" stroke="' + INK + '" stroke-width="1"/><path d="M' + (x - 6) + ' 228 L' + x + ' 221 L' + (x + 6) + ' 228 Z" fill="' + (lit ? '#FFD88F' : '#CFC3B2') + '" stroke="' + INK + '" stroke-width="1"/>';
-    }).join('');
-    var switches = [214, 286].map(function (x) {
-      return '<rect x="' + x + '" y="258" width="7" height="10" rx="1.5" fill="#FFFFFF" stroke="' + INK + '" stroke-width="1"/><rect x="' + (x + 2.2) + '" y="' + (lit ? 260 : 263) + '" width="2.6" height="3.5" rx="1" fill="' + (lit ? '#2FB585' : '#8A7F8F') + '"/>';
-    }).join('');
-    g += part(5, lamps + switches, '<rect x="214" y="258" width="7" height="10" data-spark="translate(217 262)"/>');
-
-    // B7 hallway doors (index 6)
-    var doors = ['M226 250 L240 254 L240 291 L226 291 Z', 'M298 250 L310 254 L310 291 L298 291 Z'].map(function (d, k) {
-      return '<path class="door-swing" style="animation-delay:-' + k * 1.3 + 's" d="' + d + '" fill="#D58A5C" stroke="' + INK + '" stroke-width="1.1"/>';
-    }).join('') + '<rect x="220" y="246" width="6" height="45" fill="#E2CDB0" opacity="0.5"/><rect x="292" y="246" width="6" height="45" fill="#E2CDB0" opacity="0.5"/>';
-    g += part(6, doors, '<path d="M226 250 L240 254 L240 291 L226 291 Z" data-spark="translate(233 270)"/>');
-
-    // B8 staircase up to the next floor (index 7)
-    var steps = 'M314 291';
-    for (var k = 0; k < 7; k++) steps += ' v-' + 10.5 + ' h6';
-    steps += ' V291 Z';
-    var stairs = '<path d="' + steps + '" fill="#A8744A" stroke="' + INK + '" stroke-width="1.1"/>' +
-      '<path d="M314 280 l42 -64" stroke="#6E4526" stroke-width="1.5"/>';
-    g += part(7, stairs, '<path d="' + steps + '" data-spark="translate(334 262)"/>');
-    g += bp('<path d="M356 216 L356 170"/>');
-
-    // Boss: porch light with a moth (index 8)
-    var porch = '<rect x="364" y="246" width="10" height="3" fill="' + INK + '"/><circle class="lamp-glow" cx="372" cy="254" r="14" fill="url(#halo)"/><circle cx="372" cy="253" r="4" fill="#FFD88F" stroke="' + INK + '" stroke-width="1"/>' +
-      (still ? '' : '<g><animateMotion dur="2.6s" repeatCount="indefinite" path="M372 244 a9 6 0 1 1 0.1 0"/><path d="M-3 -1 l3 1 l-3 1 z M3 -1 l-3 1 l3 1 z" fill="#FFF1E2"/></g>');
-    g += part(8, porch, '<circle cx="372" cy="253" r="4" data-spark="translate(372 253)"/>');
-
-    // interconnecting wires when both ends are built
-    if (st(3) === 'done' && st(4) === 'done') g += '<g class="wire-hit" data-fact="input() always gives you a string, even when you type a number." role="button" tabindex="0" aria-label="Connection: input() always gives you a string, even when you type a number."><title>input() always gives you a string, even when you type a number.</title><path d="M138 262 C 170 222, 222 226, 248 246" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M138 262 C 170 222, 222 226, 248 246" fill="none" stroke="#7CF5C8" stroke-width="2.4" stroke-linecap="round"/></g>';
-    if (st(5) === 'done' && st(6) === 'done') g += '<g class="wire-hit" data-fact="An if statement opens a door when its condition is True." role="button" tabindex="0" aria-label="Connection: An if statement opens a door when its condition is True."><title>An if statement opens a door when its condition is True.</title><path d="M290 260 C 270 238, 246 238, 232 252" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M290 260 C 270 238, 246 238, 232 252" fill="none" stroke="#FFC861" stroke-width="2.4" stroke-linecap="round"/></g>';
-    // foundation pillars glow once walls stand on it
-    if (st(1) === 'done' && st(2) === 'done') g += '<g class="wire-hit" data-fact="Operators work on values stored in variables, like total = price * 2." role="button" tabindex="0" aria-label="Connection: Operators work on values stored in variables, like total = price * 2."><title>Operators work on values stored in variables, like total = price * 2.</title><path d="M168 296 v-4 M255 296 v-4 M342 296 v-4" fill="none" stroke="transparent" stroke-width="14"/><path class="wire" d="M168 296 v-4 M255 296 v-4 M342 296 v-4" fill="none" stroke="#C3A6FF" stroke-width="2.4" stroke-linecap="round"/></g>';
-
-    document.getElementById('nodes').innerHTML = g;
+    document.getElementById('nodes').innerHTML = '';
 
     // place Nibb and his bubble above the yard, left of the house
     var lumi = document.getElementById('homeLumi');
@@ -877,22 +813,67 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     document.getElementById('embers').textContent = state.embers;
     var bt = document.getElementById('bubbleTopic'); if (bt) bt.textContent = L.part;
     document.getElementById('cardEyebrow').textContent = ci < 8 ? 'Ground floor · Room ' + (ci + 1) + ' of 8' : 'Ground floor · Boss';
-    document.getElementById('ctaText').textContent = 'Build the ' + L.part;
+    document.getElementById('ctaText').textContent = ci < 8 ? 'Start · earns the ' + L.part : 'Face the boss';
     document.getElementById('cardTitle').textContent = L.card;
     document.getElementById('cardText').textContent = L.text;
     buildScene();
     drawNodes();
     renderTopics();
     document.getElementById('pathCount').textContent = Math.min(state.current, 9) + ' of 9 built';
+    renderHouseCard();
+    document.getElementById('pyBar').style.width = Math.round(Math.min(state.current, 9) / 9 * 100) + '%';
+    document.getElementById('pyLevel').textContent = 'Beginner · ' + Math.min(state.current, 9) + ' of 9 lessons';
+  }
+  // Same earning rules as the House tab: lesson i is finished when state.current > i.
+  var HOUSE_ITEMS = [['poster', 1, 0], ['desk', 1, 1], ['sofa', 1, 2], ['bookshelf', 1, 3], ['plant', 1, 3], ['lamp', 2, 5], ['rug', 1, -1]];
+  function renderHouseCard() {
+    var p = state.current, earned = 0, placed = 0;
+    HOUSE_ITEMS.forEach(function (it) { if (p > it[2]) earned += it[1]; });
+    try { var h = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (h && h.placed && typeof h.placed === 'object') Object.keys(h.placed).forEach(function (r) { if (Array.isArray(h.placed[r])) placed += h.placed[r].length; }); } catch (e) {}
+    var waiting = Math.max(0, earned - placed);
+    document.getElementById('houseStatus').textContent = p < 3
+      ? ['Empty land. Your first lesson sets the front door.', 'The door is up. Next lesson pours the foundation.', 'Foundation done. One more lesson raises the walls.'][p]
+      : (waiting ? waiting + (waiting === 1 ? ' item is' : ' items are') + ' waiting to be placed' : 'Every item is placed. Finish a lesson to earn more.');
+    // tiny picture of the house at its current stage
+    var INK = '#2A1330', g = '<ellipse cx="60" cy="80" rx="54" ry="8" fill="#5DBB63" opacity=".55"/>';
+    if (p >= 2) g += '<rect x="22" y="70" width="76" height="8" rx="2" fill="#A79BA5"/>';
+    else g += '<rect x="22" y="70" width="76" height="8" rx="2" fill="none" stroke="#FFFFFF" stroke-dasharray="4 3" opacity=".8"/>';
+    if (p >= 3) g += '<rect x="26" y="38" width="68" height="33" fill="#F6E3CC" stroke="' + INK + '" stroke-width="1.5"/><path d="M20 40 L60 14 L100 40 Z" fill="#B5533F" stroke="' + INK + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<rect x="70" y="46" width="14" height="11" fill="' + (p >= 6 ? '#FFD88F' : '#BFE7F5') + '" stroke="#8A5A35" stroke-width="2"/>';
+    if (p >= 1) g += '<rect x="36" y="50" width="13" height="21" rx="2" fill="#B5533F" stroke="' + INK + '" stroke-width="1.2"/>';
+    if (p >= 5) g += '<rect x="9" y="58" width="3" height="16" fill="#8A5A35"/><rect x="4" y="53" width="13" height="7" rx="3.5" fill="#4F7FD1"/>';
+    document.getElementById('houseMini').innerHTML = g;
   }
 
   // ---------- navigation ----------
-  var screens = ['home', 'learn', 'quiz', 'done'];
+  var screens = ['home', 'house', 'learn', 'quiz', 'done'];
+  var NAV = [
+    ['home', 'Home', '<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>'],
+    ['house', 'House', '<path d="M3 10l9-6 9 6"/><rect x="6" y="10" width="12" height="10" rx="1"/><rect x="10" y="14" width="4" height="6"/>'],
+    ['cards', 'Cards', '<rect x="4" y="5" width="12" height="15" rx="2.5"/><path d="M8 3h9a3 3 0 0 1 3 3v11"/>'],
+    ['me', 'Me', '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>']
+  ];
+  function renderNav(active) {
+    document.querySelectorAll('[data-navbar]').forEach(function (nav) {
+      nav.innerHTML = NAV.map(function (n) {
+        return '<button data-nav="' + n[0] + '"' + (n[0] === active ? ' aria-current="page"' : '') + '><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">' + n[2] + '</svg>' + n[1] + '</button>';
+      }).join('');
+    });
+  }
   function show(id) {
     if (id !== 'learn' && typeof stopBoard === 'function') stopBoard();
     screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
+    if (id === 'home' || id === 'house') renderNav(id);
     if (id === 'home') refreshHome();
+    // reload the house each time, so it picks up lessons finished since it was last opened
+    if (id === 'house') document.getElementById('houseFrame').src = 'house.html?v=' + state.current;
   }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-nav]'); if (!b) return;
+    var to = b.getAttribute('data-nav');
+    if (to === 'home' || to === 'house') show(to);
+    else { var bub = document.getElementById('homeBubble'); show('home'); bub.textContent = (to === 'cards' ? 'Flashcards' : 'Your profile') + ' arrive in the next build!'; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop'); }
+  });
   document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-go')); }); });
   document.getElementById('startBtn').addEventListener('click', function () {
     if (state.current === 3) show('learn');
@@ -1024,7 +1005,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 
   function finish() {
     state.embers += earned;
-    state.current = 4;
+    state.current = Math.max(state.current, 4);
+    saveProgress();
     document.getElementById('dRight').textContent = firstTry + '/' + Q.length;
     document.getElementById('dEmbers').textContent = '+' + earned;
     document.getElementById('cardsDue').textContent = '11';
@@ -1343,11 +1325,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   };
   function renderDemo() {
     var row = document.getElementById('pick-demo'); row.innerHTML = '';
-    [[null, 'My progress'], [0, 'Empty'], [3, '3 built'], [6, '6 built'], [9, 'Finished']].forEach(function (o) {
+    [[0, 'None yet'], [2, '2 done'], [3, '3 done'], [4, '4 done'], [6, '6 done'], [9, 'All 9']].forEach(function (o) {
       var b = document.createElement('button'); b.className = 'pchip'; b.textContent = o[1];
-      b.id = 'pick-demo-' + (o[0] === null ? 'real' : o[0]);
-      b.setAttribute('aria-pressed', demoProgress === o[0] ? 'true' : 'false');
-      b.addEventListener('click', function () { demoProgress = o[0]; renderDemo(); drawNodes(); });
+      b.id = 'pick-demo-' + o[0];
+      b.setAttribute('aria-pressed', state.current === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function () { state.current = o[0]; saveProgress(); renderDemo(); refreshHome(); });
       row.appendChild(b);
     });
   }
@@ -1653,6 +1635,3 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   show('home');
 })();
 </script>
-
-</body>
-</html>

@@ -67,6 +67,33 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
 - Placement test: skipped floors appear as blueprints that can be "claimed" with a short check.
 - Later courses add new floors; other subjects are separate houses (a village).
 
+### The house screen (updated 2026-11-15)
+- **Home is for status**: next lesson, ground-floor path, a My House card (stage + items waiting), the course list
+  (Python live; Web pages and Maths with code marked "Soon"), cards due and streak. The house is not drawn on Home.
+- **My House is its own tab**, drawn in 2.5D (isometric) with three zoom levels:
+  outside (closed house in a living world) → inside (only the house, no scenery) → one room full screen.
+- **It starts as empty land.** Hello, Python sets the front door, Variables pours the foundation, Numbers raises the walls.
+  Only then can you go inside.
+- **Lessons earn furniture**, placed by drag or tap-to-place onto glowing spots:
+
+  | Lesson | Item | Real-life idea it stands for |
+  |---|---|---|
+  | Hello, Python | Poster `>> hi` | The first thing your program says |
+  | Variables | Desk | Labelled drawers: a name holding a value |
+  | Numbers | Sofa | Seats: counting and adding (`seats = 2 + 1`) |
+  | Strings | Bookshelf (+ plant bonus) | Books are text; a row of letters |
+  | Input | Mailbox (outside) | Messages arriving from outside |
+  | True / False | 2 lamps | On or off |
+  | Decisions | Inside doors | A door opens only if a condition is True |
+  | Loops | Stairs to floor 2 | Repeat a step until you reach the top |
+  | Boss | Porch light | Uses everything on the floor |
+
+- **Placement rules** (physical, never "taste"): any item can go in any room; items can't overlap; nothing covers the
+  window or the door; the doorway tile stays clear; a corner bookshelf blocks the first slot of the other wall; a lamp
+  can't stand in front of a picture; desk and sofa can be turned. Old saves are re-checked on load.
+- Progress is shared through `cq-progress` (lessons finished) and `cq-iso` (placed items). The house page runs in its
+  own frame so its styles stay separate from the app.
+
 ### Data
 - Progress on the device only (localStorage/IndexedDB) with export/import backup, because iOS can clear site data after ~7 days unless the app is added to the home screen.
 - Lesson content in data files, not code, using one level format that AI-generated quests will reuse later. Each file carries a format version.
