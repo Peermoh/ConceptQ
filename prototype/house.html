@@ -32,13 +32,30 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 .chip { min-height: 40px; padding: 0 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; display: flex; align-items: center; gap: 6px; }
 .chip.go { background: var(--mint); color: #08281C; border-color: var(--mint); }
 .scene { position: relative; flex: 1; min-height: 0; }
-.scene svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-.scene svg.nibb { inset: auto; width: 74px; height: 68px; pointer-events: none; }
+.scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.scene > svg.nibb { inset: auto; width: 74px; height: 68px; pointer-events: none; }
 .room-hit { cursor: pointer; transition: fill-opacity 0.2s ease; fill-opacity: 0; }
 .room-hit:hover, .room-hit:focus { fill-opacity: 0.22; outline: none; }
 .bubble { position: absolute; background: var(--cream); color: #2A1330; border-radius: 16px; padding: 9px 12px; font-size: 14px; line-height: 1.3; max-width: 210px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.2s ease; }
 .chip.turn { min-height: 34px; padding: 0 12px; background: var(--mint); color: #08281C; border-color: var(--mint); font-weight: 800; }
 #roomBubble { pointer-events: none; }
+.card-sheet { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 6; background: #FFF6EA; color: #2A1330; border-radius: 22px; padding: 14px 16px 16px; box-shadow: 0 14px 40px rgba(0,0,0,0.45); display: flex; flex-direction: column; gap: 8px; animation: pop 0.25s ease-out; }
+.card-sheet.top { top: 8px; bottom: auto; }
+.ic-head { display: flex; justify-content: space-between; align-items: center; }
+.ic-badge { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #8E3D2F; background: #FFE2C9; border-radius: 999px; padding: 3px 9px; }
+.ic-x { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #F1E2D2; color: #2A1330; }
+.ic-title { font-family: var(--display); font-weight: 400; font-size: 22px; }
+.ic-idea { margin: 0; font-size: 14px; line-height: 1.35; color: #5B3B52; }
+.ic-code { margin: 0; background: #2A1330; color: #FFF1E2; border-radius: 14px; padding: 10px 12px; font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; }
+.ic-code .k { color: #FFB547; } .ic-code .st { color: #7CF5C8; } .ic-code .o { color: #C3A6FF; } .ic-code .c { color: #9C86A0; } .ic-code .new { background: rgba(124,245,200,0.18); border-radius: 4px; }
+.ic-play { display: flex; gap: 6px; flex-wrap: wrap; }
+.ic-play:empty { display: none; }
+.book { min-height: 40px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; color: #2A1330; border: 2px solid rgba(0,0,0,0.15); }
+.book[aria-pressed="true"] { outline: 3px solid #2A1330; outline-offset: 1px; }
+.ic-actions { display: flex; gap: 8px; }
+.ic-btn { flex: 1; min-height: 46px; border-radius: 14px; font-size: 15px; font-weight: 900; background: #F1E2D2; color: #2A1330; }
+.ic-btn.try { background: var(--amber); box-shadow: inset 0 -4px 0 var(--amber-deep); }
+.ic-btn.try[hidden] { display: none; }
 .bubble.pop { animation: pop 0.3s ease-out; }
 @keyframes pop { from { transform: scale(0.85); } to { transform: scale(1); } }
 .nibb { position: absolute; width: 74px; height: 68px; animation: bob 3s ease-in-out infinite; }
@@ -136,9 +153,17 @@ header { display: flex; justify-content: space-between; align-items: center; pad
       <svg class="nibb" id="roomNibb" style="right: 10px; top: 4px" viewBox="0 0 120 110" aria-hidden="true"></svg>
       <div class="bubble" id="roomBubble" style="right: 86px; top: 10px">Pick an item below and drag it in.</div>
       <div class="toast" id="toast"></div>
+      <div class="card-sheet" id="itemCard" role="dialog" aria-modal="false" aria-labelledby="icTitle" hidden>
+        <div class="ic-head"><span class="ic-badge" id="icBadge">from Strings</span><button class="ic-x" id="icClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <b class="ic-title" id="icTitle">Bookshelf</b>
+        <p class="ic-idea" id="icIdea"></p>
+        <div class="ic-play" id="icPlay"></div>
+        <pre class="ic-code" id="icCode" aria-live="polite"></pre>
+        <div class="ic-actions"><button class="ic-btn try" id="icTry">Try it</button><button class="ic-btn" id="icMove">Move</button></div>
+      </div>
     </div>
     <div class="tray">
-      <div class="tray-head pad"><b>Your items</b><span id="trayTip">Tap a placed item to pick it up</span><button class="chip turn" id="turnBtn" hidden aria-label="Turn the item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>Turn</button></div>
+      <div class="tray-head pad"><b>Your items</b><span id="trayTip">Tap a placed item to try it</span><button class="chip turn" id="turnBtn" hidden aria-label="Turn the item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>Turn</button></div>
       <div class="items pad" id="items"></div>
     </div>
   </section>
@@ -263,7 +288,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     }
     return '';
   }
-  function floorArt(v, id, gx, gy, w, d, zs) {
+  function floorArt(v, id, gx, gy, w, d, zs, off) { // off: a switched-off lamp
     var s = '';
     if (id === 'rug') {
       s += poly([P(v, gx + 0.08, gy + 0.08), P(v, gx + w - 0.08, gy + 0.08), P(v, gx + w - 0.08, gy + d - 0.08), P(v, gx + 0.08, gy + d - 0.08)], '#C3A6FF');
@@ -291,10 +316,10 @@ header { display: flex; justify-content: space-between; align-items: center; pad
       s += '<circle cx="' + c[0] + '" cy="' + (c[1] - 10 * zs) + '" r="' + 13 * zs + '" fill="#4E9A5B"></circle><circle cx="' + (c[0] - 9 * zs) + '" cy="' + (c[1] - 2 * zs) + '" r="' + 9 * zs + '" fill="#5DBB63"></circle><circle cx="' + (c[0] + 9 * zs) + '" cy="' + (c[1] - 4 * zs) + '" r="' + 9 * zs + '" fill="#6FCB72"></circle>';
     } else if (id === 'lamp') {
       var b = P(v, gx + 0.5, gy + 0.5, 0), t = P(v, gx + 0.5, gy + 0.5, 64 * zs);
-      s += '<circle cx="' + t[0] + '" cy="' + t[1] + '" r="' + 46 * zs + '" fill="url(#glow)"></circle>';
+      if (!off) s += '<circle cx="' + t[0] + '" cy="' + t[1] + '" r="' + 46 * zs + '" fill="url(#glow)"></circle>';
       s += '<ellipse cx="' + b[0] + '" cy="' + b[1] + '" rx="' + 10 * zs + '" ry="' + 5 * zs + '" fill="#5E3B20"></ellipse>';
       s += '<line x1="' + b[0] + '" y1="' + b[1] + '" x2="' + t[0] + '" y2="' + t[1] + '" stroke="#5E3B20" stroke-width="' + Math.max(1.2, 3 * zs) + '"></line>';
-      s += '<path d="M' + (t[0] - 14 * zs) + ' ' + (t[1] + 6 * zs) + ' L' + (t[0] - 8 * zs) + ' ' + (t[1] - 12 * zs) + ' L' + (t[0] + 8 * zs) + ' ' + (t[1] - 12 * zs) + ' L' + (t[0] + 14 * zs) + ' ' + (t[1] + 6 * zs) + ' Z" fill="#FFD88F" stroke="#8A5A35" stroke-width="' + Math.max(0.8, 1.4 * zs) + '"></path>';
+      s += '<path d="M' + (t[0] - 14 * zs) + ' ' + (t[1] + 6 * zs) + ' L' + (t[0] - 8 * zs) + ' ' + (t[1] - 12 * zs) + ' L' + (t[0] + 8 * zs) + ' ' + (t[1] - 12 * zs) + ' L' + (t[0] + 14 * zs) + ' ' + (t[1] + 6 * zs) + ' Z" fill="' + (off ? '#CFC3B2' : '#FFD88F') + '" stroke="#8A5A35" stroke-width="' + Math.max(0.8, 1.4 * zs) + '"></path>';
     }
     return s;
   }
@@ -417,7 +442,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 
   // ---------- the closed house, seen from outside ----------
   var houseMode = 'outside';
-  function hasLamp(r) { return state.placed[r].some(function (p) { return p.id === 'lamp'; }); }
+  function hasLamp(r) { return state.placed[r].some(function (p) { return p.id === 'lamp' && !p.off; }); }
   function frontPlane(v, gx0, gy0, alongX) {
     // flat art on an outside wall: local x = px along the wall, local y = up is negative
     var L = Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4);
@@ -549,9 +574,9 @@ header { display: flex; justify-content: space-between; align-items: center; pad
         var k = p.side === 'L' ? m.sy : m.sx;
         out += wallItem(vv, p.side, p.i * k, ITEMS[p.id].size * k, sx, zs, p.id, L, 0.38 * k);
       });
-      list.filter(function (p) { return ITEMS[p.id].flat; }).forEach(function (p) { var dm = dims(p.id, p.r); out += floorArt(v, p.id, m.gx(p.x), m.gy(p.y), dm.w * m.sx, dm.d * m.sy, zs); });
+      list.filter(function (p) { return ITEMS[p.id].flat; }).forEach(function (p) { var dm = dims(p.id, p.r); out += floorArt(v, p.id, m.gx(p.x), m.gy(p.y), dm.w * m.sx, dm.d * m.sy, zs, p.off); });
       list.filter(function (p) { return ITEMS[p.id].kind === 'floor' && !ITEMS[p.id].flat; }).sort(function (a, b) { return (a.x + a.y) - (b.x + b.y); })
-        .forEach(function (p) { var dm = dims(p.id, p.r); out += floorArt(v, p.id, m.gx(p.x), m.gy(p.y), dm.w * m.sx, dm.d * m.sy, zs); });
+        .forEach(function (p) { var dm = dims(p.id, p.r); out += floorArt(v, p.id, m.gx(p.x), m.gy(p.y), dm.w * m.sx, dm.d * m.sy, zs, p.off); });
       return out;
     }
     // locked stairs outline in the stairwell
@@ -705,11 +730,11 @@ header { display: flex; justify-content: space-between; align-items: center; pad
       s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + wallItem(wm, o.p.side, o.p.i, ITEMS[o.p.id].size, 1, 1.4, o.p.id, L_R, 0.38) + '</g>';
     });
     list.filter(function (o) { return ITEMS[o.p.id].flat; }).forEach(function (o) {
-      var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45) + '</g>';
+      var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>';
     });
     list.filter(function (o) { var it = ITEMS[o.p.id]; return it.kind === 'floor' && !it.flat; })
       .sort(function (a, b) { return (a.p.x + a.p.y) - (b.p.x + b.p.y); })
-      .forEach(function (o) { var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45) + '</g>'; });
+      .forEach(function (o) { var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>'; });
     // ghost preview on the hovered spot
     if (drag && drag.allowed && drag.hover) {
       var it2 = ITEMS[drag.id];
@@ -745,6 +770,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     document.getElementById('roomView').classList.remove('out');
   }
   function closeRoom() {
+    closeCard();
     if (drag) { if (drag.ghost) drag.ghost.remove(); drag = null; }
     drawHouse();
     document.getElementById('roomView').classList.add('out');
@@ -781,11 +807,88 @@ header { display: flex; justify-content: space-between; align-items: center; pad
       return;
     }
     if (drag || t.idx < 0) return;
-    var p = state.placed[current][t.idx]; if (!p) return;
-    state.placed[current].splice(t.idx, 1); save(); drawRoom(); renderTray();
-    toast(ITEMS[p.id].name + ' is back in your tray');
+    if (state.placed[current][t.idx]) openCard(t.idx);
   });
 
+
+  // ---------- living items: tap one to see the Python it stands for ----------
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function pyStr(t) { return '<span class="st">"' + esc(t) + '"</span>'; }
+  var BOOKS = [['Space Cats', '#FF7A6B'], ['Python', '#7CF5C8'], ['Nibb', '#FFC861'], ['Hello World', '#8FD3FF'], ['Tea Time', '#C3A6FF']];
+  var IDEAS = {
+    poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
+    desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
+    sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
+    rug: ['Bonus', 'A reward for learning 3 days in a row. Keep your streak going!', ''],
+    plant: ['Bonus', 'A reward for a perfect quiz. Every answer right on the first try!', '']
+  };
+  var cardIdx = -1, cardState = null;
+  function openCard(idx) {
+    var p = state.placed[current][idx]; if (!p) return;
+    cardIdx = idx; cardState = { book: -1, step: 0 };
+    var it = ITEMS[p.id];
+    document.getElementById('icTitle').textContent = it.name;
+    document.getElementById('icBadge').textContent = 'from ' + it.from;
+    document.getElementById('icTry').hidden = false;
+    renderCard();
+    // keep the item itself in view: if it sits in the lower half of the room, show the card at the top
+    var card = document.getElementById('itemCard'), g = document.querySelector('#roomSvg g.placed[data-idx="' + idx + '"]'), sc = document.getElementById('roomScene').getBoundingClientRect();
+    var gb = g ? g.getBoundingClientRect() : null;
+    card.classList.toggle('top', !!gb && (gb.top + gb.height / 2) > sc.top + sc.height * 0.45);
+    card.hidden = false;
+    document.getElementById('icTry').focus({ preventScroll: true });
+  }
+  function closeCard() { cardIdx = -1; document.getElementById('itemCard').hidden = true; }
+  function renderCard() {
+    var p = state.placed[current][cardIdx]; if (!p) { closeCard(); return; }
+    var idea = document.getElementById('icIdea'), play = document.getElementById('icPlay'), code = document.getElementById('icCode'), tryB = document.getElementById('icTry');
+    play.innerHTML = '';
+    if (p.id === 'lamp') {
+      var on = !p.off;
+      idea.innerHTML = 'A lamp is either on or off. In Python that is <b>True</b> or <b>False</b>, a value called a boolean.';
+      code.innerHTML = 'lamp_on = <span class="k">' + (cardState.step ? !on ? 'True' : 'False' : on ? 'True' : 'False') + '</span>' +
+        (cardState.step ? '\n<span class="new">lamp_on = <span class="o">not</span> lamp_on</span>\n<span class="c"># → ' + (on ? 'True' : 'False') + ': the lamp is ' + (on ? 'on' : 'off') + '</span>' : '');
+      tryB.textContent = on ? 'Switch it off' : 'Switch it on';
+    } else if (p.id === 'bookshelf') {
+      idea.innerHTML = 'Each book title is a string: text inside "quotes". Pick a book.';
+      BOOKS.forEach(function (bk, i) {
+        var b = document.createElement('button'); b.className = 'book'; b.textContent = bk[0]; b.style.background = bk[1];
+        b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false');
+        b.addEventListener('click', function () { cardState.book = i; cardState.step = 1; renderCard(); });
+        play.appendChild(b);
+      });
+      if (cardState.book < 0) { code.innerHTML = '<span class="c"># tap a book to read its title</span>'; tryB.hidden = true; }
+      else {
+        var t = BOOKS[cardState.book][0], lines = ['title = ' + pyStr(t), 'print(title)  <span class="c"># → ' + esc(t) + '</span>'];
+        if (cardState.step >= 2) lines.push('<span class="new">len(title)    <span class="c"># → ' + t.length + (t.indexOf(' ') >= 0 ? ' (the space counts!)' : '') + '</span></span>');
+        if (cardState.step >= 3) lines.push('<span class="new">' + pyStr('My ') + ' <span class="o">+</span> title  <span class="c"># → My ' + esc(t) + '</span></span>');
+        code.innerHTML = lines.join('\n');
+        tryB.hidden = cardState.step >= 3;
+        tryB.textContent = cardState.step === 1 ? 'Count the letters' : 'Glue on a word';
+      }
+    } else {
+      var I = IDEAS[p.id] || ['', '', ''];
+      idea.innerHTML = I[1]; code.innerHTML = I[2]; code.hidden = !I[2]; tryB.hidden = true;
+      return;
+    }
+    code.hidden = false;
+  }
+  document.getElementById('icTry').addEventListener('click', function () {
+    var p = state.placed[current][cardIdx]; if (!p) return;
+    if (p.id === 'lamp') {
+      if (p.off) delete p.off; else p.off = true;
+      cardState.step = 1; save(); drawRoom(); renderCard();
+      say(document.getElementById('roomBubble'), p.off ? 'lamp_on is False. Lights out!' : 'lamp_on is True. Let there be light!', !p.off, document.getElementById('roomNibb'));
+    } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
+  });
+  document.getElementById('icClose').addEventListener('click', closeCard);
+  document.getElementById('icMove').addEventListener('click', function () {
+    var p = state.placed[current][cardIdx]; if (!p) return;
+    closeCard();
+    state.placed[current].splice(state.placed[current].indexOf(p), 1); save();
+    startDrag({ clientX: 0, clientY: 0 }, p.id, true); // picked up: now tap a glowing spot to put it somewhere else
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.getElementById('itemCard').hidden) closeCard(); });
 
   function toast(t) { var el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove('on'); }, 1800); }
 
@@ -837,6 +940,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     if (pending.mouse) e.preventDefault();
   });
   function startDrag(e, id, tapMode) {
+    closeCard();
     var it = ITEMS[id];
     var allowed = !it.rooms || it.rooms.indexOf(current) >= 0;
     if (drag && drag.ghost) drag.ghost.remove();
