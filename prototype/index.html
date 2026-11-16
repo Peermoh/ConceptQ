@@ -10,18 +10,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>
 [hidden] { display: none !important; }
-/* Home: the live world fills the screen behind everything; the page scrolls over it */
-#home .scene { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0 !important; box-shadow: none !important; z-index: 0; }
-.home-scroll > :not(.scene), #home .scene .lumi, #home .scene .bubble { pointer-events: auto; }
-#home .home-body { margin-top: 196px; }
-#home .scene .lumi, #home .scene .bubble { transition: opacity 0.25s ease, transform 0.25s ease; }
-#home.scrolled .scene .lumi, #home.scrolled .scene .bubble { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+/* Home: the live world fills the screen behind everything; the page scrolls over it.
+   Cards are solid (not blurred): blurring a moving background every frame is too slow on phones. */
+#home .scene { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0 !important; box-shadow: none !important; z-index: 0; pointer-events: none; }
+.home-hero { position: relative; z-index: 2; height: 196px; flex: none; }
+.home-hero .lumi { left: 2px; top: 30px; }
+.home-hero .bubble { left: 122px; top: 4px; }
 #home .lesson-card, #home .house-card, #home .course, #home .tile, #home .topic, #home .topbar .chip, #home .brand {
-  background: rgba(26, 11, 31, 0.58); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
-  border-color: rgba(255, 241, 226, 0.16); }
+  background: rgba(22, 9, 28, 0.84); border-color: rgba(255, 241, 226, 0.14); -webkit-backdrop-filter: none; backdrop-filter: none; }
 #home .course.soon { opacity: 1; } #home .course.soon .c-body, #home .course.soon .c-ic { opacity: 0.6; }
-#home .path-row-head { background: rgba(26, 11, 31, 0.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-radius: 14px; padding: 6px 12px; }
-#home .nav { background: rgba(26, 11, 31, 0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+#home .path-row-head { background: rgba(22, 9, 28, 0.78); border-radius: 14px; padding: 6px 12px; }
+#home .nav { background: rgba(22, 9, 28, 0.94); }
 .screen:focus { outline: none; }
 /* Layout: one phone-sized app, a live world scene on top, translucent cards below that adapt to the world. */
 :root {
@@ -393,7 +392,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .minibtn[aria-pressed="true"] { color: var(--cream); border-color: var(--mint); }
 
 /* ---------- home scrolls as one page ---------- */
-.home-scroll { pointer-events: none; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; overscroll-behavior: contain; }
+.home-scroll { flex: 1; -webkit-overflow-scrolling: touch; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; overscroll-behavior: contain; }
 .home-scroll .home-body { flex: none; overflow: visible; min-height: auto; padding-block: 14px 18px; }
 .scene { overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
@@ -446,8 +445,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       <canvas class="fx" id="fx" aria-hidden="true"></canvas>
       <div class="flash" id="flash"></div>
 
-      <svg class="lumi" id="homeLumi" data-nibb data-mood="happy" tabindex="0" style="left: 24px; top: 118px" viewBox="0 0 120 110" role="img" aria-label="Nibb the robot. Tap him for a surprise."></svg>
-      <div class="bubble" id="homeBubble" style="left: 120px; top: 128px"><span id="bubbleWhen">Tonight</span> we build the <b id="bubbleTopic">Strings</b>. Ready?<span class="hint">Psst, tap me!</span></div>
+    </div>
+
+    <div class="home-hero" id="homeHero">
+      <svg class="lumi" id="homeLumi" data-nibb data-mood="happy" tabindex="0" viewBox="0 0 120 110" role="img" aria-label="Nibb the robot. Tap him for a surprise."></svg>
+      <div class="bubble" id="homeBubble"><span id="bubbleWhen">Tonight</span> we build the <b id="bubbleTopic">Strings</b>. Ready?<span class="hint">Psst, tap me!</span></div>
     </div>
 
     <div class="home-body pad">
@@ -1049,16 +1051,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   function drawNodes() {
     document.getElementById('nodes').innerHTML = '';
 
-    // place Nibb and his bubble above the yard, left of the house
-    var lumi = document.getElementById('homeLumi');
-    var bubble = document.getElementById('homeBubble');
-    var sceneEl = document.querySelector('.scene');
-    var w = sceneEl.clientWidth, h = sceneEl.clientHeight;
-    var scale = w / 400, offX = 0, offY = 0;
-    lumi.style.left = Math.max(2, offX + 0 * scale) + 'px';
-    lumi.style.top = (offY + 112 * scale) + 'px';
-    bubble.style.left = Math.min(w - 196, offX + 118 * scale) + 'px';
-    bubble.style.top = Math.max(62, offY + 62 * scale) + 'px';
   }
 
   function refreshHome() {
@@ -1554,11 +1546,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     var dt = Math.min(0.05, (now - fxLast) / 1000); fxLast = now;
     var c = document.getElementById('fx');
     if (c && c.getClientRects().length) {
-      var dpr = window.devicePixelRatio || 1;
+      var dpr = Math.min(1.5, window.devicePixelRatio || 1); // full-screen canvas: keep it light on phones
       var W = c.clientWidth, H = c.clientHeight;
       if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
       var g = c.getContext('2d');
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!fx.parts.length && !fx._dirty) { requestAnimationFrame(fxFrame); return; } // clear weather: nothing to draw
+      fx._dirty = fx.parts.length > 0;
       g.clearRect(0, 0, W, H);
       var t = now / 1000;
       fx.parts.forEach(function (p, i) {
@@ -2329,8 +2323,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   document.addEventListener('click', function (e) { var w = e.target.closest && e.target.closest('.wire-hit'); if (w) sayFact(w); });
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.wire-hit')) { e.preventDefault(); sayFact(e.target.closest('.wire-hit')); } });
   window.addEventListener('resize', function () { buildScene(); drawNodes(); });
-  // Nibb and his bubble live in the background world: fade them out once the cards scroll over them
-  document.getElementById('homeScroll').addEventListener('scroll', function (e) { document.getElementById('home').classList.toggle('scrolled', e.currentTarget.scrollTop > 60); }, { passive: true });
+
   show('home');
 })();
 </script>
