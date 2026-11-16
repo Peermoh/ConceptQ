@@ -28,7 +28,8 @@ a = s.index('  var LESSON_TIMES = '); b = s.index(';\n', a); s = s[:a] + '  var 
 M = spec.META
 entry = ("    %d: { board: BOARD_%s, quiz: Q_%s, key: '%s', labels: %s,\n         tag: %s, title: %s, topic: %s,\n"
          "         lastBtn: %s, doneTitle: %s, doneCta: %s,\n         doneText: %s }") % (spec.IDX, N, N, K, J(LES[K]['labels']), J(M['tag']), J(M['title']), J(M['topic']), J(M['lastBtn']), J(M['doneTitle']), J(M.get('doneCta', 'See it built')), J(M['doneText']))
-m = re.search(r"    %d: \{ board: BOARD_%s.*?\n         doneText: .*?' \}|    %d: \{ board: BOARD_%s.*?\n         doneText: \".*?\" \}" % (spec.IDX, N, spec.IDX, N), s, re.S)
+# the entry ends on its doneText line: [^\n]* keeps the match from running past it into later lessons
+m = re.search(r"    %d: \{ board: BOARD_%s, (?:[^\n]*\n){1,4}?         doneText: [^\n]*\}" % (spec.IDX, N), s)
 if m: s = s[:m.start()] + entry + s[m.end():]
 else:
     a = s.index('  var LESSON_DATA = {'); b = s.index('\n  };\n', a); s = s[:b] + ',\n' + entry + s[b:]
@@ -49,4 +50,10 @@ if key_re.search(gen): gen = key_re.sub(lambda _: new_g, gen)
 else: gen = gen.rstrip() + ',' + new_g
 s = s[:gstart] + gen + s[gend:]
 open(SRC, 'w').write(s)
+# the page must still parse: check its script with node
+import subprocess, tempfile
+js = re.search(r'<script>(.*?)</script>', s, re.S).group(1)
+with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False) as t: t.write(js)
+r = subprocess.run(['node', '--check', t.name], capture_output=True, text=True)
+assert r.returncode == 0, 'page script no longer parses:\n' + r.stderr[:600]
 print('added', K, 'at', spec.IDX, '| steps', len(LES[K]['steps']), '| quiz', len(spec.QUIZ), '| cards', len(spec.CARDS))
