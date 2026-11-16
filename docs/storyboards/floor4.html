@@ -1,0 +1,223 @@
+<title>Floor 4 Storyboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; each room is a frame (the house so far) beside its lesson plan. Dark, like the app. */
+:root {
+  --deep: #1A0B1F;
+  --night: #2A1330;
+  --sheet: #33193A;
+  --line: rgba(255, 236, 214, 0.14);
+  --cream: #FFF1E2;
+  --muted: #D9BFD2;
+  --amber: #FFB547;
+  --amber-soft: rgba(255, 181, 71, 0.16);
+  --mint: #6EE7B7;
+  --coral: #FF7A6B;
+  --chalk: #2E4A3C;
+  --font-display: 'Paytone One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html { background: var(--deep); }
+body { background: var(--deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.05; }
+h2 { font-size: 26px; }
+h3 { font-size: 22px; line-height: 1.15; }
+p { margin: 0; max-width: 68ch; }
+code, .code { font-family: var(--font-code); font-size: 13.5px; }
+.eyebrow { font-weight: 900; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 12px; }
+header p { font-size: 17px; color: var(--muted); }
+
+.decide { background: var(--sheet); border: 1.5px solid var(--amber); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.decide ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.decide li { max-width: 72ch; }
+.decide b { color: var(--amber); }
+
+.strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.strip a { flex: 0 0 auto; width: 104px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 800; display: flex; flex-direction: column; gap: 4px; border-radius: 12px; padding: 6px; }
+.strip a:hover, .strip a:focus-visible { background: var(--night); color: var(--cream); outline: none; }
+.strip svg { width: 92px; height: 77px; display: block; }
+
+.room { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; padding-top: 28px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.frame { display: flex; flex-direction: column; gap: 10px; }
+.frame svg { width: 100%; max-width: 280px; aspect-ratio: 6 / 5; height: auto; border-radius: 16px; background: var(--night); }
+.frame .cap { font-size: 13px; color: var(--muted); }
+.frame .cap b { color: var(--amber); }
+.plan { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--night); color: var(--muted); }
+.tag b { color: var(--cream); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.steps li { counter-increment: s; background: var(--chalk); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps li::before { content: counter(s) ". " attr(data-t); font-weight: 900; font-size: 14px; color: #F4F7EE; }
+.steps code { color: #DDEBD8; white-space: pre-wrap; word-break: break-word; }
+.living { background: var(--amber-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.living b { color: var(--amber); }
+
+section.more { display: flex; flex-direction: column; gap: 14px; padding-top: 28px; border-top: 1px solid var(--line); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); font-weight: 900; }
+td code { color: var(--mint); }
+
+@media (max-width: 700px) {
+  .room { grid-template-columns: 1fr; }
+  .frame svg { max-width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .new { animation: glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">ConceptQ · Python · Expert</span>
+    <h1>Floor 4 storyboard: the rooftop garden</h1>
+    <p>The house is finished. Expert builds what grows around it: a garden with a shed, water and lights, and a roof terrace on the flat garage roof with an antenna to the outside world. It goes beyond the PCEP and PCAP exams and follows the Python tutorial chapters 9–12. It is built in the order a real garden is: shed and tools, water, lights, a gate, plant labels, a meter, sprinklers, an antenna, then the smart garden.</p>
+  </header>
+
+  <div class="decide">
+    <span class="eyebrow">Four choices to confirm before I write lessons</span>
+    <ol>
+      <li><b>Build on the garage roof and in the garden, not on the house roof (recommended).</b> The pitched roof already has solar panels and the weather station. A flat garage roof is where a real roof terrace goes.</li>
+      <li><b>Split generators and the standard library (recommended).</b> Iterators and generators get one lesson each, and the standard library tour becomes two: "everyday tools" (os, sys.argv, datetime, decimal, zlib) and "regular expressions". That makes 11 lessons plus the Master Builder challenge.</li>
+      <li><b>The internet lesson is simulated in the app.</b> A pretend weather service answers with real JSON, so it works offline and never sends anything anywhere. The code is exactly what you would use with the real <code>requests</code> library.</li>
+      <li><b>Garage project: the smart garden.</b> It reads a forecast (JSON), waters each bed at the same time (async), logs what it did, uses dataclasses for the plants, and has tests. This is the weather app from the curriculum, finished properly.</li>
+    </ol>
+  </div>
+
+  <nav class="strip" id="strip" aria-label="Build order"></nav>
+  <div id="rooms"></div>
+
+  <section class="more">
+    <span class="eyebrow">Wires between rooms</span>
+    <h2>Where floor 4 connects to what you already built</h2>
+    <p class="muted">A glowing wire appears once both ends exist. Tapping it shows one Python fact.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Link</th><th>Python fact it shows</th></tr></thead>
+      <tbody>
+        <tr><td>Staircase ↔ Water tap</td><td>a <code>for</code> loop asks an iterator for one item at a time with <code>next()</code></td></tr>
+        <tr><td>Lift ↔ Rain barrel</td><td>a generator expression is a comprehension that makes items only when asked</td></tr>
+        <tr><td>Smart switches ↔ String lights</td><td>functions are values, so a decorator can wrap one function in another</td></tr>
+        <tr><td>Filing cabinet ↔ Self-closing gate</td><td><code>with open(…)</code> is a context manager: it always closes</td></tr>
+        <tr><td>Dormer blueprints ↔ Label printer</td><td>a dataclass writes <code>__init__</code> and <code>__repr__</code> for you</td></tr>
+        <tr><td>Inspector ↔ Smart meter</td><td>tests check it is right; <code>timeit</code> checks it is fast; logging says what happened</td></tr>
+        <tr><td>Key rack ↔ Antenna</td><td>JSON from the internet arrives as dictionaries and lists</td></tr>
+        <tr><td>Parcel sorter ↔ Pattern sieve</td><td>regular expressions search text by its shape, not its exact letters</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Flashcards</span>
+    <h2>Two new categories</h2>
+    <p>Floor 4 adds <b>Machinery</b> (iterators, generators, decorators, context managers, type hints, dataclasses) and <b>Outside world</b> (logging, timing, concurrency, JSON and APIs, the standard library, regular expressions). About 4 cards per lesson, roughly 46 in total.</p>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Coverage check</span>
+    <h2>Python tutorial chapters 9–12, and beyond</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Source</th><th>Topics</th><th>Lessons</th></tr></thead>
+      <tbody>
+        <tr><td>Tutorial 9 · Classes (iterators, generators)</td><td><code>__iter__</code>/<code>__next__</code>, <code>StopIteration</code>, <code>yield</code>, generator expressions</td><td>1–2</td></tr>
+        <tr><td>Functions as tools</td><td>decorators, <code>functools.wraps</code>, decorators with arguments, <code>lru_cache</code></td><td>3</td></tr>
+        <tr><td>Resources</td><td><code>with</code>, <code>__enter__</code>/<code>__exit__</code>, <code>contextlib.contextmanager</code></td><td>4</td></tr>
+        <tr><td>Typing</td><td>annotations, <code>list[str]</code>, <code>Optional</code>, dataclasses, <code>field</code>, <code>frozen</code></td><td>5</td></tr>
+        <tr><td>Tutorial 10–11 · Standard library</td><td><code>logging</code>, <code>timeit</code>, <code>os</code>, <code>glob</code>, <code>sys.argv</code>, <code>datetime</code>, <code>decimal</code>, <code>zlib</code>, <code>re</code>, <code>json</code>, <code>urllib</code></td><td>6, 8–10</td></tr>
+        <tr><td>Concurrency</td><td><code>threading</code>, <code>multiprocessing</code>, <code>asyncio</code>, <code>await</code>, <code>gather</code></td><td>7</td></tr>
+        <tr><td>Tutorial 12 · Virtual environments</td><td>covered on floor 3 (Packages); reused in the challenge</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+// Each room: what it builds (in building order), the item it earns, and its lesson steps [title, example].
+var ROOMS = [
+  { n: 'Iterators', t: 'One at a time', build: 'Garden shed and water tap', why: 'The shed holds the tools, and the tap gives one cup at a time, only when you ask, like next().', item: 'Water tap', tap: 'Turn the tap: each turn is <code>next(tap)</code>. When the tank is empty you get <code>StopIteration</code>, not a flood.',
+    steps: [['Iterable vs iterator', 'iter([1, 2, 3])'], ['next() asks for one', 'next(it)  # 1'], ['The end: StopIteration', 'next(it)  # StopIteration'], ['What for really does', 'it = iter(x)\nwhile True: next(it)'], ['Your own iterator', 'def __iter__(self): return self\ndef __next__(self): …'], ['Lazy is good', 'range(10**9)  # no memory used'], ['enumerate and zip', 'for i, x in enumerate(xs):'], ['itertools', 'count()  cycle()  islice()']] },
+  { n: 'Generators', t: 'Make it when it is needed', build: 'Rain barrel feeding the tap', why: 'The barrel fills from the roof and gives water as it is needed: a generator makes each value only when asked.', item: 'Rain barrel', tap: 'Each rain cloud is a <code>yield</code>. Ask for water and the barrel runs the code up to the next <code>yield</code>, then waits.',
+    steps: [['yield', 'def drops():\n    yield 1'], ['A generator pauses', 'g = drops()\nnext(g)'], ['Loops with yield', 'for n in range(3): yield n'], ['Generator expressions', '(n * n for n in nums)'], ['Endless, safely', 'while True: yield next_day()'], ['Pipelines', 'clean(read(lines))'], ['yield from', 'yield from other()'], ['When to use one', 'big data, one item at a time']] },
+  { n: 'Decorators', t: 'Wrap it up', build: 'String lights around the garden', why: 'Wrap lights around a tree and it is still the same tree, now with lights: a decorator wraps a function.', item: 'Light switch box', tap: 'Wrap the <code>water()</code> function with <code>@logged</code> and <code>@timed</code>: the tree lights up each time it runs.',
+    steps: [['Functions inside functions', 'def outer():\n    def inner(): …'], ['A wrapper', 'def logged(f):\n    def wrap(): …; return wrap'], ['The @ sign', '@logged\ndef water(): …'], ['Pass the arguments on', 'def wrap(*args, **kwargs):'], ['Keep the name: wraps', '@functools.wraps(f)'], ['Decorators with settings', '@repeat(3)'], ['Stacking', '@timed\n@logged'], ['Ready-made: lru_cache', '@functools.lru_cache']] },
+  { n: 'Context managers', t: 'Always close the gate', build: 'Self-closing garden gate', why: 'Whatever happens in the garden, the gate swings shut behind you: with always runs the clean-up.', item: 'Self-closing gate', tap: 'Walk through with <code>with gate:</code>. Trip over inside (an error) and the gate still closes.',
+    steps: [['with you already know', 'with open("f") as f:'], ['__enter__ and __exit__', 'class Gate:\n    def __enter__(self): …'], ['It closes even on errors', '__exit__(self, exc_type, …)'], ['The easy way', '@contextmanager\ndef gate(): …; yield'], ['Several at once', 'with a, b:'], ['Ready-made ones', 'suppress(FileNotFoundError)'], ['Temporary changes', 'with patch_settings():'], ['When to write one', 'open → use → always close']] },
+  { n: 'Type hints and dataclasses', t: 'Label everything', build: 'Plant beds with printed labels', why: 'Every bed has a label saying what grows there: a type hint says what a variable holds.', item: 'Label printer', tap: 'Print a label: <code>Plant("tomato", 3)</code>. The dataclass wrote <code>__init__</code> and <code>__repr__</code> for you.',
+    steps: [['Hints for variables', 'count: int = 3'], ['Hints for functions', 'def water(bed: str) -> bool:'], ['Collections', 'list[str]   dict[str, int]'], ['Maybe nothing: Optional', 'str | None'], ['Hints do not stop you', 'Python runs it anyway; tools check'], ['@dataclass', '@dataclass\nclass Plant:\n    name: str'], ['Defaults and field', 'tags: list = field(default_factory=list)'], ['frozen and order', '@dataclass(frozen=True, order=True)']] },
+  { n: 'Logging and timing', t: 'Measure, do not guess', build: 'Smart meter on the shed', why: 'The meter records every litre and how long each sprinkler ran: logs say what happened, timeit says how fast.', item: 'Smart meter', tap: 'Run the sprinklers: the meter writes log lines at INFO and WARNING, and <code>timeit</code> compares two ways of doing the same job.',
+    steps: [['print is not enough', 'import logging'], ['Levels', 'debug  info  warning  error  critical'], ['Set it up', 'logging.basicConfig(level=logging.INFO)'], ['A logger per module', 'log = logging.getLogger(__name__)'], ['Log to a file', 'filename="garden.log"'], ['How long does it take?', 'timeit("sum(xs)", number=1000)'], ['Compare two ways', 'list vs set lookup'], ['Find the slow part', 'python -m cProfile app.py']] },
+  { n: 'Concurrency', t: 'Many jobs at once', build: 'Sprinklers in every bed', why: 'Each bed has its own sprinkler, and they all run while you wait for the slowest: threads and async do many waiting jobs at once.', item: 'Sprinkler hub', tap: 'Start four sprinklers one after another, then all at once with <code>asyncio.gather</code>. Watch the clock: same work, a quarter of the time.',
+    steps: [['One after another', 'water(a); water(b)'], ['Waiting is wasted', 'time.sleep(2)'], ['Threads', 'threading.Thread(target=water)'], ['Processes for heavy maths', 'multiprocessing.Pool()'], ['async and await', 'async def water(): await …'], ['Run many: gather', 'await asyncio.gather(a(), b())'], ['Sharing safely', 'Lock()   queue.Queue()'], ['Which to choose', 'waiting → async · heavy maths → processes']] },
+  { n: 'JSON and APIs', t: 'Talk to the outside world', build: 'Antenna on the roof terrace', why: 'The antenna fetches the weather forecast: an API answers a request with JSON, which Python turns into dictionaries.', item: 'Antenna', tap: 'Ask the pretend weather service for tomorrow: the JSON appears, then becomes a dictionary you can index.',
+    steps: [['What JSON looks like', '{"temp": 18, "rain": true}'], ['Text to Python', 'json.loads(text)'], ['Python to text', 'json.dumps(d, indent=2)'], ['Files', 'json.load(f)   json.dump(d, f)'], ['What an API is', 'a URL that answers with data'], ['Make a request', 'requests.get(url).json()'], ['Check the answer', 'r.status_code == 200'], ['Be polite and safe', 'timeouts, keys out of the code']] },
+  { n: 'Everyday tools', t: 'The standard library shed', build: 'Tool wall in the shed', why: 'Python comes with a shed full of tools you do not need to install: files, dates, money, compression.', item: 'Tool wall', tap: 'Pick a tool off the wall: each one is a module, with one thing you can try.',
+    steps: [['os and glob', 'os.listdir(".")   glob("*.txt")'], ['Arguments: sys.argv', 'python grow.py tomato'], ['Dates', 'date.today() + timedelta(days=7)'], ['Formatting dates', 'd.strftime("%d %b")'], ['Exact money: decimal', 'Decimal("0.1") + Decimal("0.2")'], ['Compress: zlib', 'zlib.compress(data)'], ['random and statistics', 'mean([3, 5, 7])'], ['collections', 'Counter("banana")   defaultdict(list)']] },
+  { n: 'Regular expressions', t: 'Find by shape', build: 'Seed sieve on the potting bench', why: 'A sieve lets through only the right-sized seeds: a pattern finds only the text with the right shape.', item: 'Seed sieve', tap: 'Pour in some text: the sieve keeps the dates, phone numbers or plant codes that match the pattern you choose.',
+    steps: [['Why patterns', 'find every date in a page'], ['re.search', 're.search(r"\\d+", text)'], ['Character classes', '\\d  \\w  \\s  [a-z]'], ['How many', '+  *  ?  {3}'], ['Find them all', 're.findall(r"\\d+", text)'], ['Groups', 'r"(\\d+)-(\\d+)"'], ['Replace', 're.sub(r"\\s+", " ", text)'], ['Keep it readable', 're.VERBOSE and comments']] },
+  { n: 'Challenge', t: 'Master Builder: the smart garden', build: 'Roof terrace garden that waters itself', why: 'Everything on floor 4 working together: the forecast decides, the sprinklers run at once, the meter logs it, and the labels say what grows.', item: '—', tap: 'Read the forecast (JSON), make a dataclass for each bed, water only the dry ones at the same time (async), log it, time it and test it.',
+    steps: [['Read the forecast', 'json.loads(antenna.fetch())'], ['A dataclass per bed', '@dataclass\nclass Bed: name: str; dry: bool'], ['Pick the dry beds', '(b for b in beds if b.dry)'], ['Water them at once', 'await asyncio.gather(*jobs)'], ['Log and time it', '@timed  log.info(…)'], ['Test it', 'assert not water_needed(rainy_day)']] }
+];
+var NS = 'http://www.w3.org/2000/svg';
+// The house and garden; stage k draws everything up to room k (0 = the finished three-floor house).
+function house(k) {
+  var C = { wall: '#5E2A5C', edge: '#8A4A85', roof: '#D9503F', amber: '#FFB547', mint: '#6EE7B7', cream: '#FFF1E2', wood: '#B7793C', steel: '#9AA3AF', coral: '#FF7A6B', leaf: '#5FB35F', water: '#8FD3FF' };
+  var s = [];
+  function part(i, svg) { if (k >= i) s.push(k === i ? '<g class="new">' + svg + '</g>' : svg); }
+  s.push('<rect x="0" y="182" width="240" height="18" fill="#3A5A2E"/>');
+  // the finished house (left) with its solar panels, and the flat-roofed garage (right)
+  s.push('<rect x="20" y="62" width="120" height="120" fill="' + C.wall + '" stroke="' + C.edge + '" stroke-width="2"/><line x1="20" y1="122" x2="140" y2="122" stroke="' + C.edge + '" stroke-width="2"/>');
+  s.push('<path d="M10 62 L80 24 L150 62 Z" fill="' + C.roof + '" stroke="#A33A2C" stroke-width="2"/>');
+  [0, 1, 2].forEach(function (i) { s.push('<path d="M' + (92 + i * 16) + ' ' + (32 + i * 9) + ' l14 7 l-3 4 l-14 -7 z" fill="#2B4AA8" stroke="' + C.water + '" stroke-width="1"/>'); });
+  [[36, 134], [96, 134], [36, 76], [96, 76]].forEach(function (w) { s.push('<rect x="' + w[0] + '" y="' + w[1] + '" width="18" height="14" fill="' + C.amber + '"/>'); });
+  s.push('<rect x="150" y="128" width="64" height="54" fill="#6E4E46" stroke="#4A2C3E" stroke-width="1.5"/><rect x="146" y="124" width="72" height="5" fill="#8E3D2F"/>');
+  // 1 shed and water tap
+  part(1, '<rect x="222" y="150" width="16" height="32" fill="' + C.wood + '"/><path d="M219 150 l11 -8 l11 8 z" fill="#8E3D2F"/><rect x="214" y="166" width="6" height="3" fill="' + C.steel + '"/><circle cx="215" cy="171" r="1.5" fill="' + C.water + '"/>');
+  // 2 rain barrel
+  part(2, '<rect x="200" y="166" width="10" height="16" rx="2" fill="#4F7FD1"/><line x1="205" y1="150" x2="205" y2="166" stroke="' + C.steel + '" stroke-width="1.5"/>');
+  // 3 string lights across the garden
+  part(3, '<path d="M140 100 Q180 116 222 140" fill="none" stroke="#5E3B20" stroke-width="1"/>' + [0.15, 0.35, 0.55, 0.75, 0.92].map(function (t, i) { var x = 140 + 82 * t, y = 100 + 40 * t + Math.sin(t * Math.PI) * 6; return '<circle cx="' + x + '" cy="' + y + '" r="2.2" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][i % 3] + '"/>'; }).join(''));
+  // 4 self-closing gate
+  part(4, '<rect x="2" y="160" width="14" height="22" fill="none" stroke="' + C.cream + '" stroke-width="1.5"/><line x1="9" y1="160" x2="9" y2="182" stroke="' + C.cream + '"/>');
+  // 5 labelled plant beds on the garage roof
+  part(5, [154, 176, 198].map(function (x, i) { return '<rect x="' + x + '" y="116" width="18" height="8" fill="' + C.wood + '"/><path d="M' + (x + 4) + ' 116 q5 -10 10 0" fill="' + C.leaf + '"/><rect x="' + (x + 5) + '" y="118" width="8" height="4" fill="' + C.cream + '"/>'; }).join(''));
+  // 6 smart meter on the shed
+  part(6, '<rect x="226" y="156" width="8" height="8" rx="1" fill="#0E2A22" stroke="' + C.mint + '"/>');
+  // 7 sprinklers
+  part(7, [163, 185, 207].map(function (x) { return '<path d="M' + x + ' 112 l-6 -6 M' + x + ' 112 l6 -6 M' + x + ' 112 v-8" stroke="' + C.water + '" stroke-width="1.2"/>'; }).join(''));
+  // 8 antenna on the roof terrace
+  part(8, '<line x1="214" y1="124" x2="214" y2="88" stroke="' + C.cream + '" stroke-width="2"/><path d="M206 94 h16 M208 100 h12" stroke="' + C.cream + '" stroke-width="1.5"/><circle cx="214" cy="86" r="2.5" fill="' + C.coral + '"/>');
+  // 9 tool wall in the shed
+  part(9, '<line x1="226" y1="176" x2="234" y2="176" stroke="' + C.amber + '" stroke-width="1.5"/>');
+  // 10 seed sieve on a potting bench
+  part(10, '<rect x="176" y="174" width="18" height="8" fill="' + C.wood + '"/><ellipse cx="185" cy="173" rx="7" ry="2.5" fill="none" stroke="' + C.steel + '" stroke-width="1.5"/>');
+  // 11 challenge: the terrace garden blooms and waters itself
+  part(11, [156, 168, 180, 192, 204].map(function (x, i) { return '<circle cx="' + x + '" cy="108" r="3" fill="' + ['#FF8FC7', '#FFC861', '#C3A6FF', '#FF7A6B', '#7CF5C8'][i] + '"/>'; }).join('') + '<path d="M150 104 q32 -14 68 0" fill="none" stroke="' + C.water + '" stroke-width="1" stroke-dasharray="2 3"/>');
+  return '<svg viewBox="0 0 240 200" xmlns="' + NS + '" role="img" aria-label="The garden after ' + (k ? ROOMS[k - 1].n : 'floor 3') + '">' + s.join('') + '</svg>';
+}
+function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+var strip = document.getElementById('strip'), rooms = document.getElementById('rooms');
+strip.innerHTML = '<a href="#start">' + house(0) + 'Start: the finished house</a>' + ROOMS.map(function (r, i) {
+  return '<a href="#room-' + (i + 1) + '">' + house(i + 1) + (i + 1 === ROOMS.length ? 'Challenge' : (i + 1) + '. ' + r.n) + '</a>';
+}).join('');
+rooms.innerHTML = '<span id="start"></span>' + ROOMS.map(function (r, i) {
+  var last = i + 1 === ROOMS.length;
+  return '<article class="room" id="room-' + (i + 1) + '">' +
+    '<div class="frame">' + house(i + 1) + '<span class="cap">Builds: <b>' + r.build + '</b>. ' + r.why + '</span></div>' +
+    '<div class="plan"><span class="eyebrow">' + (last ? 'Master Builder challenge · smart garden' : 'Lesson ' + (i + 1) + ' of ' + (ROOMS.length - 1)) + '</span>' +
+    '<h3>' + r.n + ': ' + r.t + '</h3>' +
+    '<div class="tags">' + (last ? '' : '<span class="tag">Item <b>' + r.item + '</b></span>') + '<span class="tag"><b>' + r.steps.length + '</b> steps</span><span class="tag"><b>' + (last ? 6 : 7) + '+</b> questions, fresh each time</span></div>' +
+    '<ol class="steps">' + r.steps.map(function (st) { return '<li data-t="' + st[0].replace(/"/g, '&quot;') + '"><code>' + esc(st[1]) + '</code></li>'; }).join('') + '</ol>' +
+    '<div class="living"><b>' + (last ? 'The challenge.' : 'Living item.') + '</b> ' + r.tap + '</div></div></article>';
+}).join('');
+</script>

@@ -112,6 +112,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
 .glass { background: rgba(31, 14, 36, 0.72); border-radius: 16px; padding: 6px 12px; backdrop-filter: blur(6px); }
 #houseSvg, #roomSvg { overflow: visible; }
 .cloud { animation: cloudCross linear infinite; }
+#houseView.windy .cloud { animation-duration: 16s !important; }
+#houseView.windy .sway { animation-duration: 0.8s !important; }
+#houseView.inside #hfx, #houseView.inside #hflash { display: none; }
+#hfx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#hflash { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; pointer-events: none; }
+#hflash.on { animation: hflash 0.5s ease-out; }
+@keyframes hflash { 10% { opacity: .55; } 30% { opacity: .1; } 45% { opacity: .4; } 100% { opacity: 0; } }
 @keyframes cloudCross { from { transform: translateX(-520px); } to { transform: translateX(520px); } }
 .flyby { animation: flyby linear infinite; }
 @keyframes flyby { from { transform: translateX(-120px); } to { transform: translateX(520px); } }
@@ -179,6 +186,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     </header>
     <div class="scene" id="houseScene">
       <svg id="houseSvg" viewBox="0 0 390 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Isometric ground floor with four rooms: study, stairwell, entrance and living room"></svg>
+      <canvas id="hfx" aria-hidden="true"></canvas><div id="hflash" aria-hidden="true"></div>
       <svg class="nibb" id="houseNibb" style="left: 12px; top: 78px" viewBox="0 0 120 110" aria-hidden="true"></svg>
       <div class="bubble" id="houseBubble" style="left: 92px; top: 84px">This is your house! Tap it to go inside.</div>
     </div>
@@ -722,17 +730,54 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   try { var wk = localStorage.getItem('cq-iso-world'); if (WORLDS[wk]) worldKey = wk; } catch (e) {}
   // The house follows the main page's scene (cq-scene): the same world and the same time of day.
   // The aquarium world has no garden version, so the house shows spring there.
-  var houseTime = 'day';
+  var houseTime = 'day', houseWeather = 'clear';
   function readScene() {
     var sc = null; try { sc = JSON.parse(localStorage.getItem('cq-scene') || 'null'); } catch (e) {}
     if (sc && typeof sc === 'object') { var w = sc.world === 'ocean' ? 'spring' : sc.world; if (WORLDS[w]) worldKey = w; }
     var t = sc && sc.time && sc.time !== 'auto' ? sc.time : null;
     if (!t) { var h = new Date().getHours(); t = h >= 5 && h < 9 ? 'morning' : h >= 9 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'sunset' : 'night'; }
     houseTime = { morning: 1, day: 1, sunset: 1, night: 1 }[t] ? t : 'day';
+    houseWeather = sc && { clear: 1, cloudy: 1, rain: 1, storm: 1, snow: 1, wind: 1 }[sc.weather] ? sc.weather : 'clear';
   }
   readScene();
   var TIME_SKY = { morning: ['#F7A8B8', '#FFE0C2'], sunset: ['#6A2E5E', '#F59A72'], night: ['#0D0A24', '#352560'] };
   var TIME_TINT = { morning: ['#FF9AA8', 0.10], day: ['#FFFFFF', 0], sunset: ['#4A1240', 0.30], night: ['#07061C', 0.50] };
+  // rain, snow and blowing leaves on a canvas over the garden, the same as the main page
+  var hw = { parts: [], kind: '', last: 0, flash: 0, on: false };
+  function hwSpawn(kind, W, H, any) {
+    var p = { kind: kind, x: Math.random() * W, y: any ? Math.random() * H : -10, s: Math.random() };
+    if (kind === 'rain') { p.vy = 520 + p.s * 260; p.vx = -90; p.len = 10 + p.s * 10; }
+    if (kind === 'snow') { p.vy = 22 + p.s * 30; p.r = 1.2 + p.s * 2.2; p.ph = Math.random() * 6; }
+    if (kind === 'leaf') { p.x = any ? Math.random() * W : -20; p.vx = 160 + p.s * 220; p.r = 3 + p.s * 3; p.ph = Math.random() * 6; p.col = ['rgba(240,170,70,0.9)', 'rgba(200,110,60,0.9)', 'rgba(150,190,90,0.9)'][Math.floor(p.s * 3)]; }
+    return p;
+  }
+  function startWeather() {
+    var c = document.getElementById('hfx'); if (!c) return;
+    var kinds = { rain: [['rain', 110]], storm: [['rain', 180], ['leaf', 10]], snow: [['snow', 90]], wind: [['leaf', 34]] }[houseWeather] || [];
+    var W = c.clientWidth || 390, H = c.clientHeight || 600;
+    hw.parts = []; kinds.forEach(function (k) { for (var i = 0; i < k[1]; i++) hw.parts.push(hwSpawn(k[0], W, H, true)); });
+    if (!still && hw.parts.length && !hw.on) { hw.on = true; hw.last = performance.now(); requestAnimationFrame(hwFrame); }
+    if (!hw.parts.length) { var g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); }
+  }
+  function hwFrame(now) {
+    var c = document.getElementById('hfx');
+    if (!hw.parts.length || !c) { hw.on = false; return; }
+    var dt = Math.min(0.05, (now - hw.last) / 1000); hw.last = now;
+    var dpr = Math.min(1.5, window.devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight;
+    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    var g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    var t = now / 1000;
+    hw.parts.forEach(function (p, i) {
+      if (p.kind === 'rain') { p.y += p.vy * dt; p.x += p.vx * dt; g.strokeStyle = 'rgba(200,225,255,0.6)'; g.lineWidth = 1.3; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x + p.vx * 0.02, p.y - p.len); g.stroke(); }
+      else if (p.kind === 'snow') { p.y += p.vy * dt; p.x += Math.sin(t + p.ph) * 0.4; g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.3); g.fill(); }
+      else { p.x += p.vx * dt; p.y += Math.sin(t * 3 + p.ph) * 1.2 + 0.2; g.save(); g.translate(p.x, p.y); g.rotate(t * 5 + p.ph); g.fillStyle = p.col; g.beginPath(); g.ellipse(0, 0, p.r, p.r * 0.5, 0, 0, 6.3); g.fill(); g.restore(); }
+      if (p.y > H + 20 || p.x < -30 || p.x > W + 30) { var n = hwSpawn(p.kind, W, H, false); if (p.kind === 'rain') n.x = Math.random() * (W + 80); hw.parts[i] = n; }
+    });
+    if (houseWeather === 'storm' && now - hw.flash > 4200 + Math.random() * 3000) { hw.flash = now; var f = document.getElementById('hflash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+    requestAnimationFrame(hwFrame);
+  }
+  var WEATHER_GREY = { clear: 0, wind: 0.08, cloudy: 0.16, snow: 0.12, rain: 0.26, storm: 0.4 };
+  function greyLayer() { var g = WEATHER_GREY[houseWeather]; return g ? '<rect x="-600" y="-700" width="1600" height="2200" fill="#3A3D52" opacity="' + g + '" pointer-events="none"></rect>' : ''; }
   function tintLayer(k) { var t = TIME_TINT[houseTime]; return t[1] ? '<rect x="-600" y="-700" width="1600" height="2200" fill="' + t[0] + '" opacity="' + (t[1] * k).toFixed(2) + '" pointer-events="none"></rect>' : ''; }
 
   function tree(v, gx, gy, k) {
@@ -770,12 +815,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += '<defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + SK[0] + '"></stop><stop offset="1" stop-color="' + SK[1] + '"></stop></linearGradient>' +
          '<pattern id="wdots" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="' + W.ground + '"></rect><circle cx="5" cy="6" r="1.4" fill="' + W.dot + '"></circle><circle cx="16" cy="15" r="1.4" fill="' + W.dot + '"></circle></pattern></defs>';
     s += '<rect x="-600" y="-700" width="1600" height="780" fill="url(#wsky)"></rect>';
-    if (houseTime === 'night') { // stars and a crescent moon, like the main page at night
+    var heavy = houseWeather === 'rain' || houseWeather === 'storm' || houseWeather === 'cloudy' || houseWeather === 'snow';
+    if (heavy) s += '';
+    else if (houseTime === 'night') { // stars and a moon, like the main page at night
       for (var si = 0; si < 26; si++) s += '<circle class="twinkle" style="animation-delay:-' + (si * 0.37).toFixed(2) + 's" cx="' + (-560 + (si * 137) % 1540) + '" cy="' + (-660 + (si * 89) % 600) + '" r="' + (1 + (si % 3) * 0.5) + '" fill="#FFF4E0"></circle>';
       s += '<circle cx="250" cy="-50" r="34" fill="#FFF1D2" opacity=".18"></circle><circle cx="250" cy="-50" r="18" fill="#FFF1D2"></circle><circle cx="244" cy="-54" r="3.5" fill="#E8D9B8"></circle><circle cx="255" cy="-44" r="2.5" fill="#E8D9B8"></circle>';
-    } else s += '<circle cx="330" cy="' + (houseTime === 'sunset' ? 10 : houseTime === 'morning' ? 0 : -30) + '" r="' + (worldKey === 'snow' ? 20 : 26) + '" fill="' + (houseTime === 'sunset' ? '#FF9A5A' : worldKey === 'snow' ? '#FFF6D8' : '#FFE58A') + '"></circle>';
-    [[-60, -70, 70], [120, -40, 95], [300, -90, 120]].forEach(function (c, i) {
-      s += '<g class="cloud" style="animation-duration:' + c[2] + 's;animation-delay:-' + (c[2] * 0.4 * (i + 1)) + 's"><g transform="translate(' + c[0] + ' ' + c[1] + ')" fill="#FFFFFF" opacity=".92"><ellipse cx="0" cy="0" rx="34" ry="12"></ellipse><circle cx="-12" cy="-8" r="14"></circle><circle cx="10" cy="-12" r="17"></circle><circle cx="26" cy="-3" r="11"></circle></g></g>';
+    } else if (!heavy) s += '<circle cx="330" cy="' + (houseTime === 'sunset' ? 10 : houseTime === 'morning' ? 0 : -30) + '" r="' + (worldKey === 'snow' ? 20 : 26) + '" fill="' + (houseTime === 'sunset' ? '#FF9A5A' : worldKey === 'snow' ? '#FFF6D8' : '#FFE58A') + '"></circle>';
+    var CL = [[-60, -70, 70], [120, -40, 95], [300, -90, 120], [40, -110, 80], [220, -60, 105], [-160, -50, 90], [380, -30, 75]];
+    var ncl = { clear: 3, wind: 4, cloudy: 6, snow: 6, rain: 7, storm: 7 }[houseWeather];
+    var cfill = houseWeather === 'storm' ? '#5E6078' : houseWeather === 'rain' ? '#A9AEC2' : houseTime === 'night' ? '#4A4270' : houseTime === 'sunset' ? '#D9A0B4' : '#FFFFFF';
+    CL.slice(0, ncl).forEach(function (c, i) {
+      s += '<g class="cloud" style="animation-duration:' + c[2] + 's;animation-delay:-' + (c[2] * 0.4 * (i + 1)) + 's"><g transform="translate(' + c[0] + ' ' + c[1] + ')" fill="' + cfill + '" opacity=".92"><ellipse cx="0" cy="0" rx="34" ry="12"></ellipse><circle cx="-12" cy="-8" r="14"></circle><circle cx="10" cy="-12" r="17"></circle><circle cx="26" cy="-3" r="11"></circle></g></g>';
     });
     s += '<path d="M-600 80 C -200 30, 0 60, 120 40 C 240 20, 330 54, 470 34 C 700 10, 900 50, 1000 40 L1000 120 L-600 120 Z" fill="' + W.hills + '"></path>';
     s += '<rect x="-600" y="70" width="1600" height="1400" fill="url(#wdots)"></rect>';
@@ -1205,7 +1255,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     document.getElementById('houseView').classList.toggle('inside', houseMode === 'inside');
     if (houseMode === 'outside') {
       readScene(); setWorldLabel();
-      s += worldBack(v) + tintLayer(1);
+      s += worldBack(v) + tintLayer(1) + greyLayer();
+      document.getElementById('houseView').classList.toggle('windy', houseWeather === 'wind' || houseWeather === 'storm'); startWeather();
       s += exterior(v) + worldFront(v) + tintLayer(0.45);
       document.getElementById('houseSvg').innerHTML = s;
       summary();
@@ -1487,6 +1538,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     setWorldLabel(); drawHouse();
   });
   setWorldLabel();
+  // the Learn page changed the world, weather or time: redraw the garden to match
+  window.addEventListener('storage', function (e) { if (e.key === 'cq-scene' && houseMode === 'outside') drawHouse(); });
   document.getElementById('backBtn').addEventListener('click', closeRoom);
   document.getElementById('doneBtn').addEventListener('click', closeRoom);
   document.getElementById('floorBtn').addEventListener('click', function () { var fo = floorsOpen(); VIEW_FLOOR = fo[(fo.indexOf(VIEW_FLOOR) + 1) % fo.length]; drawHouse(); });

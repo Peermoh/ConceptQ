@@ -327,6 +327,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 @keyframes jelly { 0%,100% { transform: translateY(0) scaleY(1); } 40% { transform: translateY(-22px) scaleY(0.9); } 60% { transform: translateY(-24px) scaleY(1.05); } }
 .flipper { transform-box: fill-box; transform-origin: center; animation: flap 0.9s ease-in-out infinite alternate; }
 .sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 3.6s ease-in-out infinite alternate; }
+body.windy .sway { animation-duration: 0.8s !important; }
 @keyframes sway { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
 .swim { animation: swim linear infinite; }
 @keyframes swim { from { transform: translateX(-80px); } to { transform: translateX(480px); } }
@@ -2729,10 +2730,10 @@ button.deck.locked { cursor: default; }
   };
   var UI_BG = { canyon: '#2A1330', spring: '#132A20', snow: '#211F3A', ocean: '#062A34' };
   var TINT = { morning: ['#FF9AA8', 0.12], day: ['#FFFFFF', 0], sunset: ['#4A1240', 0.38], night: ['#07061C', 0.58] };
-  var WEATHER_GREY = { clear: 0, cloudy: 0.42, rain: 0.58, storm: 0.72, snow: 0.38 };
+  var WEATHER_GREY = { clear: 0, cloudy: 0.42, rain: 0.58, storm: 0.72, snow: 0.38, wind: 0.2 };
 
   function clouds(t, w) {
-    var n = { clear: 2, cloudy: 5, rain: 6, storm: 7, snow: 5 }[w];
+    var n = { clear: 2, cloudy: 5, rain: 6, storm: 7, snow: 5, wind: 4 }[w];
     var base = t === 'night' ? '#3B3260' : t === 'sunset' ? '#C98AA0' : '#FFFFFF';
     if (w === 'rain') base = mix(base, '#8E93A8', 0.6);
     if (w === 'storm') base = mix(base, '#4E4F66', 0.75);
@@ -2905,7 +2906,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('greet').textContent = greet;
     var bw = document.getElementById('bubbleWhen'); if (bw) bw.textContent = !LESSON_DATA[Math.min(state.current, ALL_LESSONS - 1)] ? 'Soon' : (t === 'night' || t === 'sunset') ? 'Tonight' : 'Today';
     document.getElementById('sceneIcon').innerHTML = weatherIcon(w, t);
-    setParticles();
+    setParticles(); document.body.classList.toggle('windy', scene.weather === 'wind' || scene.weather === 'storm');
   }
 
   function weatherIcon(w, t) {
@@ -2915,6 +2916,7 @@ button.deck.locked { cursor: default; }
     var cloud = '<path d="M7 18h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.6A3.3 3.3 0 0 0 7 18z" fill="#E6E1F0"/>';
     if (w === 'clear') return sun;
     if (w === 'cloudy') return cloud;
+    if (w === 'wind') return '<path d="M3 8h11a3 3 0 1 0-3-3M3 13h16a3 3 0 1 1-3 3M3 18h8" stroke="#E6E1F0" stroke-width="2" fill="none" stroke-linecap="round"/>';
     if (w === 'rain') return cloud + '<path d="M9 20l-1 2M13 20l-1 2M17 20l-1 2" stroke="#7FD3FF" stroke-width="2" stroke-linecap="round"/>';
     if (w === 'storm') return cloud + '<path d="M12 17l-2 4h3l-2 3" stroke="#FFC861" stroke-width="2" fill="none" stroke-linecap="round"/>';
     return cloud + '<circle cx="9" cy="21" r="1.2" fill="#FFFFFF"/><circle cx="13" cy="22" r="1.2" fill="#FFFFFF"/><circle cx="17" cy="21" r="1.2" fill="#FFFFFF"/>';
@@ -2928,7 +2930,8 @@ button.deck.locked { cursor: default; }
     if (world === 'ocean') kinds.push(['bubble', 26]);
     else {
       if (w === 'rain') kinds.push(['rain', 110]);
-      if (w === 'storm') kinds.push(['rain', 180]);
+      if (w === 'storm') kinds.push(['rain', 180], ['leaf', 10]);
+      if (w === 'wind') kinds.push(['leaf', 34]);
       if (w === 'snow' || (world === 'snow' && w === 'cloudy')) kinds.push(['snow', 90]);
       if (world === 'spring' && (w === 'clear' || w === 'cloudy') && t !== 'night') kinds.push(['petal', 18]);
       if (t === 'night' && (w === 'clear' || w === 'cloudy') && world !== 'snow') kinds.push(['firefly', 14]);
@@ -2947,6 +2950,7 @@ button.deck.locked { cursor: default; }
     if (kind === 'snow') { p.vy = 22 + p.s * 30; p.r = 1.2 + p.s * 2.2; p.ph = Math.random() * 6; }
     if (kind === 'petal') { p.vy = 18 + p.s * 18; p.r = 2.5 + p.s * 2; p.ph = Math.random() * 6; }
     if (kind === 'bubble') { p.y = anywhere ? Math.random() * H : H + 10; p.vy = -(18 + p.s * 30); p.r = 1.5 + p.s * 3.5; p.ph = Math.random() * 6; }
+    if (kind === 'leaf') { p.x = anywhere ? Math.random() * W : -20; p.y = Math.random() * H; p.vx = 160 + p.s * 220; p.r = 3 + p.s * 3; p.ph = Math.random() * 6; p.col = ['rgba(240,170,70,0.9)', 'rgba(200,110,60,0.9)', 'rgba(150,190,90,0.9)'][Math.floor(p.s * 3)]; }
     if (kind === 'firefly') { p.y = H * 0.45 + Math.random() * H * 0.5; p.ph = Math.random() * 6; }
     return p;
   }
@@ -2976,6 +2980,9 @@ button.deck.locked { cursor: default; }
           p.y += p.vy * dt; p.x += Math.sin(t * 1.5 + p.ph) * 0.8 + 0.3;
           g.save(); g.translate(p.x, p.y); g.rotate(t * 2 + p.ph);
           g.fillStyle = 'rgba(255,170,205,0.9)'; g.beginPath(); g.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, 6.3); g.fill(); g.restore();
+        } else if (p.kind === 'leaf') {
+          p.x += p.vx * dt; p.y += Math.sin(t * 3 + p.ph) * 1.2 + 0.2;
+          g.save(); g.translate(p.x, p.y); g.rotate(t * 5 + p.ph); g.fillStyle = p.col; g.beginPath(); g.ellipse(0, 0, p.r, p.r * 0.5, 0, 0, 6.3); g.fill(); g.restore();
         } else if (p.kind === 'bubble') {
           p.y += p.vy * dt; p.x += Math.sin(t * 2 + p.ph) * 0.3;
           g.strokeStyle = 'rgba(220,250,255,0.7)'; g.lineWidth = 1.2; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.3); g.stroke();
@@ -2988,6 +2995,7 @@ button.deck.locked { cursor: default; }
         if (p.y > H + 20 || p.x < -30 || p.x > W + 30 || p.y < -30) {
           var n = spawn(p.kind, W, H, false);
           if (p.kind === 'rain') n.x = Math.random() * (W + 80);
+          if (p.kind === 'leaf') n.x = -20;
           fx.parts[i] = n;
         }
       });
@@ -3003,7 +3011,7 @@ button.deck.locked { cursor: default; }
   // ----- picker -----
   var PICK = {
     world: [['canyon', 'Canyon'], ['spring', 'Spring'], ['snow', 'Snowland'], ['ocean', 'Aquarium']],
-    weather: [['clear', 'Sunny'], ['cloudy', 'Cloudy'], ['rain', 'Rainy'], ['storm', 'Stormy'], ['snow', 'Snowy']],
+    weather: [['clear', 'Sunny'], ['cloudy', 'Cloudy'], ['rain', 'Rainy'], ['storm', 'Stormy'], ['snow', 'Snowy'], ['wind', 'Windy']],
     time: [['auto', 'Match my clock'], ['morning', 'Morning'], ['day', 'Day'], ['sunset', 'Sunset'], ['night', 'Night']]
   };
   function renderDemo() {

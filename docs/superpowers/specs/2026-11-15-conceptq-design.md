@@ -245,3 +245,13 @@ quiz built fresh every time (hand-written questions + generators checked against
   of 600+ (the artifact limit is 512).
 - Pipeline: `tools/record_voices.py` (per-step clips, resumable) → `tools/combine_audio.py` (join + offsets).
 - Fixed: the Variables lesson gained two steps on every recording run (it re-read its own output); it is 8 steps again.
+
+### House follows the Learn scene; Floor 4 storyboard (2026-11-16)
+- The house outside reads `cq-scene` (world, weather, time) and redraws when it changes. Aquarium shows the spring
+  garden. Time: morning/day/sunset/night sky, sun or moon and stars, tint. Weather: cloudy (more clouds), rain, storm
+  (rain, leaves, lightning flash), snow, and the new **Windy** (blowing leaves, fast-swaying trees and clouds), which
+  is also added to the Learn page picker. Roof lights glow brighter at sunset and night.
+- Lesson caption reserves the height of the lesson's longest sentence, so it never overlaps the Voice/Captions row.
+- Ground-floor challenge now has 4 question generators.
+- Floor 4 (Expert) storyboard: `docs/storyboards/floor4.html` — rooftop garden: 11 lessons + smart-garden challenge,
+  4 choices awaiting confirmation.
