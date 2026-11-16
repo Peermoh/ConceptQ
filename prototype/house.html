@@ -243,6 +243,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     glasscab:  { name: 'Glass cabinet', from: 'Tuples', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     toybox:    { name: 'Toy box', from: 'Sets', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     keyrack:   { name: 'Key rack', from: 'Dictionaries', kind: 'wall', size: 1, count: 1, rooms: null },
+    filecab:   { name: 'Filing cabinet', from: 'Files', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
+    toolbox:   { name: 'Toolbox', from: 'Modules', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     noticeboard: { name: 'Notice board', from: 'String tools', kind: 'wall', size: 1, count: 1, rooms: null },
     kettle:    { name: 'Kettle', from: 'Functions I', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     toaster:   { name: 'Toaster', from: 'Functions II', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
@@ -255,8 +257,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 21) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17 }; // rug: a welcome gift, always earned
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Boss'];
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
@@ -265,10 +267,10 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
   var UPSTAIRS = PROGRESS >= 13; // Sets builds the floor-2 walls and lowers the roof
   var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
-  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.' };
+  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the boss, a garden party on the balcony.', 21: 'Floor 2 is complete: you finished Intermediate!' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -319,7 +321,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     bookshelf: ['study', 'living', 'entrance', 'stairs'], plant: ['living', 'entrance', 'study', 'stairs'], lamp: ['living', 'study', 'entrance', 'stairs'],
     wardrobe: ['stairs', 'study', 'entrance', 'living'], shoerack: ['entrance', 'stairs', 'living', 'study'],
     glasscab: ['living', 'study', 'entrance', 'stairs'], toybox: ['playroom', 'bedroom', 'landing', 'kitchen'], keyrack: ['landing', 'kitchen', 'bedroom', 'playroom'],
-    noticeboard: ['bedroom', 'playroom', 'landing', 'kitchen'], kettle: ['kitchen', 'playroom', 'bedroom', 'landing'], toaster: ['kitchen', 'playroom', 'bedroom', 'landing'], alarm: ['kitchen', 'landing', 'bedroom', 'playroom'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    noticeboard: ['bedroom', 'playroom', 'landing', 'kitchen'], kettle: ['kitchen', 'playroom', 'bedroom', 'landing'], toaster: ['kitchen', 'playroom', 'bedroom', 'landing'], alarm: ['kitchen', 'landing', 'bedroom', 'playroom'],
+    filecab: ['bedroom', 'landing', 'playroom', 'study'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -459,6 +462,22 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       [0.42, 0.58].forEach(function (f) { var k = P(v, x0 + ww * f, y0 + wd, wh * 0.5); s += '<circle cx="' + k[0] + '" cy="' + k[1] + '" r="' + Math.max(1.2, 2.6 * zs) + '" fill="#FFC861"></circle>'; });
       var tp = P(v, x0 + ww / 2, y0 + wd / 2, wh);
       s += '<rect x="' + (tp[0] - 9 * zs) + '" y="' + (tp[1] - 4 * zs) + '" width="' + 18 * zs + '" height="' + 7 * zs + '" rx="' + 2 * zs + '" fill="#FF8FC7" opacity=".9"></rect>';
+    } else if (id === 'filecab') {
+      // three drawers; each drawer is a file that is still there tomorrow
+      var fh = 70 * zs, x4 = gx + 0.15, y4 = gy + 0.15, w4 = w - 0.3, d4 = d - 0.3;
+      s += box(v, x4, y4, w4, d4, fh, '#AEB6C2', '#8A93A0', '#9AA3AF');
+      [0.18, 0.5, 0.82].forEach(function (f) {
+        var a1 = P(v, x4 + w4 * 0.1, y4 + d4, fh * f - fh * 0.12), a2 = P(v, x4 + w4 * 0.9, y4 + d4, fh * f - fh * 0.12), a3 = P(v, x4 + w4 * 0.9, y4 + d4, fh * f + fh * 0.12), a4 = P(v, x4 + w4 * 0.1, y4 + d4, fh * f + fh * 0.12);
+        s += '<polygon points="' + pts([a1, a2, a3, a4]) + '" fill="#C9D2DE" stroke="#6B7380" stroke-width="' + Math.max(0.5, zs) + '"></polygon>';
+        var hd3 = P(v, x4 + w4 * 0.5, y4 + d4, fh * f); s += '<rect x="' + (hd3[0] - 5 * zs) + '" y="' + (hd3[1] - 1.5 * zs) + '" width="' + 10 * zs + '" height="' + 3 * zs + '" fill="#FFC861"></rect>';
+      });
+    } else if (id === 'toolbox') {
+      // a red toolbox: a module full of ready-made tools
+      var bh = 22 * zs, x5 = gx + 0.15, y5 = gy + 0.28, w5 = w - 0.3, d5 = d - 0.56;
+      s += box(v, x5, y5, w5, d5, bh, '#FF7A6B', '#D9503F', '#C2443A');
+      var hl1 = P(v, x5 + w5 * 0.3, y5 + d5 / 2, bh), hl2 = P(v, x5 + w5 * 0.7, y5 + d5 / 2, bh);
+      s += '<path d="M' + hl1[0] + ' ' + hl1[1] + ' v-' + 8 * zs + ' H' + hl2[0] + ' v' + 8 * zs + '" fill="none" stroke="#3A3A44" stroke-width="' + Math.max(1, 2.5 * zs) + '"></path>';
+      var wr = P(v, x5 + w5 * 0.85, y5 + d5 * 0.3, bh); s += '<line x1="' + wr[0] + '" y1="' + wr[1] + '" x2="' + (wr[0] + 6 * zs) + '" y2="' + (wr[1] - 12 * zs) + '" stroke="#C9D2DE" stroke-width="' + Math.max(1, 3 * zs) + '"></line>';
     } else if (id === 'kettle' || id === 'toaster') {
       // a little kitchen table with the kettle (Functions I) or the toaster (Functions II) on it
       var th2 = 30 * zs, x3 = gx + 0.18, y3 = gy + 0.18, w3 = w - 0.36, d3 = d - 0.36;
@@ -760,7 +779,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       s += '<g transform="' + frontPlane(v, 10, w[0], false) + '">' + windowArt(w[1] * L, hasLamp(w[2])) + '</g>';
     });
     // gable window (attic, dark until Intermediate)
-    var attic = '<g transform="' + frontPlane(v, 10, 4.5, false) + '"><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="11" fill="#8A5A35"></circle><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="8" fill="#5E4A6E"></circle></g>';
+    var atticLit = PROGRESS >= 19; // Files: the attic keeps things overnight, like a file
+    var attic = '<g' + (atticLit ? ' data-part="18"' : '') + ' transform="' + frontPlane(v, 10, 4.5, false) + '">' + (atticLit ? '<circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="22" fill="url(#glow)"></circle>' : '') + '<circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="11" fill="#8A5A35"></circle><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="8" fill="' + (atticLit ? '#FFD88F' : '#5E4A6E') + '"></circle></g>';
     if (SEP) R += attic; else s += attic;
     // front door, step and porch light
     // front door: an open doorway until the Input lesson hangs the door (things come in from outside)
@@ -808,6 +828,19 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       up += '<path d="M' + pts([P(v, 0, 10, G1), P(v, 10, 10, G1), P(v, 10, 0, G1)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9A27C" stroke-width="4"></path>';
       [[1.2, 1.0], [5.0, 1.1], [7.6, 1.1]].forEach(function (w) { up += '<g transform="translate(0 -56)"><g transform="' + frontPlane(v, w[0], 10, true) + '">' + windowArt(w[1] * L, upLit()) + '</g></g>'; });
       [[1.2, 1.1], [3.1, 1.1], [6.2, 1.1], [8.1, 1.1]].forEach(function (w) { up += '<g transform="translate(0 -56)"><g transform="' + frontPlane(v, 10, w[0], false) + '">' + windowArt(w[1] * L, upLit()) + '</g></g>'; });
+      if (PROGRESS >= 21) { // the floor-2 boss builds a balcony, with flower boxes and party lights
+        var bc = '', z0 = G1 + 2;
+        bc += poly([P(v, 10, 3.6, z0), P(v, 11.4, 3.6, z0), P(v, 11.4, 6.6, z0), P(v, 10, 6.6, z0)], '#C98A4B', ' stroke="#8A5A35" stroke-width="1"');
+        bc += poly([P(v, 10, 6.6, z0 - 4), P(v, 11.4, 6.6, z0 - 4), P(v, 11.4, 6.6, z0), P(v, 10, 6.6, z0)], '#8A5A35') + poly([P(v, 11.4, 3.6, z0 - 4), P(v, 11.4, 6.6, z0 - 4), P(v, 11.4, 6.6, z0), P(v, 11.4, 3.6, z0)], '#9C6A40');
+        for (var by = 3.6; by <= 6.61; by += 0.5) { var r1 = P(v, 11.4, by, z0), r2 = P(v, 11.4, by, z0 + 20); bc += '<line x1="' + r1[0] + '" y1="' + r1[1] + '" x2="' + r2[0] + '" y2="' + r2[1] + '" stroke="#FFF1E2" stroke-width="1.6"></line>'; }
+        bc += '<path d="M' + pts([P(v, 10, 6.6, z0 + 20), P(v, 11.4, 6.6, z0 + 20), P(v, 11.4, 3.6, z0 + 20), P(v, 10, 3.6, z0 + 20)]).replace(/ /g, ' L') + '" fill="none" stroke="#FFF1E2" stroke-width="2.4"></path>';
+        bc += poly([P(v, 11.4, 4.0, z0 + 20), P(v, 11.4, 6.2, z0 + 20), P(v, 11.6, 6.2, z0 + 26), P(v, 11.6, 4.0, z0 + 26)], '#B5533F');
+        [4.3, 4.9, 5.5, 6.0].forEach(function (y, i) { var f = P(v, 11.5, y, z0 + 29); bc += '<circle cx="' + f[0] + '" cy="' + f[1] + '" r="3" fill="' + ['#FF8FC7', '#FFC861', '#C3A6FF', '#FF7A6B'][i] + '"></circle>'; });
+        var l1 = P(v, 10, 3.6, z0 + 44), l2 = P(v, 11.4, 5.1, z0 + 34), l3 = P(v, 10, 6.6, z0 + 44);
+        bc += '<path d="M' + l1[0] + ' ' + l1[1] + ' Q' + l2[0] + ' ' + (l2[1] + 10) + ' ' + l3[0] + ' ' + l3[1] + '" fill="none" stroke="#5E3B20" stroke-width="1"></path>';
+        for (var q = 1; q < 7; q++) { var t = q / 7, bx = (1 - t) * (1 - t) * l1[0] + 2 * (1 - t) * t * l2[0] + t * t * l3[0], byy = (1 - t) * (1 - t) * l1[1] + 2 * (1 - t) * t * (l2[1] + 10) + t * t * l3[1]; bc += '<circle cx="' + bx + '" cy="' + (byy + 2) + '" r="2.4" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][q % 3] + '"></circle>'; }
+        up += '<g data-part="20">' + bc + '</g>';
+      }
       s += '<g data-part="12">' + up + '</g><g class="roof-g">' + R + '</g>';
     }
     if (ROOF_LIFTED) {
@@ -1190,6 +1223,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // ---------- living items: tap one to see the Python it stands for ----------
   function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function pyStr(t) { return '<span class="st">"' + esc(t) + '"</span>'; }
+  var DRAWER = ['Feed the cat', 'Water the plant'], TOOLS2 = [['math.sqrt(49)', '7.0'], ['math.ceil(2.1)', '3'], ['math.floor(2.9)', '2'], ['random.randint(1, 6)', 'dice'], ['random.choice(["tea", "juice", "milk"])', 'pick']];
   var NOTE = 'hello world', TOOLS = [['.upper()', 'HELLO WORLD'], ['.split()', "['hello', 'world']"], ['[::-1]', 'dlrow olleh'], ['.replace("o", "0")', 'hell0 w0rld']];
   var TROPHIES = ['cup', 'medal', 'star'], TOYS = ['teddy', 'ball', 'kite'], KEYS = [['bed', 'blue'], ['kitchen', 'red'], ['play', 'yellow']];
   var RACK = [['boot', 'sneaker', 'sandal'], ['slipper', 'flipflop', 'wellie']];
@@ -1199,7 +1233,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
-    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''],
+    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], toolbox: ['Modules', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1255,6 +1289,22 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         tryB.hidden = cardState.step >= 3;
         tryB.textContent = cardState.step === 1 ? 'Count the letters' : 'Glue on a word';
       }
+    } else if (p.id === 'filecab') {
+      idea.innerHTML = 'Each drawer is a <b>file</b>: <code>notes.txt</code>. What you write in it is still there tomorrow.';
+      var lines = cardState.lines || (cardState.lines = DRAWER.slice());
+      lines.forEach(function (ln) { var b = document.createElement('span'); b.className = 'book'; b.textContent = ln; b.style.background = '#FFF1E2'; play.appendChild(b); });
+      var fl = ['<span class="o">with</span> open(' + pyStr('notes.txt') + ') <span class="o">as</span> f:', '    <span class="o">for</span> line <span class="o">in</span> f:', '        print(line.strip())', '<span class="c"># → ' + lines.map(esc).join(', ') + '</span>'];
+      if (cardState.step === 1) fl.push('<span class="new"><span class="c"># "a" added a line to the end</span></span>');
+      if (cardState.step === 2) fl.push('<span class="new"><span class="c"># "w" wiped the file, then wrote one line</span></span>');
+      code.innerHTML = fl.join('\n'); tryB.hidden = cardState.step >= 2; tryB.textContent = cardState.step ? 'Write it fresh with "w"' : 'Add a note with "a"';
+    } else if (p.id === 'toolbox') {
+      idea.innerHTML = 'A <b>module</b> is a box of ready-made tools. Pick one.';
+      TOOLS2.forEach(function (t, i) { var b = document.createElement('button'); b.className = 'book'; b.textContent = t[0].replace('random.choice(["tea", "juice", "milk"])', 'random.choice(drinks)'); b.style.background = ['#8FD3FF', '#B8F27C', '#FFC861', '#FF8FC7', '#C3A6FF'][i];
+        b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false');
+        b.addEventListener('click', function () { cardState.book = i; cardState.roll = t[1] === 'dice' ? 1 + Math.floor(Math.random() * 6) : t[1] === 'pick' ? ['tea', 'juice', 'milk'][Math.floor(Math.random() * 3)] : t[1]; renderCard(); }); play.appendChild(b); });
+      var tl2 = ['<span class="o">import</span> math, random'];
+      if (cardState.book >= 0) tl2.push('<span class="new">' + esc(TOOLS2[cardState.book][0]) + '  <span class="c"># → ' + esc(cardState.roll) + '</span></span>');
+      code.innerHTML = tl2.join('\n'); tryB.hidden = !(cardState.book === 3 || cardState.book === 4); tryB.textContent = 'Try it again';
     } else if (p.id === 'noticeboard') {
       idea.innerHTML = 'The note is a <b>string</b>. Pick a tool to reshape it. The note itself never changes.';
       TOOLS.forEach(function (t, i) { var b = document.createElement('button'); b.className = 'book'; b.textContent = t[0]; b.style.background = ['#FFE7A8', '#8FD3FF', '#FF8FC7', '#B8F27C'][i];
@@ -1353,6 +1403,12 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       cardState.step = 1; save(); drawRoom(); renderCard();
       say(document.getElementById('roomBubble'), p.off ? 'lamp_on is False. Lights out!' : 'lamp_on is True. Let there be light!', !p.off, document.getElementById('roomNibb'));
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
+    else if (p.id === 'filecab') {
+      cardState.step++;
+      if (cardState.step === 1) cardState.lines.push('Party on Saturday'); else cardState.lines = ['Clean slate'];
+      renderCard(); say(document.getElementById('roomBubble'), cardState.step === 1 ? '"a" means append: the new note goes on the end.' : 'Whoosh! "w" wiped the old notes first. Careful with "w"!', cardState.step === 1, document.getElementById('roomNibb'));
+    }
+    else if (p.id === 'toolbox') { var tb = TOOLS2[cardState.book]; cardState.roll = tb[1] === 'dice' ? 1 + Math.floor(Math.random() * 6) : ['tea', 'juice', 'milk'][Math.floor(Math.random() * 3)]; renderCard(); say(document.getElementById('roomBubble'), 'Random every time: ' + cardState.roll + '!', true, document.getElementById('roomNibb')); }
     else if (p.id === 'alarm') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'Beep beep! int("burnt") failed, the alarm caught the ValueError, and the house carried on.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'glasscab') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'The glass says no! A tuple cannot change.', false, document.getElementById('roomNibb')); }
     else if (p.id === 'toybox') {
@@ -1539,13 +1595,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     14: 'Wallpaper! One pattern, repeated along every wall, like "◆" * 8.',
     15: 'The kitchen is in: a sink and a stove. Every recipe in it is a function, written once, cooked many times.',
     16: 'An oven with dials! Leave a dial alone and it uses its default, like level=3.',
-    17: 'Errors happen in every kitchen. The smoke alarm catches them so the house carries on: try and except.'
+    17: 'Errors happen in every kitchen. The smoke alarm catches them so the house carries on: try and except.',
+    18: 'The attic light is on! The attic keeps things after you go to sleep, like a file keeps your data.',
+    19: 'A toolbox full of ready-made tools, like a module: import math, import random.',
+    20: 'Party on the balcony! Files, sets, dictionaries, functions and try, all together. You finished the second floor!'
   };
 
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
     if (n >= 9 && n <= 12 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
+    if (n === 18 || n === 20) { houseMode = 'outside'; drawHouse(); } // the attic window and the balcony are seen from outside
     if (n >= 13 && n <= 16) { houseMode = 'inside'; VIEW_FLOOR = 2; drawHouse(); } // plates, wallpaper and the kitchen are upstairs
     if (n === 12 && !still) { var rd = document.querySelector('#houseSvg .roof-g'); if (rd) rd.classList.add('roof-drop'); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }

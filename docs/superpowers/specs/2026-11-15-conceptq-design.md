@@ -181,3 +181,29 @@ recorded with word timestamps), a Read-it pane, 3 questions with a reason for ev
   it drops in, and the learner can still move it. When Strings raises the walls, everything that was waiting moves in.
 - **Wardrobe** (Lists I) is a living item: its clothes are a list with positions; Try it does `pop()` then `append()`.
   It sits on the ground floor until floor 2 has walls.
+
+### Floor 2 complete (2026-11-16)
+All 12 Intermediate lessons are playable (21 lessons in total, 0–20). Each has board steps in both voices, a
+quiz built fresh every time (hand-written questions + generators checked against real Python: 2,884 samples,
+0 wrong), flashcards (new categories: Collections, Recipes), a build moment and a living item:
+
+| # | Lesson | Builds | Item (what tapping it shows) |
+|---|---|---|---|
+| 9 | Lists I | crane lifts the roof; floor beams | Wardrobe: clothes[i], pop / append |
+| 10 | Lists II | floorboards in rows | Shoe rack: rack[row][col], nested loop |
+| 11 | Tuples | four corner posts | Glass cabinet: shelf[0] = … → TypeError |
+| 12 | Sets | floor-2 walls; roof lowered; upstairs opens | Toy box: a repeat teddy bounces out |
+| 13 | Dictionaries | name plates on upstairs doors | Key rack: keys["attic"] → KeyError, then .get() |
+| 14 | String tools | wallpaper ("◆" * 8) | Notice board: .upper(), .split(), [::-1] |
+| 15 | Functions I | kitchen sink + stove | Kettle: make_tea(sugar) |
+| 16 | Functions II | oven | Toaster: toast(2, level=3) default |
+| 17 | Errors | smoke alarm arrives | Smoke alarm: try / except ValueError |
+| 18 | Files | attic window lights up | Filing cabinet: "a" adds, "w" wipes |
+| 19 | Modules | toolbox arrives | Toolbox: math.sqrt, ceil, floor, randint, choice |
+| 20 | Boss | balcony with party lights | — |
+
+- Inside view has a Downstairs/Upstairs switch; upstairs rooms: bedroom, landing (top of the stairs), kitchen,
+  playroom. Kitchen fixtures block their tiles and the wall above them. Room labels sit off the floor.
+- New items are carried in by Nibb at the build moment (moveIn), into a room that suits them.
+- Tools: `tools/addlesson.py` adds a lesson from a `spec_*.py`; `tools/check_quizzes.js` + `tools/verify_generators.py`
+  check every quiz and every generator against Python.
