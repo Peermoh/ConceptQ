@@ -35,6 +35,10 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 .scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
 .scene > svg.nibb { inset: auto; width: 74px; height: 68px; pointer-events: none; }
 .room-hit { cursor: pointer; transition: fill-opacity 0.2s ease; fill-opacity: 0; }
+.spot:focus { outline: none; }
+.spot:focus-visible { stroke: #2A1330; stroke-width: 3.5; stroke-dasharray: none; fill-opacity: 0.55; }
+.placed:focus { outline: none; }
+.placed:focus-visible { filter: drop-shadow(0 0 3px #FFB547) drop-shadow(0 0 6px #FFB547); }
 .room-hit:hover, .room-hit:focus { fill-opacity: 0.22; outline: none; }
 .bubble { position: absolute; background: var(--cream); color: #2A1330; border-radius: 16px; padding: 9px 12px; font-size: 14px; line-height: 1.3; max-width: 210px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.2s ease; }
 .chip.turn { min-height: 34px; padding: 0 12px; background: var(--mint); color: #08281C; border-color: var(--mint); font-weight: 800; }
@@ -78,6 +82,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 .tray-head span { font-size: 12px; color: var(--muted); }
 .items { display: grid; grid-auto-flow: column; grid-auto-columns: 72px; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
 .items::-webkit-scrollbar { display: none; }
+button.item { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); }
 .item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); touch-action: pan-x; user-select: none; -webkit-user-select: none; }
 .item .tile { width: 64px; height: 64px; border-radius: 18px; background: var(--bg); border: 1.5px solid var(--line); display: grid; place-items: center; position: relative; }
 .item.can .tile { border-color: var(--amber); cursor: grab; }
@@ -195,8 +200,8 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     desk:      { name: 'Desk', from: 'Variables', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
     lamp:      { name: 'Lamp', from: 'True / False', kind: 'floor', w: 1, d: 1, count: 2, tall: true, rooms: null },
     sofa:      { name: 'Sofa', from: 'Numbers', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
-    rug:       { name: 'Rug', from: 'Bonus: streak', kind: 'floor', w: 2, d: 2, flat: true, count: 1, rooms: null },
-    plant:     { name: 'Plant', from: 'Bonus: perfect quiz', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
+    rug:       { name: 'Rug', from: 'Welcome gift', kind: 'floor', w: 2, d: 2, flat: true, count: 1, rooms: null },
+    plant:     { name: 'Plant', from: 'Bonus: Strings', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     poster:    { name: 'Poster', from: 'Hello, Python', kind: 'wall', size: 1, count: 1, rooms: null },
     stairs:    { name: 'Stairs', locked: 'Loops' }
   };
@@ -206,7 +211,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 9) PROGRESS = Math.floor(pr.current); } catch (e) {}
   var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5 }; // rug: streak bonus, always earned in this demo
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   var WALLS_UP = PROGRESS >= 3; // Hello lays the door, Variables the foundation, Numbers raises the walls
   var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'stairs'];
@@ -224,10 +229,20 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 
   var state = { placed: { study: [], stairs: [], entrance: [], living: [] } };
   try { var loadUsed = {}, s = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (s && s.placed && typeof s.placed === 'object') ORDER.forEach(function (r) { if (Array.isArray(s.placed[r])) state.placed[r] = s.placed[r].reduce(function (keep, p) {
-      if (!p || !ITEMS[p.id] || ITEMS[p.id].locked) return keep;
-      var it = ITEMS[p.id], spot = it.kind === 'wall' ? { side: p.side, i: p.i } : { x: p.x, y: p.y, r: !!p.r };
-      var inGrid = it.kind === 'wall' ? ((p.side === 'L' || p.side === 'R') && p.i >= 0 && p.i + it.size <= GRID) : (p.x >= 0 && p.y >= 0 && p.x + dims(p.id, p.r).w <= GRID && p.y + dims(p.id, p.r).d <= GRID);
-      if (inGrid && (loadUsed[p.id] || 0) < it.count && fits(keep, p.id, spot)) { keep.push(p); loadUsed[p.id] = (loadUsed[p.id] || 0) + 1; }
+      // saved data is untrusted: accept only known items at whole-number positions, and keep only known fields
+      if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !Object.prototype.hasOwnProperty.call(ITEMS, p.id)) return keep;
+      var it = ITEMS[p.id]; if (it.locked || !it.kind) return keep;
+      var clean, spot, inGrid;
+      if (it.kind === 'wall') {
+        clean = { id: p.id, side: p.side, i: p.i }; spot = { side: p.side, i: p.i };
+        inGrid = (p.side === 'L' || p.side === 'R') && Number.isInteger(p.i) && p.i >= 0 && p.i + it.size <= GRID;
+      } else {
+        var r = p.r === 1 || p.r === true;
+        clean = { id: p.id, x: p.x, y: p.y }; if (r) clean.r = 1; if (p.id === 'lamp' && p.off === true) clean.off = true;
+        spot = { x: p.x, y: p.y, r: r };
+        inGrid = Number.isInteger(p.x) && Number.isInteger(p.y) && p.x >= 0 && p.y >= 0 && p.x + dims(p.id, r).w <= GRID && p.y + dims(p.id, r).d <= GRID;
+      }
+      if (inGrid && (loadUsed[p.id] || 0) < it.count && fits(keep, p.id, spot)) { keep.push(clean); loadUsed[p.id] = (loadUsed[p.id] || 0) + 1; }
       return keep;
     }, []); }); } catch (e) {}
   function save() { try { localStorage.setItem('cq-iso', JSON.stringify(state)); } catch (e) {} }
@@ -733,20 +748,21 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     if (drag && drag.allowed) {
       drag.spots.forEach(function (sp) {
         var hot = drag.hover && sameSpot(sp, drag.hover);
-        s += poly(spotShape(sp, drag.id), hot ? '#1E9E6E' : '#7CF5C8', ' fill-opacity="' + (hot ? 0.55 : 0.22) + '" stroke="#1E9E6E" stroke-width="' + (hot ? 2.4 : 1.2) + '" stroke-dasharray="' + (hot ? '0' : '5 4') + '"');
+        var si = drag.spots.indexOf(sp);
+        s += poly(spotShape(sp, drag.id), hot ? '#1E9E6E' : '#7CF5C8', ' class="spot" data-spot="' + si + '" tabindex="0" role="button" aria-label="' + spotLabel(sp) + '" fill-opacity="' + (hot ? 0.55 : 0.22) + '" stroke="#1E9E6E" stroke-width="' + (hot ? 2.4 : 1.2) + '" stroke-dasharray="' + (hot ? '0' : '5 4') + '"');
       });
     }
     // items: walls, flat floor, standing (sorted back to front)
     var list = state.placed[r].map(function (p, idx) { return { p: p, idx: idx }; });
     list.filter(function (o) { return ITEMS[o.p.id].kind === 'wall'; }).forEach(function (o) {
-      s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + wallItem(wm, o.p.side, o.p.i, ITEMS[o.p.id].size, 1, 1.4, o.p.id, L_R, 0.38) + '</g>';
+      s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer" tabindex="0" role="button" aria-label="' + ITEMS[o.p.id].name + ', try it or move it">' + wallItem(wm, o.p.side, o.p.i, ITEMS[o.p.id].size, 1, 1.4, o.p.id, L_R, 0.38) + '</g>';
     });
     list.filter(function (o) { return ITEMS[o.p.id].flat; }).forEach(function (o) {
-      var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>';
+      var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer" tabindex="0" role="button" aria-label="' + ITEMS[o.p.id].name + ', try it or move it">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>';
     });
     list.filter(function (o) { var it = ITEMS[o.p.id]; return it.kind === 'floor' && !it.flat; })
       .sort(function (a, b) { return (a.p.x + a.p.y) - (b.p.x + b.p.y); })
-      .forEach(function (o) { var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>'; });
+      .forEach(function (o) { var it = ITEMS[o.p.id]; s += '<g class="placed" data-idx="' + o.idx + '" style="cursor:pointer" tabindex="0" role="button" aria-label="' + ITEMS[o.p.id].name + ', try it or move it">' + floorArt(v, o.p.id, o.p.x, o.p.y, dims(o.p.id, o.p.r).w, dims(o.p.id, o.p.r).d, 1.45, o.p.off) + '</g>'; });
     // ghost preview on the hovered spot
     if (drag && drag.allowed && drag.hover) {
       var it2 = ITEMS[drag.id];
@@ -756,17 +772,22 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     }
     document.getElementById('roomSvg').innerHTML = s;
   }
+  function spotLabel(sp) {
+    if (sp.side) return 'Place on the ' + (sp.side === 'L' ? 'left' : 'right') + ' wall, spot ' + (sp.i + 1);
+    return 'Place on the floor, row ' + (sp.y + 1) + ', column ' + (sp.x + 1) + (sp.r ? ', turned' : '');
+  }
   function sameSpot(a, b) { return a.side ? (a.side === b.side && a.i === b.i) : (a.x === b.x && a.y === b.y && !!a.r === !!b.r); }
 
   function renderTray() {
     var box2 = document.getElementById('items'); box2.innerHTML = '';
     TRAY.forEach(function (id) {
-      var it = ITEMS[id], el = document.createElement('div');
+      var it = ITEMS[id], el = document.createElement('button');
       var left = it.locked ? 0 : it.count - usedCount(id);
       el.className = 'item ' + (it.locked ? 'locked' : left > 0 ? 'can' : 'used') + (drag && drag.mode === 'tap' && drag.id === id ? ' selected' : '');
       el.setAttribute('data-id', id);
-      el.setAttribute('role', 'button');
-      el.setAttribute('aria-label', it.locked ? it.name + ', unlocks with the ' + it.locked + ' lesson' : it.name + ', ' + left + ' left. Drag into the room.');
+      el.type = 'button';
+      el.setAttribute('aria-pressed', drag && drag.mode === 'tap' && drag.id === id ? 'true' : 'false');
+      el.setAttribute('aria-label', it.locked ? it.name + ', unlocks with the ' + it.locked + ' lesson' : it.name + ', ' + left + ' left. Press to choose a spot for it.');
       el.innerHTML = '<span class="tile">' + trayIcon(id) + '<span class="count' + (it.locked ? ' lock' : '') + '">' + (it.locked ? '🔒'.replace('🔒', 'L') : left) + '</span></span><span>' + it.name + '</span><span class="from">' + (it.locked ? 'from ' + it.locked : 'from ' + it.from) + '</span>';
       if (it.locked) el.querySelector('.count').textContent = it.locked;
       box2.appendChild(el);
@@ -805,6 +826,13 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   // swallows the browser's click, which is why some taps on glowing spots did nothing.
   var roomTap = null;
   var roomSvgEl = document.getElementById('roomSvg');
+  roomSvgEl.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var sp = e.target.closest && e.target.closest('.spot'), g = e.target.closest && e.target.closest('.placed');
+    if (sp && drag) { e.preventDefault(); var spot = drag.spots[+sp.getAttribute('data-spot')]; var d = drag; drag = null; place(d, spot); drawRoom(); renderTray(); focusTrayItem(d.id); return; }
+    if (g && !drag) { e.preventDefault(); openCard(+g.getAttribute('data-idx')); }
+  });
+  function focusTrayItem(id) { var el = document.querySelector('#items .item[data-id="' + id + '"]'); if (el) el.focus(); }
   roomSvgEl.addEventListener('pointerdown', function (e) {
     var g = e.target.closest && e.target.closest('.placed');
     roomTap = { x: e.clientX, y: e.clientY, idx: g ? +g.getAttribute('data-idx') : -1 };
@@ -831,8 +859,8 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
-    rug: ['Bonus', 'A reward for learning 3 days in a row. Keep your streak going!', ''],
-    plant: ['Bonus', 'A reward for a perfect quiz. Every answer right on the first try!', '']
+    rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
+    plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
   };
   var cardIdx = -1, cardState = null;
   function openCard(idx) {
@@ -848,9 +876,16 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     var gb = g ? g.getBoundingClientRect() : null;
     card.classList.toggle('top', !!gb && (gb.top + gb.height / 2) > sc.top + sc.height * 0.45);
     card.hidden = false;
-    document.getElementById('icTry').focus({ preventScroll: true });
+    var a = document.activeElement, from = a && a.closest && a.closest('.placed');
+    cardReturn = from ? function () { var el = document.querySelector('#roomSvg .placed[data-idx="' + from.getAttribute('data-idx') + '"]'); if (el) el.focus(); } : null;
+    var t = document.getElementById('icTry'); (t.hidden ? document.getElementById('icClose') : t).focus({ preventScroll: true });
   }
-  function closeCard() { cardIdx = -1; document.getElementById('itemCard').hidden = true; }
+  var cardReturn = null; // puts keyboard focus back on the item the card was opened from
+  function closeCard() {
+    if (cardIdx < 0) return;
+    cardIdx = -1; document.getElementById('itemCard').hidden = true;
+    if (cardReturn) cardReturn(); cardReturn = null;
+  }
   function renderCard() {
     var p = state.placed[current][cardIdx]; if (!p) { closeCard(); return; }
     var idea = document.getElementById('icIdea'), play = document.getElementById('icPlay'), code = document.getElementById('icCode'), tryB = document.getElementById('icTry');
@@ -866,7 +901,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
       BOOKS.forEach(function (bk, i) {
         var b = document.createElement('button'); b.className = 'book'; b.textContent = bk[0]; b.style.background = bk[1];
         b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false');
-        b.addEventListener('click', function () { cardState.book = i; cardState.step = 1; renderCard(); });
+        b.addEventListener('click', function () { cardState.book = i; cardState.step = 1; renderCard(); var nb = document.querySelectorAll('#icPlay .book')[i]; if (nb) nb.focus(); });
         play.appendChild(b);
       });
       if (cardState.book < 0) { code.innerHTML = '<span class="c"># tap a book to read its title</span>'; tryB.hidden = true; }
@@ -899,6 +934,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     closeCard();
     state.placed[current].splice(state.placed[current].indexOf(p), 1); save();
     startDrag({ clientX: 0, clientY: 0 }, p.id, true); // picked up: now tap a glowing spot to put it somewhere else
+    if (drag) drag.keepOff = !!p.off; else { state.placed[current].push(p); save(); drawRoom(); } // nowhere free: put it back
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.getElementById('itemCard').hidden) closeCard(); });
 
@@ -943,6 +979,17 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   }
   // Swipe sideways scrolls the tray; pulling an item upward (or a mouse drag) picks it up.
   var pending = null;
+  document.getElementById('items').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var el = e.target.closest('.item'); if (!el) return;
+    e.preventDefault();
+    var id = el.getAttribute('data-id'), it = ITEMS[id];
+    if (it.locked) { say(document.getElementById('roomBubble'), 'The ' + it.name.toLowerCase() + ' unlocks when you finish the ' + it.locked + ' lesson.', false, document.getElementById('roomNibb')); return; }
+    if (drag && drag.mode === 'tap' && drag.id === id) { cancelPlacing('Okay, put it back.'); return; }
+    if (it.count - usedCount(id) <= 0) { say(document.getElementById('roomBubble'), 'You have placed every ' + it.name.toLowerCase() + '. Choose one in the room to move it.', false, document.getElementById('roomNibb')); return; }
+    startDrag({ clientX: 0, clientY: 0 }, id, true);
+    var first = document.querySelector('#roomSvg .spot'); if (first) first.focus();
+  });
   document.getElementById('items').addEventListener('pointerdown', function (e) {
     var el = e.target.closest('.item'); if (!el) return;
     var id = el.getAttribute('data-id'), it = ITEMS[id];
@@ -962,7 +1009,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     if (!tapMode) { drag.ghost = document.createElement('div'); drag.ghost.className = 'ghost'; drag.ghost.innerHTML = trayIcon(id); document.body.appendChild(drag.ghost); moveGhost(e); }
     renderTray();
     if (!allowed) say(document.getElementById('roomBubble'), it.hint || 'That does not fit in this room.', false, document.getElementById('roomNibb'));
-    else if (!drag.spots.length) say(document.getElementById('roomBubble'), noSpaceMsg(id), false, document.getElementById('roomNibb'));
+    else if (!drag.spots.length) { if (drag.ghost) drag.ghost.remove(); drag = null; renderTray(); say(document.getElementById('roomBubble'), noSpaceMsg(id), false, document.getElementById('roomNibb')); drawRoom(); return; }
     else if (turned) say(document.getElementById('roomBubble'), 'I turned the ' + it.name.toLowerCase() + ' sideways so it fits. Tap Turn to switch.', false, document.getElementById('roomNibb'));
     else say(document.getElementById('roomBubble'), tapMode ? 'Now tap a glowing spot to place it. Tap the item again to cancel.' : (it.kind === 'wall' ? 'Wall item! Slide it onto a glowing wall spot.' : 'Floor item! Drop it on a glowing spot.'), false, document.getElementById('roomNibb'));
     drawRoom();
@@ -997,7 +1044,9 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   });
   function place(d, spot) {
     var it = ITEMS[d.id];
-    state.placed[current].push(it.kind === 'wall' ? { id: d.id, side: spot.side, i: spot.i } : (spot.r ? { id: d.id, x: spot.x, y: spot.y, r: 1 } : { id: d.id, x: spot.x, y: spot.y }));
+    var np = it.kind === 'wall' ? { id: d.id, side: spot.side, i: spot.i } : (spot.r ? { id: d.id, x: spot.x, y: spot.y, r: 1 } : { id: d.id, x: spot.x, y: spot.y });
+    if (d.keepOff) np.off = true;
+    state.placed[current].push(np);
     save();
     say(document.getElementById('roomBubble'), ['Perfect spot!', 'Looks great in here.', 'Nice! Your room is coming alive.'][state.placed[current].length % 3], true, document.getElementById('roomNibb'));
   }

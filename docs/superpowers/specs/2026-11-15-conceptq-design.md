@@ -81,18 +81,26 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
   | Hello, Python | Poster `>> hi` | The first thing your program says |
   | Variables | Desk | Labelled drawers: a name holding a value |
   | Numbers | Sofa | Seats: counting and adding (`seats = 2 + 1`) |
-  | Strings | Bookshelf (+ plant bonus) | Books are text; a row of letters |
+  | Strings | Bookshelf (+ plant bonus for finishing it) | Books are text; a row of letters |
   | Input | Mailbox (outside) | Messages arriving from outside |
   | True / False | 2 lamps | On or off |
   | Decisions | Inside doors | A door opens only if a condition is True |
   | Loops | Stairs to floor 2 | Repeat a step until you reach the top |
   | Boss | Porch light | Uses everything on the floor |
 
+- Rug: a welcome gift, always available once the walls are up.
 - **Placement rules** (physical, never "taste"): any item can go in any room; items can't overlap; nothing covers the
   window or the door; the doorway tile stays clear; a corner bookshelf blocks the first slot of the other wall; a lamp
   can't stand in front of a picture; desk and sofa can be turned. Old saves are re-checked on load.
 - Progress is shared through `cq-progress` (lessons finished) and `cq-iso` (placed items). The house page runs in its
   own frame so its styles stay separate from the app.
+- Keyboard: tray items are buttons; glowing spots and placed items take focus (Enter places / opens the card).
+- Saves carry a version (`v: 2`); saved furniture is re-checked on load (known ids, whole-number positions only).
+
+### Playable lessons in the prototype (2026-11-16)
+Hello, Python (door, poster) · Variables (foundation, desk) · Numbers (walls, sofa) · Strings (bookshelf).
+Each lesson is data: board lines with spoken cues and recorded timings, narration (ElevenLabs, voice Will,
+recorded with word timestamps), a Read-it pane, 3 questions with a reason for every option, and done-screen text.
 
 ### Data
 - Progress on the device only (localStorage/IndexedDB) with export/import backup, because iOS can clear site data after ~7 days unless the app is added to the home screen.
