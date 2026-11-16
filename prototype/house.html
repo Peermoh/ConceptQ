@@ -1,5 +1,8 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0;height:100%;background:#1A0B1F}[hidden]{display:none!important}
+  .twinkle { animation: twinkle 2.4s ease-in-out infinite; } @keyframes twinkle { 50% { opacity: .45; } }
+  .spin-cups { animation: spincups 3s linear infinite; } @keyframes spincups { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .twinkle, .spin-cups { animation: none; } }
 </style>
 <title>ConceptQ House 2.5D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -251,6 +254,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     vacuum:    { name: 'Robot vacuum', from: 'Lambda and closures', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     archcab:   { name: 'Archive cabinet', from: 'Files pro', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     clipboard: { name: 'Inspector\'s clipboard', from: 'Testing', kind: 'wall', size: 1, count: 1, rooms: null },
+    blueprints: { name: 'Shared blueprint table', from: 'Team coding', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
+    ctrlpanel: { name: 'Control panel', from: 'Coding with AI', kind: 'wall', size: 2, count: 1, rooms: null },
     printer:   { name: 'Blueprint printer', from: 'Classes I', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     badges:    { name: 'Room badges', from: 'Classes II', kind: 'wall', size: 1, count: 1, rooms: null },
     xray:      { name: 'X-ray scanner', from: 'Namespaces', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
@@ -273,8 +278,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 35) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode', 'Classes I', 'Classes II', 'Namespaces', 'Inheritance', 'Comprehensions', 'Lambda and closures', 'Files pro', 'Testing'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31 }; // rug: a welcome gift, always earned
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode', 'Classes I', 'Classes II', 'Namespaces', 'Inheritance', 'Comprehensions', 'Lambda and closures', 'Files pro', 'Testing', 'Team coding', 'Coding with AI', 'the floor-3 Master Builder challenge'];
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31, blueprints: 32, ctrlpanel: 33 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
@@ -286,10 +291,10 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function floorsOpen() { return LOFT ? [1, 2, 3] : UPSTAIRS ? [1, 2] : [1]; }
   var FLOOR_LABEL = { 1: 'Downstairs', 2: 'Upstairs', 3: 'Loft' };
   var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
-  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.', 25: 'Next: Classes II builds the loft floor and rooms.', 26: 'The loft is open: tap Loft inside. Next: Namespaces wires it.', 27: 'Next: Inheritance furnishes the loft.', 28: 'Next: Comprehensions builds a lift between the floors.', 29: 'Next: Lambda and closures fits smart switches.', 30: 'Next: Files pro fills the archive room.', 31: 'Next: Testing brings the inspector.', 32: 'Inspection passed! Next: Team coding fits the solar panels.' };
+  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.', 25: 'Next: Classes II builds the loft floor and rooms.', 26: 'The loft is open: tap Loft inside. Next: Namespaces wires it.', 27: 'Next: Inheritance furnishes the loft.', 28: 'Next: Comprehensions builds a lift between the floors.', 29: 'Next: Lambda and closures fits smart switches.', 30: 'Next: Files pro fills the archive room.', 31: 'Next: Testing brings the inspector.', 32: 'Inspection passed! Next: Team coding fits the solar panels.', 33: 'Solar panels on! Next: Coding with AI switches on the control room.', 34: 'Next: the Master Builder challenge makes the roof smart.', 35: 'Your house is finished: three floors, a loft and a smart roof!' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'blueprints', 'ctrlpanel', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -348,7 +353,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     workbench: ['study', 'playroom', 'stairs', 'living'], harness: ['entrance', 'landing', 'stairs', 'study'], sorter: ['entrance', 'stairs', 'landing', 'living'],
     printer: ['study', 'playroom', 'bedroom', 'landing'], badges: ['loftland', 'loftbed', 'control', 'archive'], xray: ['loftland', 'control', 'loftbed', 'archive'],
     bunkbed: ['loftbed', 'control', 'loftland', 'archive'], portraits: ['loftbed', 'loftland', 'control', 'archive'],
-    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], blueprints: ['control', 'loftland', 'study', 'landing'], ctrlpanel: ['control', 'loftland', 'study', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -434,6 +439,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
               '<text x="' + (n[0] + 4) + '" y="' + (n[1] + 14) + '" font-family="JetBrains Mono, monospace" font-weight="700" font-size="7" fill="#2A1330">' + n[3] + '</text>';
       });
       return nb;
+    }
+    if (id === 'ctrlpanel') { // the smart home's brain: a screen with room readings and an Install button
+      var cp = '<rect x="6" y="-128" width="' + (W - 12) + '" height="62" rx="5" fill="#3A3A44" stroke="#22222A" stroke-width="2"></rect><rect x="12" y="-122" width="' + (W - 24) + '" height="38" rx="2" fill="#0E2A22"></rect>';
+      [[0, 21, '#7CF5C8'], [1, 14, '#8FD3FF'], [2, 17, '#7CF5C8']].forEach(function (r) { var y = -114 + r[0] * 11; cp += '<rect x="16" y="' + (y - 4) + '" width="' + Math.min(W - 32, r[1] * 3) + '" height="6" rx="2" fill="' + r[2] + '"></rect>'; });
+      cp += '<rect x="' + (W / 2 - 20) + '" y="-80" width="40" height="10" rx="4" fill="#6EE7B7"></rect><text x="' + (W / 2) + '" y="-72.5" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="7" fill="#08281C">Install</text>';
+      cp += '<circle cx="14" cy="-75" r="3" fill="#FF7A6B"></circle><circle cx="' + (W - 14) + '" cy="-75" r="3" fill="#FFC861"></circle>';
+      return '<g transform="translate(0 14)">' + cp + '</g>'; // a little lower, clear of the wall clock
     }
     if (id === 'clipboard') { // a clipboard with a checklist of ticks
       return '<rect x="' + (W / 2 - 16) + '" y="-122" width="32" height="42" rx="3" fill="#B9824F" stroke="#8A5A35" stroke-width="2"></rect><rect x="' + (W / 2 - 12) + '" y="-116" width="24" height="32" fill="#FFFFFF"></rect>' +
@@ -533,6 +545,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       var ah = 60 * zs, x8 = gx + 0.14, y8 = gy + 0.16, w8 = w - 0.28, d8 = d - 0.32;
       s += box(v, x8, y8, w8, d8, ah, '#C9B8A6', '#9C8670', '#B8A592');
       [0.25, 0.5, 0.75].forEach(function (f, k) { var c = P(v, x8 + w8 * 0.5, y8 + d8, ah * f); s += '<rect x="' + (c[0] - 9 * zs) + '" y="' + (c[1] - 5 * zs) + '" width="' + 18 * zs + '" height="' + 7 * zs + '" rx="' + 1.5 * zs + '" fill="' + ['#8FD3FF', '#FFC861', '#FF8FC7'][k] + '" stroke="#6B5A48" stroke-width="' + Math.max(0.5, zs) + '"></rect>'; });
+    } else if (id === 'blueprints') {
+      // a drawing table with the house plan on it, and a stack of saved versions (commits) beside it
+      var tb = d > w, LB = tb ? d : w, SB = tb ? w : d;
+      function cb(a, b, la, lb) { return tb ? [gx + b, gy + a, lb, la] : [gx + a, gy + b, la, lb]; }
+      var th = 34 * zs;
+      [[0.12, 0.18], [LB - 0.2, 0.18], [0.12, SB - 0.26], [LB - 0.2, SB - 0.26]].forEach(function (l) { var q = cb(l[0], l[1], 0.08, 0.08); s += box(v, q[0], q[1], q[2], q[3], th - 4 * zs, '#8A5A35', '#6E4428', '#7A4E30'); });
+      var tt = cb(0.06, 0.12, LB - 0.12, SB - 0.24); s += box(v, tt[0], tt[1], tt[2], tt[3], th, '#C98A4B', '#8A5A35', '#9C6A40', th - 4 * zs);
+      var sh = cb(0.25, 0.22, LB * 0.55, SB - 0.44); s += box(v, sh[0], sh[1], sh[2], sh[3], th + 1 * zs, '#3B5DC9', '#2B4AA8', '#24408F', th);
+      var a1 = P(v, sh[0] + sh[2] * 0.2, sh[1] + sh[3] * 0.3, th + 1 * zs), a2 = P(v, sh[0] + sh[2] * 0.8, sh[1] + sh[3] * 0.7, th + 1 * zs);
+      s += '<path d="M' + a1[0] + ' ' + a1[1] + ' L' + a2[0] + ' ' + a2[1] + '" stroke="#BFE7F5" stroke-width="' + Math.max(0.6, 1.2 * zs) + '"></path>';
+      ['#FFF1E2', '#FFE7A8', '#C3E6FF'].forEach(function (c4, k) { var st = cb(LB * 0.68, 0.3, LB * 0.22, SB - 0.6); s += box(v, st[0], st[1], st[2], st[3], th + (k + 1) * 2.5 * zs, c4, '#B5A99A', '#CFC3B2', th + k * 2.5 * zs); });
     } else if (id === 'printer') {
       // a blueprint printer: a blue sheet goes in, a window object comes out
       var ph = 30 * zs, x7 = gx + 0.15, y7 = gy + 0.2, w7 = w - 0.3, d7 = d - 0.4;
@@ -657,6 +680,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (id === 'bookshelf') { var bv = { ox: 22, oy: 47, w: 22, h: 11, wx: 0, wy: 0 }; return '<svg width="54" height="54" viewBox="0 0 64 64">' + wallItem(bv, 'R', 0, 2, Math.sqrt(121 + 30.25) / 54, 0.36, 'bookshelf', 54, 0.45) + '</svg>'; }
     if (id === 'poster') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(14 76) scale(0.5)">' + wallArt('poster', 1, 70) + '</g></svg>';
     if (id === 'noticeboard') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(10 96) scale(0.62)">' + wallArt('noticeboard', 1, 70) + '</g></svg>';
+    if (id === 'ctrlpanel') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(4 92) scale(0.4)">' + wallArt('ctrlpanel', 2, 70) + '</g></svg>';
     if (id === 'clipboard') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(-12 96) scale(0.72)">' + wallArt('clipboard', 1, 70) + '</g></svg>';
     if (id === 'badges') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(-2 92) scale(0.62)">' + wallArt('badges', 1, 70) + '</g></svg>';
     if (id === 'portraits') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(4 96) scale(0.42)">' + wallArt('portraits', 2, 70) + '</g></svg>';
@@ -1026,6 +1050,27 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         up += '<g data-part="20">' + bc + '</g>';
       }
       s += '<g data-part="12">' + up + '</g><g class="roof-g">' + R + '</g>';
+      var zrf = function (gy) { return H - 6 + (10.6 - gy) / 5.6 * (RH + 6); }; // height of the front roof at depth gy
+      if (PROGRESS >= 33) { // Team coding: three solar panels high on the front roof, one commit each
+        var sp = '';
+        [[0.6, 2.3], [2.6, 4.3], [4.6, 6.3]].forEach(function (pn) {
+          var y0 = 5.5, y1 = 6.6, c = [P(v, pn[0], y1, zrf(y1) + 2), P(v, pn[1], y1, zrf(y1) + 2), P(v, pn[1], y0, zrf(y0) + 2), P(v, pn[0], y0, zrf(y0) + 2)];
+          sp += poly(c, '#24408F', ' stroke="#C9D2DE" stroke-width="1.2"');
+          for (var gl = 1; gl < 3; gl++) { var u = gl / 3, m1 = P(v, pn[0] + (pn[1] - pn[0]) * u, y1, zrf(y1) + 2), m2 = P(v, pn[0] + (pn[1] - pn[0]) * u, y0, zrf(y0) + 2); sp += '<line x1="' + m1[0] + '" y1="' + m1[1] + '" x2="' + m2[0] + '" y2="' + m2[1] + '" stroke="#8FB4FF" stroke-width="0.7"></line>'; }
+          var h1 = P(v, pn[0], (y0 + y1) / 2, zrf((y0 + y1) / 2) + 2), h2 = P(v, pn[1], (y0 + y1) / 2, zrf((y0 + y1) / 2) + 2);
+          sp += '<line x1="' + h1[0] + '" y1="' + h1[1] + '" x2="' + h2[0] + '" y2="' + h2[1] + '" stroke="#8FB4FF" stroke-width="0.7"></line>';
+        });
+        s += '<g data-part="32">' + sp + '</g>';
+      }
+      if (PROGRESS >= 35) { // the smart roof: a weather station on the ridge
+        var wb = P(v, 8.9, 5.2, zrf(5.2)), wt = P(v, 8.9, 5.2, zrf(5.2) + 44), ws = '';
+        ws += '<line x1="' + wb[0] + '" y1="' + wb[1] + '" x2="' + wt[0] + '" y2="' + wt[1] + '" stroke="#5E5A66" stroke-width="2.4"></line>';
+        ws += '<g class="spin-cups" style="transform-origin:' + wt[0] + 'px ' + wt[1] + 'px"><path d="M' + (wt[0] - 13) + ' ' + wt[1] + ' H' + (wt[0] + 13) + '" stroke="#5E5A66" stroke-width="1.6"></path>' +
+              '<circle cx="' + (wt[0] - 13) + '" cy="' + wt[1] + '" r="3.4" fill="#FFC861" stroke="#8A5A35" stroke-width="0.8"></circle><circle cx="' + (wt[0] + 13) + '" cy="' + wt[1] + '" r="3.4" fill="#FFC861" stroke="#8A5A35" stroke-width="0.8"></circle></g>';
+        ws += '<path d="M' + (wt[0] - 9) + ' ' + (wt[1] - 12) + ' H' + (wt[0] + 7) + ' M' + (wt[0] + 7) + ' ' + (wt[1] - 15) + ' l5 3 l-5 3 Z" stroke="#4A2C3E" stroke-width="1.4" fill="#FF7A6B"></path>';
+        ws += '<rect x="' + (wb[0] - 8) + '" y="' + (wb[1] - 22) + '" width="16" height="10" rx="2" fill="#E2E6EC" stroke="#5E5A66" stroke-width="1"></rect><text x="' + wb[0] + '" y="' + (wb[1] - 14.5) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="6" fill="#2A1330">14°</text>';
+        s += '<g data-part="34">' + ws + '</g>';
+      }
       if (PROGRESS >= 25) { // three dormers on the front roof: one blueprint, three objects, each its own colour
         var dm = '', zr = function (gy) { return H - 6 + (10.6 - gy) / 5.6 * (RH + 6); };
         [[1.6, '#FF7A6B'], [4.4, '#8FD3FF'], [7.2, '#FFC861']].forEach(function (d) {
@@ -1037,6 +1082,16 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
           dm += poly([P(v, x0 + 0.35, gy + 0.02, zb + 4), P(v, x1 - 0.35, gy + 0.02, zb + 4), P(v, x1 - 0.35, gy + 0.02, zt - 3), P(v, x0 + 0.35, gy + 0.02, zt - 3)], LOFT ? '#FFE7A8' : '#BFE7F5', ' stroke="' + d[1] + '" stroke-width="2.5"');
         });
         s += '<g data-part="24">' + dm + '</g>';
+      }
+      if (PROGRESS >= 34) { // Coding with AI: the control room screens glow green in the middle dormer
+        var cg = poly([P(v, 4.9, 8.63, zrf(8.6) + 8), P(v, 5.5, 8.63, zrf(8.6) + 8), P(v, 5.5, 8.63, zrf(8.6) + 16), P(v, 4.9, 8.63, zrf(8.6) + 16)], '#7CF5C8', ' stroke="#08281C" stroke-width="0.8"');
+        s += '<g data-part="33">' + cg + '</g>';
+      }
+      if (PROGRESS >= 35) { // roof lights: bright when it is really night where you are, like roof_lights(hour)
+        var hr = new Date().getHours(), night = hr >= 19 || hr < 6, rl = '';
+        for (var li = 0; li <= 12; li++) { var lp = P(v, li * 10 / 12, 10.62, zrf(10.6) - 2); rl += (night ? '<circle cx="' + lp[0] + '" cy="' + lp[1] + '" r="6" fill="#FFE7A8" opacity=".35"></circle>' : '') + '<circle class="twinkle" style="animation-delay:-' + (li * 0.3) + 's" cx="' + lp[0] + '" cy="' + lp[1] + '" r="2.6" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][li % 3] + '"></circle>'; }
+        for (var lj = 1; lj <= 6; lj++) { var lq = P(v, 10.02, 10.6 - lj * 10 / 6, H - 6); rl += (night ? '<circle cx="' + lq[0] + '" cy="' + lq[1] + '" r="6" fill="#FFE7A8" opacity=".35"></circle>' : '') + '<circle class="twinkle" style="animation-delay:-' + (lj * 0.4) + 's" cx="' + lq[0] + '" cy="' + lq[1] + '" r="2.4" fill="' + ['#FF8FC7', '#FFD88F', '#7CF5C8'][lj % 3] + '"></circle>'; }
+        s += '<g data-part="34">' + rl + '</g>';
       }
     }
     if (ROOF_LIFTED) {
@@ -1204,7 +1259,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var total = 0, kinds = 0; TRAY.forEach(function (id) { if (!ITEMS[id].locked) { kinds += ITEMS[id].count; total += usedCount(id); } });
     var next = TRAY.filter(function (id) { return id in NEED && ITEMS[id].locked; }).sort(function (a, b) { return NEED[a] - NEED[b]; })[0];
     if (ROOF_LIFTED) { document.getElementById('houseSummary').textContent = 'Floor 2 is under construction: the roof is up on the crane. ' + F2_NEXT[PROGRESS - 10]; }
-    else if (UPSTAIRS && F2_DONE[PROGRESS]) document.getElementById('houseSummary').textContent = (LOFT ? 'Your house has three floors! Tap Loft inside to see the top floor. ' : 'Your house has two floors! Tap Upstairs inside to see floor 2. ') + F2_DONE[PROGRESS];
+    else if (UPSTAIRS && F2_DONE[PROGRESS]) document.getElementById('houseSummary').textContent = (PROGRESS >= 35 ? '' : LOFT ? 'Your house has three floors! Tap Loft inside to see the top floor. ' : 'Your house has two floors! Tap Upstairs inside to see floor 2. ') + F2_DONE[PROGRESS];
     else document.getElementById('houseSummary').textContent = !WALLS_UP
       ? 'Your house is being built. ' + ['Finish Hello, Python to put up your welcome sign.', 'Finish Variables to bring the building supplies.', 'Finish Numbers to lay the foundation.', 'Finish Strings to raise the walls and roof.'][PROGRESS]
       : kinds + ' items earned from lessons. Placed: ' + total + '.' + (next ? ' Next: finish ' + ITEMS[next].locked + ' to earn the ' + ITEMS[next].name.toLowerCase() + '.' : '');
@@ -1471,7 +1526,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
-    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
+    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], blueprints: ['Team coding', '', ''], ctrlpanel: ['Coding with AI', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1552,6 +1607,22 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       if (cardState.book >= 0) { var f4 = FILES2[cardState.book]; al2.push('<span class="new">(p / ' + pyStr(f4[0].split('/')[0]) + ' / ' + pyStr(f4[0].split('/')[1]) + ').open(' + pyStr(f4[1]) + ').read()  <span class="c"># → ' + esc(f4[2]) + ', ' + f4[3] + '</span></span>'); }
       if (cardState.step) al2.push('<span class="new">[f.name <span class="o">for</span> f <span class="o">in</span> p.glob(' + pyStr('*/*.png') + ')]  <span class="c"># → [\'cat.png\']</span></span>');
       code.innerHTML = al2.join('\n'); tryB.hidden = !!cardState.step; tryB.textContent = 'Find every picture';
+    } else if (p.id === 'blueprints') {
+      idea.innerHTML = 'The whole team shares this plan. Every panel is a <b>commit</b>. Try a <b>branch</b>, then <b>merge</b> it.';
+      var hist = cardState.hist || (cardState.hist = ['Add panel 3', 'Add panel 2', 'Add panel 1']);
+      var bl = ['<span class="o">$</span> git log --oneline'];
+      hist.forEach(function (m, k) { bl.push((k === 0 && cardState.step ? '<span class="new">' : '') + '<span class="c">' + ['e5', 'd4', 'c3', 'b2', 'a1'][5 - hist.length + k] + '</span> ' + esc(m) + (k === 0 && cardState.step ? '</span>' : '')); });
+      if (cardState.step === 1) bl.unshift('<span class="new"><span class="o">$</span> git switch -c test-panel  <span class="c"># main stays safe</span></span>');
+      if (cardState.step === 2) bl.unshift('<span class="new"><span class="o">$</span> git switch main\n<span class="o">$</span> git merge test-panel  <span class="c"># → the test panel joins main</span></span>');
+      code.innerHTML = bl.join('\n'); tryB.hidden = cardState.step >= 2; tryB.textContent = cardState.step ? 'Merge it into main' : 'Try a branch';
+    } else if (p.id === 'ctrlpanel') {
+      var st2 = cardState.step;
+      idea.innerHTML = ['Nibb suggested <code>is_cold(t)</code>. <b>Read it</b>: is it right? Then test it.', 'The test <b>failed</b>: 10 degrees is cold, but the code said no. Fix the sign.', 'Fixed and every test passes. <b>Now</b> it is safe to install.', 'Installed! The heating comes on in cold rooms. You checked it first.'][st2];
+      var cl = ['<span class="o">def</span> is_cold(t):', '    <span class="o">return</span> t ' + (st2 >= 2 ? '<span class="new">&lt;</span>' : '&gt;') + ' 18'];
+      if (st2 === 1) cl.push('<span class="new" style="color:#FF7A6B"><span class="o">assert</span> is_cold(10) == True  <span class="c"># AssertionError!</span></span>');
+      if (st2 >= 2) cl.push('<span class="new"><span class="o">assert</span> is_cold(10) == True  <span class="c"># ✓</span>\n<span class="o">assert</span> is_cold(25) == False  <span class="c"># ✓</span></span>');
+      if (st2 === 3) cl.push('<span class="new"><span class="c"># installed: heating on in ' + esc(pyListSafe(['loft'])) + '</span></span>');
+      code.innerHTML = cl.join('\n'); tryB.hidden = st2 >= 3; tryB.textContent = ['Test it', 'Fix the bug', 'Install'][st2] || '';
     } else if (p.id === 'clipboard') {
       idea.innerHTML = 'The inspector\'s checklist is a list of <b>assert</b>s. All true: the house passes.';
       var broken = !!cardState.broken;
@@ -1736,6 +1807,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
     else if (p.id === 'vacuum') { cardState.dirty.forEach(function (x) { x[1] = false; }); renderCard(); say(document.getElementById('roomBubble'), 'Vroom! map(clean, todo) cleaned every dirty room.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'archcab') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'glob found every .png in the archive folders.', true, document.getElementById('roomNibb')); }
+    else if (p.id === 'blueprints') { cardState.step++; if (cardState.step === 1) cardState.hist.unshift('Add test panel'); renderCard(); say(document.getElementById('roomBubble'), cardState.step === 1 ? 'A branch! The test panel is a commit on its own copy.' : 'Merged! The test panel is part of main now.', true, document.getElementById('roomNibb')); }
+    else if (p.id === 'ctrlpanel') { cardState.step++; renderCard(); say(document.getElementById('roomBubble'), ['', 'The test caught my bug. Good thing you checked!', 'Now 10 is cold and 25 is not. All tests pass.', 'Installed. You were in charge the whole time.'][cardState.step], cardState.step !== 1, document.getElementById('roomNibb')); }
     else if (p.id === 'clipboard') { cardState.broken = !cardState.broken; renderCard(); say(document.getElementById('roomBubble'), cardState.broken ? 'Uh oh: assert lamp.on failed. A test caught the bug!' : 'Fixed! All three checks pass again.', !cardState.broken, document.getElementById('roomNibb')); }
     else if (p.id === 'workbench') { cardState.step = 1; (cardState.drawers || (cardState.drawers = BENCH.slice())).push(['paint', 'brush()', 'swish']); renderCard(); say(document.getElementById('roomBubble'), 'Beep beep! The pip van delivered a paint drawer.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'filecab') {
@@ -1939,6 +2012,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     29: 'Smart switches in every room. One function, mapped over every room: map(switch_on, rooms).',
     30: 'The archive room is ready: photos are bytes, notes are text, and pathlib finds them all.',
     31: 'Inspection passed! Every assert was true, so the scaffolding has come down.',
+    32: 'Solar panels on the roof! The team fitted them one commit at a time: panel 1, panel 2, panel 3.',
+    33: 'The control room is on! Nibb suggests code, and you read it, test it and fix it before you install it.',
+    34: 'The smart roof is on! The weather station reads the sky, and the roof lights shine at night. Your house is finished!',
     24: 'Three dormer windows, all from one blueprint! One class, three objects, each its own colour.',
     25: 'The loft has a floor, stairs and rooms. Every room shares the house name: a class variable. Tap Loft inside to look.',
     26: 'The loft is wired. The cables are hidden in the walls, like the names inside an object: obj.__dict__.',
@@ -1953,7 +2029,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (n >= 9 && n <= 12 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
     if (n === 18 || n === 20 || (n >= 21 && n <= 24)) { houseMode = 'outside'; drawHouse(); }
     if (n >= 25 && n <= 30) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); } // the loft, the lift, the switches and the archive
-    if (n === 31) { houseMode = 'outside'; drawHouse(); } // the scaffolding comes down // the attic window and the balcony are seen from outside
+    if (n === 31 || n === 32 || n === 34) { houseMode = 'outside'; drawHouse(); }
+    if (n === 33) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); } // the scaffolding comes down // the attic window and the balcony are seen from outside
     if (n >= 13 && n <= 16) { houseMode = 'inside'; VIEW_FLOOR = 2; drawHouse(); } // plates, wallpaper and the kitchen are upstairs
     if (n === 12 && !still) { var rd = document.querySelector('#houseSvg .roof-g'); if (rd) rd.classList.add('roof-drop'); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }

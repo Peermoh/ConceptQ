@@ -226,3 +226,22 @@ quiz built fresh every time (hand-written questions + generators checked against
   claim your prize". The last 30 wins are kept. Stored in `cq-rewards` (`v: 1`), re-checked on load.
 - The Learn dashboard has a Prize wheel tile (jar progress, glows when a spin is ready); the done screen shows the jar.
 - Floor 3 (Advanced) storyboard: `docs/storyboards/floor3.html` (loft conversion + smart home, 13 lessons + challenge).
+
+### Floor 3 complete (2026-11-16)
+- 14 lessons (index 21–34): Packages, Exceptions in depth, Text and Unicode, Classes I, Classes II, Namespaces,
+  Inheritance, Comprehensions, Lambda and closures, Files pro, Testing, **Team coding** (git: commits, log, branches,
+  merges, conflicts, review), **Coding with AI** (ask clearly → read → test → fix → keep; never paste secrets), and the
+  **Master Builder: smart roof** (sensor file → a class per sensor → comprehensions → lambda sort → tests → roof lights).
+- Git and AI are taught as in-app simulations, not real tools: the **shared blueprint table** (commit history, try a
+  branch, merge it) and the **control panel** (Nibb suggests `is_cold` with a bug; test it, fix it, then Install).
+- Outside: three solar panels (one per commit), a green control-room screen in the middle dormer, then the smart roof:
+  a weather station on the ridge and roof lights that glow brighter when it is really night on the learner's device.
+- The challenge covers the planned "garage project" (sensor readings from a file, classes, tests).
+
+### Narration audio: one file per lesson (2026-11-16)
+- Each lesson is one MP3 per voice (`audio/<voice>/<key>.mp3`), with 0.6 s of silence between steps. The page's
+  `AUDIO_SEG[key][voice]` holds each step's `[start, end]`; the player seeks to the start, stops at the end (checked
+  every frame), and the board clock runs from the step start. This keeps the published artifact at ~70 files instead
+  of 600+ (the artifact limit is 512).
+- Pipeline: `tools/record_voices.py` (per-step clips, resumable) → `tools/combine_audio.py` (join + offsets).
+- Fixed: the Variables lesson gained two steps on every recording run (it re-read its own output); it is 8 steps again.
