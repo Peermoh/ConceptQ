@@ -121,15 +121,19 @@
   };
   function makeQuiz(ld) {
     var n = ld.quiz.length, gens = shuffled(GEN[ld.key] || []), made = [];
+    // one question per idea: two pop() questions, or two len() questions, in one quiz feels repetitive
+    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
+    function topicOf(code) { var plain = code.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'); for (var i = 0; i < TOPIC.length; i++) if (TOPIC[i].test(plain)) return i; return -1; }
+    var taken = [];
     // about half the quiz is made fresh (never more than the generators available), the rest is hand-written
     var want = Math.min(gens.length, Math.ceil(n / 2));
     for (var g = 0; g < gens.length && made.length < want; g++) {
-      for (var t = 0; t < 8; t++) { var q = gens[g](); if (q) { made.push(q); break; } }
+      for (var t = 0; t < 8; t++) {
+        var q = gens[g](); if (!q) continue;
+        var tp = topicOf(q.code); if (tp >= 0 && taken.indexOf(tp) >= 0) break; // this idea is already in the quiz
+        made.push(q); if (tp >= 0) taken.push(tp); break;
+      }
     }
-    // skip hand-written questions that test the same thing as a fresh one (two pop() questions in a row feels repetitive)
-    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
-    function topicOf(code) { var plain = code.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'); for (var i = 0; i < TOPIC.length; i++) if (TOPIC[i].test(plain)) return i; return -1; }
-    var taken = made.map(function (q) { return topicOf(q.code); });
     var pool = shuffled(ld.quiz), fresh = [];
     pool.forEach(function (q) { var t = topicOf(q.code); if (t < 0 || taken.indexOf(t) < 0) { fresh.push(q); if (t >= 0) taken.push(t); } }); // one question per idea
     var fixed = fresh.concat(pool.filter(function (q) { return fresh.indexOf(q) < 0; })).slice(0, n - made.length); // repeats only if nothing else is left
