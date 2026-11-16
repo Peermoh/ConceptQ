@@ -243,6 +243,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     glasscab:  { name: 'Glass cabinet', from: 'Tuples', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     toybox:    { name: 'Toy box', from: 'Sets', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     keyrack:   { name: 'Key rack', from: 'Dictionaries', kind: 'wall', size: 2, count: 1, rooms: null },
+    workbench: { name: 'Workbench', from: 'Packages', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
+    harness:   { name: 'Harness hook', from: 'Exceptions in depth', kind: 'wall', size: 1, count: 1, rooms: null },
+    sorter:    { name: 'Parcel sorter', from: 'Text and Unicode', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     filecab:   { name: 'Filing cabinet', from: 'Files', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     toolbox:   { name: 'Toolbox', from: 'Modules', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     noticeboard: { name: 'Notice board', from: 'String tools', kind: 'wall', size: 1, count: 1, rooms: null },
@@ -256,9 +259,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // The main app saves how many lessons are finished in 'cq-progress' (same site, so we can read it here).
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
-  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 21) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19 }; // rug: a welcome gift, always earned
+  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 35) PROGRESS = Math.floor(pr.current); } catch (e) {}
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode'];
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
@@ -267,10 +270,10 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
   var UPSTAIRS = PROGRESS >= 13; // Sets builds the floor-2 walls and lowers the roof
   var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
-  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete: you finished Intermediate!' };
+  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -322,7 +325,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     wardrobe: ['stairs', 'study', 'entrance', 'living'], shoerack: ['entrance', 'stairs', 'living', 'study'],
     glasscab: ['living', 'study', 'entrance', 'stairs'], toybox: ['playroom', 'bedroom', 'landing', 'kitchen'], keyrack: ['landing', 'kitchen', 'bedroom', 'playroom'],
     noticeboard: ['bedroom', 'playroom', 'landing', 'kitchen'], kettle: ['kitchen', 'playroom', 'bedroom', 'landing'], toaster: ['kitchen', 'playroom', 'bedroom', 'landing'], alarm: ['kitchen', 'landing', 'bedroom', 'playroom'],
-    filecab: ['bedroom', 'landing', 'playroom', 'study'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    filecab: ['bedroom', 'landing', 'playroom', 'study'],
+    workbench: ['study', 'playroom', 'stairs', 'living'], harness: ['entrance', 'landing', 'stairs', 'study'], sorter: ['entrance', 'stairs', 'landing', 'living'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -409,6 +413,11 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       });
       return nb;
     }
+    if (id === 'harness') { // a hook with a hard hat and a harness: finally always unclips it
+      return '<rect x="' + (W / 2 - 4) + '" y="-118" width="8" height="8" rx="2" fill="#5E3B20"></rect><path d="M' + (W / 2) + ' -110 v10" stroke="#3A3A44" stroke-width="2"></path>' +
+             '<path d="M' + (W / 2 - 16) + ' -78 a16 14 0 0 1 32 0 z" fill="#FFC861" stroke="#8A5A35" stroke-width="2"></path><rect x="' + (W / 2 - 20) + '" y="-80" width="40" height="4" rx="2" fill="#E0A11B"></rect>' +
+             '<path d="M' + (W / 2 - 10) + ' -100 q10 20 20 0 M' + (W / 2 - 12) + ' -96 l-4 40 M' + (W / 2 + 12) + ' -96 l4 40" fill="none" stroke="#FF7A6B" stroke-width="3"></path>';
+    }
     if (id === 'alarm') { // high on the wall, with a test button
       return '<circle cx="' + (W / 2) + '" cy="-104" r="15" fill="#F7F3EE" stroke="#8A8390" stroke-width="2"></circle><circle cx="' + (W / 2) + '" cy="-104" r="5" fill="#E2DCD4"></circle>' +
              '<circle cx="' + (W / 2 + 9) + '" cy="-112" r="2.4" fill="#FF7A6B"></circle><rect x="' + (W / 2 - 7) + '" y="-88" width="14" height="5" rx="2" fill="#FF7A6B"></rect>';
@@ -467,6 +476,25 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       [0.42, 0.58].forEach(function (f) { var k = P(v, x0 + ww * f, y0 + wd, wh * 0.5); s += '<circle cx="' + k[0] + '" cy="' + k[1] + '" r="' + Math.max(1.2, 2.6 * zs) + '" fill="#FFC861"></circle>'; });
       var tp = P(v, x0 + ww / 2, y0 + wd / 2, wh);
       s += '<rect x="' + (tp[0] - 9 * zs) + '" y="' + (tp[1] - 4 * zs) + '" width="' + 18 * zs + '" height="' + 7 * zs + '" rx="' + 2 * zs + '" fill="#FF8FC7" opacity=".9"></rect>';
+    } else if (id === 'workbench') {
+      // a bench with labelled drawers: the bench is a package, each drawer a module
+      var tb = d > w, LB = tb ? d : w, SB = tb ? w : d;
+      function wb(a, b, la, lb) { return tb ? [gx + b, gy + a, lb, la] : [gx + a, gy + b, la, lb]; }
+      var top = wb(0.06, 0.15 * SB, LB - 0.12, SB * 0.7);
+      s += box(v, top[0], top[1], top[2], top[3], 36 * zs, '#C98A4B', '#8A5A35', '#9C6A40');
+      ['#FF7A6B', '#7CF5C8', '#FFC861'].forEach(function (cl, k) {
+        var dr = wb(0.12 + k * (LB - 0.24) / 3, 0.15 * SB + SB * 0.7, (LB - 0.24) / 3 - 0.06, 0);
+        var a1 = P(v, dr[0], dr[1] + (tb ? 0 : 0), 12 * zs), a2 = tb ? P(v, dr[0], dr[1] + dr[3], 12 * zs) : P(v, dr[0] + dr[2], dr[1], 12 * zs);
+        var a3 = [a2[0], a2[1] - 12 * zs], a4 = [a1[0], a1[1] - 12 * zs];
+        s += '<polygon points="' + pts([a1, a2, a3, a4]) + '" fill="' + cl + '" stroke="#5E3B20" stroke-width="' + Math.max(0.5, zs) + '"></polygon>';
+      });
+      var vt = P(v, top[0] + top[2] * 0.3, top[1] + top[3] * 0.5, 36 * zs); s += '<rect x="' + (vt[0] - 5 * zs) + '" y="' + (vt[1] - 14 * zs) + '" width="' + 10 * zs + '" height="' + 14 * zs + '" fill="#AEB6C2"></rect>';
+    } else if (id === 'sorter') {
+      // a parcel sorter: shelves by how many bytes a label needs
+      var sh2 = 64 * zs, x6 = gx + 0.12, y6 = gy + 0.16, w6 = w - 0.24, d6 = d - 0.32;
+      s += box(v, x6, y6, w6, d6, sh2, '#D9A06C', '#A8744A', '#8A5A35');
+      [0.25, 0.5, 0.75].forEach(function (f, k) { var a = P(v, x6, y6 + d6, sh2 * f), b = P(v, x6 + w6, y6 + d6, sh2 * f); s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#5E3B20" stroke-width="' + Math.max(0.8, 1.6 * zs) + '"></line>';
+        var pb = P(v, x6 + w6 * (0.3 + k * 0.2), y6 + d6, sh2 * f + 2 * zs); s += '<rect x="' + (pb[0] - 5 * zs) + '" y="' + (pb[1] - 9 * zs) + '" width="' + 10 * zs + '" height="' + 8 * zs + '" fill="' + ['#F4D5A8', '#8FD3FF', '#FF8FC7'][k] + '"></rect>'; });
     } else if (id === 'filecab') {
       // three drawers; each drawer is a file that is still there tomorrow
       var fh = 70 * zs, x4 = gx + 0.15, y4 = gy + 0.15, w4 = w - 0.3, d4 = d - 0.3;
@@ -541,6 +569,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (id === 'bookshelf') { var bv = { ox: 22, oy: 47, w: 22, h: 11, wx: 0, wy: 0 }; return '<svg width="54" height="54" viewBox="0 0 64 64">' + wallItem(bv, 'R', 0, 2, Math.sqrt(121 + 30.25) / 54, 0.36, 'bookshelf', 54, 0.45) + '</svg>'; }
     if (id === 'poster') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(14 76) scale(0.5)">' + wallArt('poster', 1, 70) + '</g></svg>';
     if (id === 'noticeboard') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(10 96) scale(0.62)">' + wallArt('noticeboard', 1, 70) + '</g></svg>';
+    if (id === 'harness') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(-2 78) scale(0.62)">' + wallArt('harness', 1, 70) + '</g></svg>';
     if (id === 'alarm') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(-12 128) scale(0.92)">' + wallArt('alarm', 1, 70) + '</g></svg>';
     if (id === 'keyrack') return '<svg width="46" height="46" viewBox="0 0 64 64"><g transform="translate(4 84) scale(0.4)">' + wallArt('keyrack', 2, 70) + '</g></svg>';
     if (id === 'stairs') return '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9C86A0" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
@@ -760,6 +789,38 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     return out;
   }
   function upLit() { return FLOORS[2].some(function (r) { return hasLamp(r); }); }
+  // Floor 3 starts outside: a garage workshop and the pip delivery van, then safety scaffolding, then deliveries
+  var SCAFFOLD = PROGRESS >= 23 && PROGRESS < 32; // the Testing lesson's inspection takes it down
+  function garage(v) {
+    // the workshop stands to the right of the house, with the pip van on its drive
+    var g = '', H2 = 44, x0 = 11.8, x1 = 14.8, y0 = 1.2, y1 = 5.2;
+    g += poly([P(v, x0, y1, 0), P(v, x1, y1, 0), P(v, x1, y1, H2), P(v, x0, y1, H2)], '#E6CDB6', ' stroke="#4A2C3E" stroke-width="1"');
+    g += poly([P(v, x1, y0, 0), P(v, x1, y1, 0), P(v, x1, y1, H2), P(v, x1, y0, H2)], '#D9BFA8', ' stroke="#4A2C3E" stroke-width="1"');
+    g += poly([P(v, x0 - 0.2, y0 - 0.2, H2 + 4), P(v, x1 + 0.2, y0 - 0.2, H2 + 4), P(v, x1 + 0.2, y1 + 0.2, H2), P(v, x0 - 0.2, y1 + 0.2, H2)], '#8E3D2F', ' stroke="#4A2C3E" stroke-width="1"');
+    // roll-up door with stripes on the front, and a sign over it
+    g += poly([P(v, x0 + 0.5, y1, 0), P(v, x1 - 0.5, y1, 0), P(v, x1 - 0.5, y1, 32), P(v, x0 + 0.5, y1, 32)], '#AEB6C2', ' stroke="#6B7380" stroke-width="1"');
+    for (var k = 1; k < 6; k++) { var a = P(v, x0 + 0.5, y1, k * 5.4), b = P(v, x1 - 0.5, y1, k * 5.4); g += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#8A93A0" stroke-width="1"></line>'; }
+    var sg = P(v, (x0 + x1) / 2, y1, 38); g += '<rect x="' + (sg[0] - 24) + '" y="' + (sg[1] - 6) + '" width="48" height="11" rx="3" fill="#FFE7A8" stroke="#2A1330" stroke-width="0.8"></rect><text x="' + sg[0] + '" y="' + (sg[1] + 2.5) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="7" fill="#2A1330">workshop/</text>';
+    // the pip delivery van on the drive in front of it
+    var vn = '', vx = 12.2, vy = 5.9;
+    vn += poly([P(v, vx, vy + 1.2, 0), P(v, vx + 2.4, vy + 1.2, 0), P(v, vx + 2.4, vy + 1.2, 20), P(v, vx, vy + 1.2, 20)], '#FFFFFF', ' stroke="#4A2C3E" stroke-width="1"');
+    vn += poly([P(v, vx + 2.4, vy, 0), P(v, vx + 2.4, vy + 1.2, 0), P(v, vx + 2.4, vy + 1.2, 20), P(v, vx + 2.4, vy, 20)], '#E8E2DA', ' stroke="#4A2C3E" stroke-width="1"');
+    vn += poly([P(v, vx, vy, 20), P(v, vx + 2.4, vy, 20), P(v, vx + 2.4, vy + 1.2, 20), P(v, vx, vy + 1.2, 20)], '#F4F0EA');
+    var lb = P(v, vx + 1.1, vy + 1.2, 11); vn += '<text x="' + lb[0] + '" y="' + (lb[1] + 3) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="8" fill="#3B5DC9">pip</text>';
+    [vx + 0.5, vx + 1.9].forEach(function (wx) { var c = P(v, wx, vy + 1.2, 0); g += ''; vn += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="4" fill="#3A3A44"></circle>'; });
+    return '<g data-part="21">' + g + vn + '</g>';
+  }
+  function scaffolding(v, H) {
+    var sc = '', top = H + 30, c = '#9AA3AF';
+    function line(a, b, w) { return '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="' + c + '" stroke-width="' + (w || 2) + '"></line>'; }
+    [0, 3.4, 6.8, 10.4].forEach(function (x) { sc += line(P(v, x, 10.9, 0), P(v, x, 10.9, top)); });
+    [0, 5, 10.4].forEach(function (y) { sc += line(P(v, 10.9, y, 0), P(v, 10.9, y, top)); });
+    [40, 66, 94, 122, top].forEach(function (z) { if (z > top) return; sc += line(P(v, 0, 10.9, z), P(v, 10.4, 10.9, z), 3) + line(P(v, 10.9, 10.9, z), P(v, 10.9, 0, z), 3); });
+    // green safety nets on the upper part
+    sc += poly([P(v, 0, 10.95, 70), P(v, 10.4, 10.95, 70), P(v, 10.4, 10.95, top), P(v, 0, 10.95, top)], '#6EE7B7', ' opacity=".22"');
+    sc += poly([P(v, 10.95, 10.4, 70), P(v, 10.95, 0, 70), P(v, 10.95, 0, top), P(v, 10.95, 10.4, top)], '#6EE7B7', ' opacity=".18"');
+    return '<g data-part="22">' + sc + '</g>';
+  }
   function exterior(v) {
     if (!WALLS_UP) return buildSite(v);
     var G1 = 66, W = WORLDS[worldKey], H = UPSTAIRS ? G1 + 56 : G1, RH = 46, s = '';
@@ -894,6 +955,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       s += '<g class="roof-g"><g transform="translate(0 ' + (-LIFT) + ')">' + R + '</g></g>' + cr;
     }
     s = '<g data-part="3">' + s + '</g>'; // the whole house: the Strings lesson raises it
+    if (PROGRESS >= 22) s = s + garage(v); // beside the house, in front of it in depth
+    if (PROGRESS >= 24) { // parcels by the front door, labelled in many languages
+      var pc = '';
+      [[3.3, 10.9, 0, '#E9B87C'], [3.9, 11.0, 0, '#D9A06C'], [3.5, 10.95, 10, '#F0C48A']].forEach(function (b) {
+        var gx = b[0], gy = b[1], z = b[2];
+        pc += poly([P(v, gx, gy + 0.5, z), P(v, gx + 0.5, gy + 0.5, z), P(v, gx + 0.5, gy + 0.5, z + 10), P(v, gx, gy + 0.5, z + 10)], b[3], ' stroke="#8A5A35" stroke-width="0.8"') +
+              poly([P(v, gx + 0.5, gy, z), P(v, gx + 0.5, gy + 0.5, z), P(v, gx + 0.5, gy + 0.5, z + 10), P(v, gx + 0.5, gy, z + 10)], '#B5793F') +
+              poly([P(v, gx, gy, z + 10), P(v, gx + 0.5, gy, z + 10), P(v, gx + 0.5, gy + 0.5, z + 10), P(v, gx, gy + 0.5, z + 10)], '#F4D5A8');
+      });
+      s += '<g data-part="23">' + pc + '</g>';
+    }
     // mailbox by the path
     var mb = P(v, 3.6, 11.3);
     if (PROGRESS >= 5) s += '<g data-part="4"><rect x="' + (mb[0] - 1.5) + '" y="' + (mb[1] - 22) + '" width="3" height="22" fill="#8A5A35"></rect><rect x="' + (mb[0] - 9) + '" y="' + (mb[1] - 31) + '" width="18" height="10" rx="5" fill="#4F7FD1" stroke="#2A1330" stroke-width="1"></rect></g>';
@@ -910,6 +982,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       fc += '<rect x="0" y="-12" width="' + (8.2 * 0.42 * L + 4) + '" height="3" fill="#C9A27C"></rect></g>';
       s += '<g data-part="6">' + g + fc + '</g>';
     }
+    if (SCAFFOLD) s += scaffolding(v, H);
     // the whole house is one big button: tap to go inside
     s += '<polygon class="enter-hit" tabindex="0" role="button" aria-label="Go inside your house" points="' +
          pts([P(v, 0, 10, 0), P(v, 10, 10, 0), P(v, 10, 0, 0), P(v, 10, 0, H), P(v, 10.4, -0.6, H - 6), P(v, 10.4, 5, H + RH), P(v, -0.4, 5, H + RH), P(v, -0.4, 10.6, H - 6), P(v, 0, 10, H)]) +
@@ -921,13 +994,15 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
 
   // ---------- house view ----------
   var HV = { ox: 195, oy: 150, w: 34, h: 17 };
+  var HV3 = { ox: 160, oy: 150, w: 28, h: 14 };
   var HVI = { ox: 195, oy: 120, w: 37, h: 18.5 }; // inside: no scenery, so the house can be bigger
   function roomMap(r) {
     var R = ROOMS[r];
     return { gx: function (g) { return R.rx + g * R.rw / GRID; }, gy: function (g) { return R.ry + g * R.rh / GRID; }, sx: R.rw / GRID, sy: R.rh / GRID };
   }
   function drawHouse() {
-    var v = houseMode === 'inside' ? HVI : HV, s = '<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD28A" stop-opacity=".85"></stop><stop offset="1" stop-color="#FFB547" stop-opacity="0"></stop></radialGradient></defs>';
+    // from Packages on, the garage stands beside the house: zoom out a little and shift right so it fits
+    var v = houseMode === 'inside' ? HVI : PROGRESS >= 22 ? HV3 : HV, s = '<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD28A" stop-opacity=".85"></stop><stop offset="1" stop-color="#FFB547" stop-opacity="0"></stop></radialGradient></defs>';
     document.getElementById('houseView').classList.toggle('inside', houseMode === 'inside');
     if (houseMode === 'outside') {
       s += worldBack(v);
@@ -1237,6 +1312,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // ---------- living items: tap one to see the Python it stands for ----------
   function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function pyStr(t) { return '<span class="st">"' + esc(t) + '"</span>'; }
+  var BENCH = [['saws', 'cut()', 'zzz'], ['drills', 'drill()', 'brrr'], ['glue', 'stick()', 'stuck!']];
+  var PARCELS = [['A', 65, "b'A'", 1], ['é', 233, "b'\\xc3\\xa9'", 2], ['中', 20013, "b'\\xe4\\xb8\\xad'", 3], ['🙂', 128578, "b'\\xf0\\x9f\\x99\\x82'", 4]];
   var DRAWER = ['Feed the cat', 'Water the plant'], TOOLS2 = [['math.sqrt(49)', '7.0'], ['math.ceil(2.1)', '3'], ['math.floor(2.9)', '2'], ['random.randint(1, 6)', 'dice'], ['random.choice(["tea", "juice", "milk"])', 'pick']];
   var NOTE = 'hello world', TOOLS = [['.upper()', 'HELLO WORLD'], ['.split()', "['hello', 'world']"], ['[::-1]', 'dlrow olleh'], ['.replace("o", "0")', 'hell0 w0rld']];
   var TROPHIES = ['cup', 'medal', 'star'], TOYS = ['teddy', 'ball', 'kite'], KEYS = [['bed', 'blue'], ['kitchen', 'red'], ['play', 'yellow']];
@@ -1247,7 +1324,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
-    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], toolbox: ['Modules', '', ''],
+    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1303,6 +1380,30 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         tryB.hidden = cardState.step >= 3;
         tryB.textContent = cardState.step === 1 ? 'Count the letters' : 'Glue on a word';
       }
+    } else if (p.id === 'workbench') {
+      idea.innerHTML = 'The bench is a <b>package</b> called workshop. Each drawer is a <b>module</b> inside it.';
+      var dr = cardState.drawers || (cardState.drawers = BENCH.slice());
+      dr.forEach(function (d2, i) { var b = document.createElement('button'); b.className = 'book'; b.textContent = d2[0] + '.py'; b.style.background = ['#FF7A6B', '#7CF5C8', '#FFC861', '#C3A6FF'][i % 4];
+        b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false'); b.addEventListener('click', function () { cardState.book = i; renderCard(); }); play.appendChild(b); });
+      var wl = ['workshop/', '    __init__.py'].concat(dr.map(function (d2) { return '    ' + d2[0] + '.py'; }));
+      if (cardState.book >= 0) { var dd = dr[cardState.book]; wl.push('<span class="new"><span class="o">from</span> workshop <span class="o">import</span> ' + dd[0] + '\n' + dd[0] + '.' + dd[1] + '  <span class="c"># → ' + dd[2] + '</span></span>'); }
+      if (cardState.step) wl.push('<span class="new"><span class="c"># pip install paint → the van brought a new drawer</span></span>');
+      code.innerHTML = wl.join('\n'); tryB.hidden = !!cardState.step; tryB.textContent = 'pip install paint';
+    } else if (p.id === 'harness') {
+      idea.innerHTML = 'Climb with the harness on. <b>finally</b> always unclips it, whatever happens.';
+      ['Climb safely', 'Slip!'].forEach(function (t, i) { var b = document.createElement('button'); b.className = 'book'; b.textContent = t; b.style.background = i ? '#FF9A8B' : '#7CF5C8';
+        b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false'); b.addEventListener('click', function () { cardState.book = i; renderCard(); say(document.getElementById('roomBubble'), i ? 'Whoops! The net caught the FallError, and finally unclipped the harness.' : 'No problems: else ran, then finally unclipped the harness.', !i, document.getElementById('roomNibb')); }); play.appendChild(b); });
+      var slip = cardState.book === 1, ran = cardState.book < 0 ? null : slip ? [1, 2, 0, 1] : [1, 0, 1, 1];
+      var hl = [['<span class="o">try</span>:\n    climb()', 'try'], ['<span class="o">except</span> FallError:\n    net_catches()', 'except'], ['<span class="o">else</span>:\n    wave()', 'else'], ['<span class="o">finally</span>:\n    unclip_harness()', 'finally']];
+      code.innerHTML = hl.map(function (h, k) { var st2 = ran ? (ran[k] === 1 ? 'new' : ran[k] === 2 ? 'new' : '') : ''; return ran && !ran[k] ? '<span style="opacity:.4">' + h[0] + '</span>' : (st2 ? '<span class="new">' + h[0] + '</span>' : h[0]); }).join('\n') + (ran ? '\n<span class="c"># ran: ' + (slip ? 'try (it failed), except, finally' : 'try, else, finally') + '</span>' : '');
+      tryB.hidden = true;
+    } else if (p.id === 'sorter') {
+      idea.innerHTML = 'Every character is a number. Drop a parcel: the sorter reads its label and puts it on the shelf for its number of <b>bytes</b>.';
+      PARCELS.forEach(function (pc2, i) { var b = document.createElement('button'); b.className = 'book'; b.textContent = pc2[0]; b.style.background = ['#F4D5A8', '#8FD3FF', '#FF8FC7', '#FFE7A8'][i];
+        b.setAttribute('aria-pressed', cardState.book === i ? 'true' : 'false'); b.addEventListener('click', function () { cardState.book = i; renderCard(); }); play.appendChild(b); });
+      if (cardState.book < 0) code.innerHTML = '<span class="c"># drop a parcel</span>';
+      else { var pc3 = PARCELS[cardState.book]; code.innerHTML = ['ord(' + pyStr(pc3[0]) + ')  <span class="c"># → ' + pc3[1] + '</span>', pyStr(pc3[0]) + '.encode()  <span class="c"># → ' + esc(pc3[2]) + '</span>', '<span class="new"><span class="c"># ' + pc3[3] + (pc3[3] === 1 ? ' byte: shelf 1' : ' bytes: shelf ' + pc3[3]) + '</span></span>'].join('\n'); }
+      tryB.hidden = true;
     } else if (p.id === 'filecab') {
       idea.innerHTML = 'Each drawer is a <b>file</b>: <code>notes.txt</code>. What you write in it is still there tomorrow.';
       var lines = cardState.lines || (cardState.lines = DRAWER.slice());
@@ -1417,6 +1518,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       cardState.step = 1; save(); drawRoom(); renderCard();
       say(document.getElementById('roomBubble'), p.off ? 'lamp_on is False. Lights out!' : 'lamp_on is True. Let there be light!', !p.off, document.getElementById('roomNibb'));
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
+    else if (p.id === 'workbench') { cardState.step = 1; (cardState.drawers || (cardState.drawers = BENCH.slice())).push(['paint', 'brush()', 'swish']); renderCard(); say(document.getElementById('roomBubble'), 'Beep beep! The pip van delivered a paint drawer.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'filecab') {
       cardState.step++;
       if (cardState.step === 1) cardState.lines.push('Party on Saturday'); else cardState.lines = ['Clean slate'];
@@ -1612,6 +1714,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     17: 'Errors happen in every kitchen. The smoke alarm catches them so the house carries on: try and except.',
     18: 'The attic light is on! The attic keeps things after you go to sleep, like a file keeps your data.',
     19: 'A toolbox full of ready-made tools, like a module: import math, import random.',
+    21: 'The garage workshop is built! A package is a workshop of toolboxes, and pip is the van that delivers new ones.',
+    22: 'Safety scaffolding with nets! Working high up needs try, except and, most of all, finally: always unclip.',
+    23: 'Parcels for the loft, labelled in every language. Every character is a number: ord("é") is 233.',
     20: 'Party on the balcony! Files, sets, dictionaries, functions and try, all together. You finished the second floor!'
   };
 
@@ -1619,7 +1724,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
     if (n >= 9 && n <= 12 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
-    if (n === 18 || n === 20) { houseMode = 'outside'; drawHouse(); } // the attic window and the balcony are seen from outside
+    if (n === 18 || n === 20 || n === 21 || n === 22 || n === 23) { houseMode = 'outside'; drawHouse(); } // the attic window and the balcony are seen from outside
     if (n >= 13 && n <= 16) { houseMode = 'inside'; VIEW_FLOOR = 2; drawHouse(); } // plates, wallpaper and the kitchen are upstairs
     if (n === 12 && !still) { var rd = document.querySelector('#houseSvg .roof-g'); if (rd) rd.classList.add('roof-drop'); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }

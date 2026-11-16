@@ -21,6 +21,9 @@ def block(name, body):
         i = s.index('  var Q_BOSS = ['); s = s[:i] + body + s[i:]
 steps = ',\n'.join('    { lines: %s,\n      say: %s,\n      cue: %s }' % (J(l), J(say), J(c)) for l, say, c in LES[K]['steps'])
 block('BOARD_' + N, '  var BOARD_%s = [\n%s\n  ];\n' % (N, steps))
+# a question may carry a 6th field: the lesson step it tests (0-based), used for 'areas to improve'
+QSTEPS = [q[5] if len(q) > 5 else None for q in spec.QUIZ]
+spec.QUIZ = [q[:5] for q in spec.QUIZ]
 for t, c, o, a, w in spec.QUIZ: assert len(o) == 4 and len(w) == 4 and len(set(o)) == 4, t
 qs = ',\n'.join('    { text: %s,\n      code: %s,\n      options: %s, answer: %d,\n      why: %s }' % (J(t), J(hl(c)), J(o), a, J(w)) for t, c, o, a, w in spec.QUIZ)
 block('Q_' + N, '  var Q_%s = [\n%s\n  ];\n' % (N, qs))
@@ -49,6 +52,15 @@ new_g = '\n    %s: [\n%s\n    ]' % (K, spec.GEN_JS.strip('\n'))
 if key_re.search(gen): gen = key_re.sub(lambda _: new_g, gen)
 else: gen = gen.rstrip() + ',' + new_g
 s = s[:gstart] + gen + s[gend:]
+# step tags: merge this lesson's into the page's Q_STEPS / GEN_STEPS
+if all(x is not None for x in QSTEPS) or hasattr(spec, 'GEN_STEPS'):
+    for name, val in (('Q_STEPS', QSTEPS if all(x is not None for x in QSTEPS) else None), ('GEN_STEPS', getattr(spec, 'GEN_STEPS', None))):
+        if val is None: continue
+        m = re.search(r'  var %s = (\{.*?\});\n' % name, s)
+        d = json.loads(m.group(1)); d[K] = val
+        nsteps = len(LES[K]['steps']); assert all(0 <= x < nsteps for x in val), (name, val)
+        s = s[:m.start(1)] + json.dumps(d) + s[m.end(1):]
+    gn = len(re.findall(r'^      function \(\)', spec.GEN_JS, re.M)); assert len(getattr(spec, 'GEN_STEPS', [])) == gn, ('GEN_STEPS count', gn)
 open(SRC, 'w').write(s)
 # the page must still parse: check its script with node
 import subprocess, tempfile
