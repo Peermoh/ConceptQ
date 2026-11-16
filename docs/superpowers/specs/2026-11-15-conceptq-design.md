@@ -105,7 +105,9 @@ Each lesson is data: board lines with spoken cues and recorded timings, narratio
 recorded with word timestamps), a Read-it pane, 3 questions with a reason for every option, and done-screen text.
 
 ### Cards and Me tabs (2026-11-16)
-- **Cards:** each finished lesson adds 3 flashcards (27 for the ground floor). Leitner boxes 1-5 with gaps of
+- **Cards:** each finished lesson adds 3 flashcards (27 for the ground floor), grouped into 6 categories by the
+  kind of thinking they practise: Talking to Python (3), Boxes & names (2), Text & numbers (5),
+  Maths & comparing (6), Choices & loops (7), Bug spotting (4). Review all due cards or one category. Leitner boxes 1-5 with gaps of
   0, 1, 3, 7 and 16 days; "Got it" moves a card up a box, "Again" sends it to box 1 and back into the current
   session. Stored in `cq-cards` and re-checked on load. Home's cards tile shows the real number due.
 - **Me:** name, age (5-18+, sets "for age X" and hides courses above the learner's age), avatar colour,

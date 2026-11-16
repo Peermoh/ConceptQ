@@ -550,6 +550,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   .face { min-height: 300px; }
   .me-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
 }
+
+.review-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.cat-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.cat-chips::-webkit-scrollbar { display: none; }
+.cat-chip { flex: none; min-height: 38px; padding: 0 14px; border-radius: 999px; background: var(--panel); border: 1.5px solid var(--line); color: var(--cream); font-weight: 800; font-size: 13px; }
+.cat-chip[aria-pressed="true"] { background: var(--cc, var(--amber)); border-color: var(--cc, var(--amber)); color: #2A1330; }
+.cat-tag { align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: var(--cc, #FFC861); color: #2A1330 !important; opacity: 1 !important; }
+button.deck { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+button.deck.locked { cursor: default; }
+.deck[aria-pressed="true"] { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(255,181,71,0.35); }
+.deck-ic svg { display: block; }
 </style>
 
 <div class="stage">
@@ -690,8 +701,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     <div class="scroll pad tab-wrap">
       <header class="tab-head"><h1 class="title-xl">Cards</h1><p id="cardsSummary"></p></header>
       <div class="cards-grid">
-        <div class="review" id="reviewArea" aria-live="polite"></div>
-        <section class="decks" aria-label="Card decks"><h2 class="sub-h">Your decks</h2><div id="deckList"></div></section>
+        <div class="review-col">
+          <div class="cat-chips" id="catChips" role="group" aria-label="Review which cards"></div>
+          <div class="review" id="reviewArea" aria-live="polite"></div>
+        </div>
+        <section class="decks" aria-label="Card categories"><h2 class="sub-h">Categories</h2><div id="deckList"></div></section>
       </div>
     </div>
     <nav class="nav" aria-label="Main" data-navbar></nav>
@@ -1272,34 +1286,47 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   // Every finished lesson adds its 3 cards. A card you know moves up a box and comes back later
   // (box 1..5 = 0, 1, 3, 7, 16 days); "Again" sends it back to box 1 for another go soon.
   var CARDS = [
-    { id: 'h1', l: 0, f: 'What does `print("Hi")` show?', b: 'Hi. print shows the text without the quotes.' },
-    { id: 'h2', l: 0, f: 'In which order does Python read your code?', b: 'Top to bottom, one line at a time.' },
-    { id: 'h3', l: 0, f: 'What happens with `Print("Hi")`?', b: 'A NameError. Python only knows `print` in small letters.' },
-    { id: 'v1', l: 1, f: 'What is a variable?', b: 'A name that holds a value, like a labelled box: `pens = 3`' },
-    { id: 'v2', l: 1, f: '`pens = 3`, then `pens = 5`. What is pens now?', b: '5. The new value replaces the old one.' },
-    { id: 'v3', l: 1, f: 'Can a name start with a number, like `2pens`?', b: 'No, that is a SyntaxError. Start with a letter: `my_pens`' },
-    { id: 'n1', l: 2, f: 'What does `4 * 3` give?', b: '12. The star means times.' },
-    { id: 'n2', l: 2, f: '`7 / 2` and `7 // 2` give?', b: '3.5 and 3. Two slashes keep only the whole number.' },
-    { id: 'n3', l: 2, f: 'What does `"2" + "2"` give?', b: '"22". Text is glued, not added.' },
-    { id: 's1', l: 3, f: 'What makes something a string?', b: 'Quotes: `"Python"` is text.' },
-    { id: 's2', l: 3, f: 'What does `"Book" + "Club"` give?', b: 'BookClub. + glues with no space.' },
-    { id: 's3', l: 3, f: 'What does `len("book")` give?', b: '4. len counts the characters, and spaces count too.' },
-    { id: 'i1', l: 4, f: 'What does `input()` give back?', b: 'Always text (a string), even when you type a number.' },
-    { id: 'i2', l: 4, f: 'How do you turn the text "9" into the number 9?', b: '`int("9")`' },
-    { id: 'i3', l: 4, f: 'You type 3. What is `n + n` when `n = input()`?', b: '"33". Text plus text glues together.' },
-    { id: 't1', l: 5, f: 'What does `5 > 3` give?', b: 'True' },
-    { id: 't2', l: 5, f: 'What is the difference between `=` and `==`?', b: '`=` stores a value, `==` compares two values.' },
-    { id: 't3', l: 5, f: 'What does `not True` give?', b: 'False. not flips the value.' },
-    { id: 'd1', l: 6, f: 'When does the code under `if` run?', b: 'Only when the condition is True.' },
-    { id: 'd2', l: 6, f: 'What does `else` mean?', b: 'Otherwise: it runs when the if condition is False.' },
-    { id: 'd3', l: 6, f: 'Two `elif` conditions are True. Which one runs?', b: 'Only the first True branch, checking from the top.' },
-    { id: 'o1', l: 7, f: 'Which numbers does `range(3)` give?', b: '0, 1 and 2. It starts at 0 and stops before 3.' },
-    { id: 'o2', l: 7, f: 'How many times does `for i in range(4):` repeat?', b: '4 times.' },
-    { id: 'o3', l: 7, f: 'When does a `while` loop stop?', b: 'When its condition becomes False.' },
-    { id: 'b1', l: 8, f: 'Why wrap input in `int()`, as in `int(input())`?', b: 'input() gives text; int() turns it into a number you can compare or do maths with.' },
-    { id: 'b2', l: 8, f: '`hour = 20`. Is `hour > 18` True or False?', b: 'True, so the porch light goes on.' },
-    { id: 'b3', l: 8, f: 'A loop prints Blink! twice, then one more `print("Blink!")` follows. How many?', b: '3: two from the loop, one after it.' }
+    { id: 'h1', c: 'talk', l: 0, f: 'What does `print("Hi")` show?', b: 'Hi. print shows the text without the quotes.' },
+    { id: 'h2', c: 'talk', l: 0, f: 'In which order does Python read your code?', b: 'Top to bottom, one line at a time.' },
+    { id: 'h3', c: 'bugs', l: 0, f: 'What happens with `Print("Hi")`?', b: 'A NameError. Python only knows `print` in small letters.' },
+    { id: 'v1', c: 'boxes', l: 1, f: 'What is a variable?', b: 'A name that holds a value, like a labelled box: `pens = 3`' },
+    { id: 'v2', c: 'boxes', l: 1, f: '`pens = 3`, then `pens = 5`. What is pens now?', b: '5. The new value replaces the old one.' },
+    { id: 'v3', c: 'bugs', l: 1, f: 'Can a name start with a number, like `2pens`?', b: 'No, that is a SyntaxError. Start with a letter: `my_pens`' },
+    { id: 'n1', c: 'maths', l: 2, f: 'What does `4 * 3` give?', b: '12. The star means times.' },
+    { id: 'n2', c: 'maths', l: 2, f: '`7 / 2` and `7 // 2` give?', b: '3.5 and 3. Two slashes keep only the whole number.' },
+    { id: 'n3', c: 'bugs', l: 2, f: 'What does `"2" + "2"` give?', b: '"22". Text is glued, not added.' },
+    { id: 's1', c: 'types', l: 3, f: 'What makes something a string?', b: 'Quotes: `"Python"` is text.' },
+    { id: 's2', c: 'types', l: 3, f: 'What does `"Book" + "Club"` give?', b: 'BookClub. + glues with no space.' },
+    { id: 's3', c: 'types', l: 3, f: 'What does `len("book")` give?', b: '4. len counts the characters, and spaces count too.' },
+    { id: 'i1', c: 'talk', l: 4, f: 'What does `input()` give back?', b: 'Always text (a string), even when you type a number.' },
+    { id: 'i2', c: 'types', l: 4, f: 'How do you turn the text "9" into the number 9?', b: '`int("9")`' },
+    { id: 'i3', c: 'bugs', l: 4, f: 'You type 3. What is `n + n` when `n = input()`?', b: '"33". Text plus text glues together.' },
+    { id: 't1', c: 'maths', l: 5, f: 'What does `5 > 3` give?', b: 'True' },
+    { id: 't2', c: 'maths', l: 5, f: 'What is the difference between `=` and `==`?', b: '`=` stores a value, `==` compares two values.' },
+    { id: 't3', c: 'maths', l: 5, f: 'What does `not True` give?', b: 'False. not flips the value.' },
+    { id: 'd1', c: 'flow', l: 6, f: 'When does the code under `if` run?', b: 'Only when the condition is True.' },
+    { id: 'd2', c: 'flow', l: 6, f: 'What does `else` mean?', b: 'Otherwise: it runs when the if condition is False.' },
+    { id: 'd3', c: 'flow', l: 6, f: 'Two `elif` conditions are True. Which one runs?', b: 'Only the first True branch, checking from the top.' },
+    { id: 'o1', c: 'flow', l: 7, f: 'Which numbers does `range(3)` give?', b: '0, 1 and 2. It starts at 0 and stops before 3.' },
+    { id: 'o2', c: 'flow', l: 7, f: 'How many times does `for i in range(4):` repeat?', b: '4 times.' },
+    { id: 'o3', c: 'flow', l: 7, f: 'When does a `while` loop stop?', b: 'When its condition becomes False.' },
+    { id: 'b1', c: 'types', l: 8, f: 'Why wrap input in `int()`, as in `int(input())`?', b: 'input() gives text; int() turns it into a number you can compare or do maths with.' },
+    { id: 'b2', c: 'maths', l: 8, f: '`hour = 20`. Is `hour > 18` True or False?', b: 'True, so the porch light goes on.' },
+    { id: 'b3', c: 'flow', l: 8, f: 'A loop prints Blink! twice, then one more `print("Blink!")` follows. How many?', b: '3: two from the loop, one after it.' }
   ];
+  // Cards are grouped by the kind of thinking they practise (not by lesson), so revision can target
+  // what a learner keeps mixing up: e.g. all the "Maths & comparing" cards together.
+  var CATS = [
+    { id: 'talk',  name: 'Talking to Python', note: 'print, the order code runs, input', bg: '#FFC861', ic: '<path d="M4 6h16v10H9l-5 4z"/>' },
+    { id: 'boxes', name: 'Boxes & names',     note: 'variables and their values',       bg: '#FFB547', ic: '<rect x="4" y="8" width="16" height="11" rx="2"/><path d="M4 8l3-4h10l3 4M10 13h4"/>' },
+    { id: 'types', name: 'Text & numbers',    note: 'strings, quotes, len(), int()',    bg: '#FF8FC7', ic: '<path d="M5 7h6M8 7v11M14 11h5M16.5 11v7"/>' },
+    { id: 'maths', name: 'Maths & comparing', note: '* / // and > == != not',           bg: '#7CF5C8', ic: '<path d="M6 6l12 12M18 6L6 18M4 12h4M16 12h4"/>' },
+    { id: 'flow',  name: 'Choices & loops',   note: 'if, else, elif, for, range, while', bg: '#C3A6FF', ic: '<path d="M12 4v6M12 10l-6 6M12 10l6 6M6 16v4M18 16v4"/>' },
+    { id: 'bugs',  name: 'Bug spotting',      note: 'the classic mistakes to avoid',    bg: '#FF7A6B', ic: '<ellipse cx="12" cy="13" rx="5" ry="6"/><path d="M12 7V4M7 10L4 8M17 10l3-2M7 16l-3 2M17 16l3 2M12 7v12"/>' }
+  ];
+  function catOf(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i]; return CATS[0]; }
+  function catIcon(c, size) { return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="#2A1330" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + c.ic + '</svg>'; }
+  var cardFilter = 'all';
   var CARD_DAYS = [0, 0, 1, 3, 7, 16], DAY_MS = 86400000;
   var cardState = {};
   try { var cs0 = JSON.parse(localStorage.getItem('cq-cards') || 'null');
@@ -1332,24 +1359,39 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     ensureCards();
     var due = dueCards(), total = Object.keys(cardState).length;
     document.getElementById('cardsSummary').textContent = total
-      ? due.length + ' to review now · ' + learnedCount() + ' of ' + total + ' learned well'
+      ? due.length + ' to review now · ' + learnedCount() + ' of ' + total + ' learned well · ' + CATS.length + ' categories'
       : 'Finish your first lesson to get your first cards.';
-    // decks: one per lesson
-    var list = document.getElementById('deckList'); list.innerHTML = '';
-    TOPICS.forEach(function (tp, i) {
-      var cs = CARDS.filter(function (c) { return c.l === i; }), open = i < state.current;
-      var d = document.createElement('div'); d.className = 'deck' + (open ? '' : ' locked');
-      var ic = document.createElement('span'); ic.className = 'deck-ic'; ic.style.background = tp.bg; ic.innerHTML = topicIcon(tp.key).replace('width="44" height="44"', 'width="30" height="30"');
-      var body = document.createElement('span'); body.className = 'deck-body';
-      var nm = document.createElement('b'); nm.textContent = tp.name;
-      var sub = document.createElement('span');
-      if (!open) sub.textContent = 'Unlocks with the ' + tp.name + ' lesson';
-      else { var dn = cs.filter(function (c) { var r = cardState[c.id]; return r && r.due <= Date.now(); }).length; sub.textContent = (dn ? dn + ' due · ' : 'All bright · ') + cs.filter(function (c) { return cardState[c.id] && cardState[c.id].box >= 3; }).length + '/3 learned'; }
-      var pips = document.createElement('span'); pips.className = 'pips';
-      cs.forEach(function (c) { var t = document.createElement('span'), p = document.createElement('i'), r = cardState[c.id]; p.style.width = (r ? r.box * 20 : 0) + '%'; t.appendChild(p); pips.appendChild(t); });
-      body.appendChild(nm); body.appendChild(sub); body.appendChild(pips);
-      d.appendChild(ic); d.appendChild(body); list.appendChild(d);
+    // filter chips: All, or one category (with how many are due in it)
+    var chips = document.getElementById('catChips'); chips.innerHTML = '';
+    [{ id: 'all', name: 'All' }].concat(CATS).forEach(function (c) {
+      var n = due.filter(function (cd) { return c.id === 'all' || cd.c === c.id; }).length;
+      var b = document.createElement('button'); b.className = 'cat-chip'; b.setAttribute('aria-pressed', cardFilter === c.id ? 'true' : 'false');
+      if (c.bg) b.style.setProperty('--cc', c.bg);
+      b.textContent = c.name + (n ? ' · ' + n : '');
+      b.addEventListener('click', function () { cardFilter = c.id; reviewQueue = null; renderCards(); });
+      chips.appendChild(b);
     });
+    // categories: cards unlocked so far, how many are due, how well each is learned
+    var list = document.getElementById('deckList'); list.innerHTML = '';
+    CATS.forEach(function (ct) {
+      var all = CARDS.filter(function (c) { return c.c === ct.id; }), have = all.filter(function (c) { return cardState[c.id]; });
+      var dn = have.filter(function (c) { return cardState[c.id].due <= Date.now(); }).length;
+      var d = document.createElement('button'); d.className = 'deck' + (have.length ? '' : ' locked'); d.setAttribute('aria-pressed', cardFilter === ct.id ? 'true' : 'false');
+      var ic = document.createElement('span'); ic.className = 'deck-ic'; ic.style.background = ct.bg; ic.innerHTML = catIcon(ct, 24);
+      var body = document.createElement('span'); body.className = 'deck-body';
+      var nm = document.createElement('b'); nm.textContent = ct.name;
+      var sub = document.createElement('span');
+      sub.textContent = !have.length ? ct.note + ' · unlocks with lessons'
+        : (dn ? dn + ' due · ' : 'All bright · ') + have.filter(function (c) { return cardState[c.id].box >= 3; }).length + '/' + all.length + ' learned' + (have.length < all.length ? ' · ' + (all.length - have.length) + ' to unlock' : '');
+      var pips = document.createElement('span'); pips.className = 'pips'; pips.style.gridTemplateColumns = 'repeat(' + all.length + ', 1fr)';
+      all.forEach(function (c) { var t = document.createElement('span'), p = document.createElement('i'), r = cardState[c.id]; p.style.width = (r ? r.box * 20 : 0) + '%'; t.appendChild(p); pips.appendChild(t); });
+      body.appendChild(nm); body.appendChild(sub); body.appendChild(pips);
+      d.appendChild(ic); d.appendChild(body);
+      d.setAttribute('aria-label', ct.name + ': ' + sub.textContent + '. Press to review this category.');
+      if (have.length) d.addEventListener('click', function () { cardFilter = ct.id; reviewQueue = null; renderCards(); document.getElementById('reviewArea').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+      list.appendChild(d);
+    });
+    due = due.filter(function (c) { return cardFilter === 'all' || c.c === cardFilter; });
     if (!reviewQueue || !reviewQueue.length) { reviewQueue = due.slice(); reviewDone = 0; }
     renderReview();
   }
@@ -1357,9 +1399,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     var area = document.getElementById('reviewArea'); area.innerHTML = '';
     var total = Object.keys(cardState).length;
     if (!reviewQueue.length) {
-      var next = Infinity; Object.keys(cardState).forEach(function (k) { next = Math.min(next, cardState[k].due); });
+      var next = Infinity; CARDS.forEach(function (c) { if (cardState[c.id] && (cardFilter === 'all' || c.c === cardFilter)) next = Math.min(next, cardState[c.id].due); });
       var msg = !total ? 'No cards yet. Each lesson you finish adds 3 cards here.'
-        : 'All caught up! ' + (next < Infinity ? 'Next card comes back ' + whenText(next) + '.' : '');
+        : (cardFilter === 'all' ? 'All caught up! ' : 'Nothing due in ' + catOf(cardFilter).name + '. ') + (next < Infinity ? 'Next card comes back ' + whenText(next) + '.' : '');
       area.innerHTML = '<div class="rest"><svg class="rest-nibb" viewBox="0 0 120 110" aria-hidden="true">' + lumiSVG('happy') + '</svg><p></p></div>';
       area.querySelector('p').textContent = msg;
       if (!total) { var go = document.createElement('button'); go.className = 'cta'; go.textContent = 'Start a lesson'; go.addEventListener('click', function () { show('home'); }); area.firstChild.appendChild(go); }
@@ -1367,9 +1409,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     }
     var c = reviewQueue[0];
     area.innerHTML = '<p class="rev-count"></p>' +
-      '<button class="flip" id="flipCard" aria-label="Card. Press to turn it over."><span class="flip-inner"><span class="face front"><small>Question</small><span class="q"></span><em>Tap to turn over</em></span><span class="face back"><small>Answer</small><span class="a"></span></span></span></button>' +
+      '<button class="flip" id="flipCard" aria-label="Card. Press to turn it over."><span class="flip-inner"><span class="face front"><small class="cat-tag"></small><span class="q"></span><em>Tap to turn over</em></span><span class="face back"><small>Answer</small><span class="a"></span></span></span></button>' +
       '<div class="rev-actions" hidden><button class="cta coral" id="revAgain">Again</button><button class="cta mint" id="revGot">Got it</button></div>';
-    area.querySelector('.rev-count').textContent = 'Card ' + (reviewDone + 1) + ' of ' + (reviewDone + reviewQueue.length) + ' · ' + TOPICS[c.l].name;
+    area.querySelector('.rev-count').textContent = 'Card ' + (reviewDone + 1) + ' of ' + (reviewDone + reviewQueue.length) + ' · from ' + TOPICS[c.l].name;
+    var tag = area.querySelector('.cat-tag'), ct = catOf(c.c); tag.textContent = ct.name; tag.style.setProperty('--cc', ct.bg);
     cardText(area.querySelector('.q'), c.f); cardText(area.querySelector('.a'), c.b);
     var flip = area.querySelector('#flipCard'), acts = area.querySelector('.rev-actions');
     flip.addEventListener('click', function () {
