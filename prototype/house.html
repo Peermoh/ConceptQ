@@ -215,6 +215,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   var WALLS_UP = PROGRESS >= 3; // Hello lays the door, Variables the foundation, Numbers raises the walls
   var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'stairs'];
+  var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
+  if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
   // long furniture (desk, sofa) can be turned: r = true swaps its width and depth
   function dims(id, r) { var it = ITEMS[id]; return r ? { w: it.d, d: it.w } : { w: it.w, d: it.d }; }
@@ -226,9 +228,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     return [WINDOW, DOOR].some(function (o) { return o.side === side && i < o.from + o.len && i + 1 > o.from; });
   }
   function cellBlocked(x, y) { return x === 0 && y === 3; } // just inside the door
+  var ROOM_CTX = null; // the room being checked, so the stairwell can keep its stair tiles clear
+  function stairsCell(c) { var xy = c.split(','); return STAIRS_BUILT && ROOM_CTX === 'stairs' && +xy[0] >= 2 && +xy[1] <= 1; }
+  // a staircase climbing towards the back wall: n steps, drawn from the top step to the bottom one
+  function stairsArt(v, x0, y0, w, d, n, stepH) {
+    var s = '';
+    for (var j = n - 1; j >= 0; j--) s += box(v, x0, y0 + d - (j + 1) * d / n, w, d / n, stepH * (j + 1), j % 2 ? '#C99A6A' : '#D9A97A', '#A8744A', '#8A5A35');
+    return s;
+  }
 
   var state = { placed: { study: [], stairs: [], entrance: [], living: [] } };
-  try { var loadUsed = {}, s = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (s && s.placed && typeof s.placed === 'object') ORDER.forEach(function (r) { if (Array.isArray(s.placed[r])) state.placed[r] = s.placed[r].reduce(function (keep, p) {
+  try { var loadUsed = {}, s = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (s && s.placed && typeof s.placed === 'object') ORDER.forEach(function (r) { ROOM_CTX = r; if (Array.isArray(s.placed[r])) state.placed[r] = s.placed[r].reduce(function (keep, p) {
       // saved data is untrusted: accept only known items at whole-number positions, and keep only known fields
       if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !Object.prototype.hasOwnProperty.call(ITEMS, p.id)) return keep;
       var it = ITEMS[p.id]; if (it.locked || !it.kind) return keep;
@@ -530,7 +540,15 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
          '<rect x="0" y="-47" width="' + (1.2 * L) + '" height="47" rx="2" fill="#B5533F"></rect>' +
          '<rect x="5" y="-41" width="' + (1.2 * L - 10) + '" height="14" rx="2" fill="#9C4535"></rect>' +
          '<circle cx="' + (1.2 * L - 7) + '" cy="-22" r="2.4" fill="#FFC861"></circle>' +
-         '<circle cx="' + (1.2 * L + 12) + '" cy="-46" r="12" fill="url(#glow)"></circle><circle cx="' + (1.2 * L + 12) + '" cy="-46" r="3.5" fill="#FFD88F" stroke="#5E3B20" stroke-width="1"></circle></g>';
+         '</g>';
+    // porch light beside the door: dark until the boss is beaten
+    var lit = PROGRESS >= 9;
+    s += '<g' + (lit ? ' data-part="8"' : '') + '><g transform="' + frontPlane(v, 1.4, 10, true) + '">' +
+         '<rect x="' + (1.2 * L + 8) + '" y="-56" width="8" height="3" fill="#5E3B20"></rect>' +
+         (lit ? '<circle cx="' + (1.2 * L + 12) + '" cy="-46" r="16" fill="url(#glow)"></circle>' : '') +
+         '<circle cx="' + (1.2 * L + 12) + '" cy="-46" r="4.5" fill="' + (lit ? '#FFD88F' : '#B8ADB6') + '" stroke="#5E3B20" stroke-width="1"></circle>' +
+         (lit && !still ? '<circle r="1.6" fill="#FFF1E2"><animateMotion dur="2.4s" repeatCount="indefinite" path="M' + (1.2 * L + 12) + ' -58 a10 7 0 1 1 0.1 0"></animateMotion></circle>' : '') +
+         '</g></g>';
     s += poly([P(v, 1.2, 10, 0), P(v, 2.8, 10, 0), P(v, 2.8, 10.7, 0), P(v, 1.2, 10.7, 0)], '#B8ADB6', ' stroke="#8A8390" stroke-width="1"');
     // front roof plane with shingle lines
     s += poly([P(v, -0.4, 10.6, H - 6), P(v, 10.4, 10.6, H - 6), P(v, 10.4, 5, H + RH), P(v, -0.4, 5, H + RH)], '#B5533F', ' stroke="#4A2C3E" stroke-width="1.2"');
@@ -556,6 +574,19 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     // mailbox by the path
     var mb = P(v, 3.6, 11.3);
     if (PROGRESS >= 5) s += '<g data-part="4"><rect x="' + (mb[0] - 1.5) + '" y="' + (mb[1] - 22) + '" width="3" height="22" fill="#8A5A35"></rect><rect x="' + (mb[0] - 9) + '" y="' + (mb[1] - 31) + '" width="18" height="10" rx="5" fill="#4F7FD1" stroke="#2A1330" stroke-width="1"></rect></g>';
+    // garden gate and fence on the front path: the Decisions lesson builds it
+    if (PROGRESS >= 7) {
+      var g = '<g transform="' + frontPlane(v, 0.9, 11.6, true) + '">', gw = 2.0 * L;
+      g += '<rect x="-4" y="-34" width="7" height="34" rx="2" fill="#8A5A35"></rect><rect x="' + (gw - 3) + '" y="-34" width="7" height="34" rx="2" fill="#8A5A35"></rect>';
+      for (var k = 0; k < 6; k++) g += '<rect x="' + (6 + k * (gw - 14) / 5.5) + '" y="-26" width="5" height="24" rx="1.5" fill="#E6CDB6" stroke="#8A5A35" stroke-width="0.8"></rect>';
+      g += '<rect x="2" y="-20" width="' + (gw - 4) + '" height="3.5" fill="#C9A27C"></rect><rect x="2" y="-9" width="' + (gw - 4) + '" height="3.5" fill="#C9A27C"></rect>';
+      g += '<rect x="' + (gw / 2 - 12) + '" y="-46" width="24" height="10" rx="3" fill="#FFE7A8" stroke="#2A1330" stroke-width="1"></rect><text x="' + (gw / 2) + '" y="-38.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="7" fill="#2A1330">if</text></g>';
+      // low picket fence to the right of the gate
+      var fc = '<g transform="' + frontPlane(v, 3.1, 11.6, true) + '">';
+      for (var q = 0; q < 9; q++) fc += '<rect x="' + (q * 0.42 * L) + '" y="-18" width="4" height="18" fill="#E6CDB6" stroke="#8A5A35" stroke-width="0.6"></rect>';
+      fc += '<rect x="0" y="-12" width="' + (8.2 * 0.42 * L + 4) + '" height="3" fill="#C9A27C"></rect></g>';
+      s += '<g data-part="6">' + g + fc + '</g>';
+    }
     // the whole house is one big button: tap to go inside
     s += '<polygon class="enter-hit" tabindex="0" role="button" aria-label="Go inside your house" points="' +
          pts([P(v, 0, 10, 0), P(v, 10, 10, 0), P(v, 10, 0, 0), P(v, 10, 0, H), P(v, 10.4, -0.6, H - 6), P(v, 10.4, 5, H + RH), P(v, -0.4, 5, H + RH), P(v, -0.4, 10.6, H - 6), P(v, 0, 10, H)]) +
@@ -606,8 +637,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         .forEach(function (p) { var dm = dims(p.id, p.r); out += floorArt(v, p.id, m.gx(p.x), m.gy(p.y), dm.w * m.sx, dm.d * m.sy, zs, p.off); });
       return out;
     }
-    // locked stairs outline in the stairwell
-    s += poly([P(v, 7.6, 0.4), P(v, 9.6, 0.4), P(v, 9.6, 3.8), P(v, 7.6, 3.8)], 'none', ' stroke="#8A6E86" stroke-width="1.2" stroke-dasharray="4 3"');
+    // the stairwell: a dashed outline until the Loops lesson builds the stairs
+    if (STAIRS_BUILT) s += '<g data-part="7">' + stairsArt(v, 7.6, 0.4, 2.0, 3.4, 6, 4.5) + '</g>';
+    else s += poly([P(v, 7.6, 0.4), P(v, 9.6, 0.4), P(v, 9.6, 3.8), P(v, 7.6, 3.8)], 'none', ' stroke="#8A6E86" stroke-width="1.2" stroke-dasharray="4 3"');
     s += items('study') + partition([5, 0], [5, 5]) + items('stairs') + partition([0, 5], [10, 5]) + items('entrance') + partition([4, 5], [4, 10]) + items('living');
     // front door gap marker
     s += poly([P(v, 1.4, 10, 0), P(v, 2.6, 10, 0), P(v, 2.6, 10.4, 0), P(v, 1.4, 10.4, 0)], '#8A5A35');
@@ -684,6 +716,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function blockedByOpening(id, spot) {
     var it = ITEMS[id], f = footprint(id, spot);
     if (it.kind === 'wall') return f.walls.some(function (w) { return slotBlocked(w[0], +w.slice(1)); });
+    if (f.stand.concat(f.flat).some(stairsCell)) return true;
     return !it.flat && f.stand.some(function (c) { var xy = c.split(','); return cellBlocked(+xy[0], +xy[1]); });
   }
   function fits(list, id, spot) {
@@ -695,7 +728,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     });
   }
   function validSpots(room, id, r) {
-    var it = ITEMS[id], out = [], list = state.placed[room];
+    var it = ITEMS[id], out = [], list = state.placed[room]; ROOM_CTX = room;
     if (it.kind === 'wall') {
       ['L', 'R'].forEach(function (side) {
         for (var i = 0; i + it.size <= GRID; i++) if (fits(list, id, { side: side, i: i })) out.push({ side: side, i: i });
@@ -742,7 +775,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += '<g transform="' + wallMatrix(wm, DOOR.side, DOOR.from, 1, 1.4, DOOR.len) + '"><rect x="0" y="-100" width="' + (0.85 * L_R) + '" height="100" rx="3" fill="#B5533F"></rect><circle cx="' + (0.7 * L_R) + '" cy="-50" r="3" fill="#FFC861"></circle></g>';
     // floor tiles
     for (var x = 0; x < GRID; x++) for (var y = 0; y < GRID; y++) s += poly([P(v, x, y), P(v, x + 1, y), P(v, x + 1, y + 1), P(v, x, y + 1)], (x + y) % 2 ? R.floor : R.floor2, ' stroke="#C9AE96" stroke-width="0.6"');
-    if (r === 'stairs') s += poly([P(v, 2.2, 0.1), P(v, 3.9, 0.1), P(v, 3.9, 1.6), P(v, 2.2, 1.6)], 'none', ' stroke="#8A6E86" stroke-width="2" stroke-dasharray="6 4"') +
+    if (r === 'stairs' && STAIRS_BUILT) s += stairsArt(v, 2.1, 0.05, 1.85, 1.9, 6, 19);
+    else if (r === 'stairs') s += poly([P(v, 2.2, 0.1), P(v, 3.9, 0.1), P(v, 3.9, 1.6), P(v, 2.2, 1.6)], 'none', ' stroke="#8A6E86" stroke-width="2" stroke-dasharray="6 4"') +
       '<text x="' + P(v, 3.05, 0.85)[0] + '" y="' + (P(v, 3.05, 0.85)[1] + 4) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11" fill="#8A6E86">stairs · Loops</text>';
     // drag highlights (under items)
     if (drag && drag.allowed) {
@@ -797,7 +831,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function openRoom(r) {
     current = r;
     document.getElementById('roomName').textContent = ROOMS[r].name;
-    say(document.getElementById('roomBubble'), r === 'stairs' ? 'The stairs come with the Loops lesson. You can still decorate!' : 'Pick an item below and drag it in.', false, document.getElementById('roomNibb'));
+    say(document.getElementById('roomBubble'), r === 'stairs' ? (STAIRS_BUILT ? 'Your stairs! Floor 2 opens with the next level.' : 'The stairs come with the Loops lesson. You can still decorate!') : 'Pick an item below and drag it in.', false, document.getElementById('roomNibb'));
     drawRoom(); renderTray();
     document.getElementById('houseView').classList.add('out', 'zoom');
     document.getElementById('roomView').classList.remove('out');
@@ -1083,10 +1117,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     2: 'The walls are up! Tap the house to go inside and place your items.',
     3: 'You earned a bookshelf! Tap the house, open a room and place it.',
     4: 'A mailbox! Messages from outside arrive here, like input().',
-    5: 'Two lamps! Place them, then tap one to switch it on and off.'
+    5: 'Two lamps! Place them, then tap one to switch it on and off.',
+    6: 'A garden gate! It only opens if the condition is True.',
+    7: 'Your staircase is built! A loop climbs it one step at a time. Floor 2 opens with the next level.',
+    8: 'The porch light is on and the moth is happy! You finished the whole ground floor!'
   };
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
+    if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
     var part = document.querySelector('#houseSvg [data-part="' + n + '"]');
     if (part && !still) {
       part.classList.add(n === 2 ? 'build-rise' : 'build-drop');

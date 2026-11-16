@@ -84,7 +84,7 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
   | Strings | Bookshelf (+ plant bonus for finishing it) | Books are text; a row of letters |
   | Input | Mailbox (outside) | Messages arriving from outside |
   | True / False | 2 lamps | On or off |
-  | Decisions | Inside doors | A door opens only if a condition is True |
+  | Decisions | Garden gate (outside, with an `if` sign) | A gate opens only if a condition is True |
   | Loops | Stairs to floor 2 | Repeat a step until you reach the top |
   | Boss | Porch light | Uses everything on the floor |
 
@@ -99,7 +99,8 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
 
 ### Playable lessons in the prototype (2026-11-16)
 Hello, Python (door, poster) · Variables (foundation, desk) · Numbers (walls, sofa) · Strings (bookshelf) ·
-Input (mailbox) · True / False (2 lamps).
+Input (mailbox) · True / False (2 lamps) · Decisions (garden gate) · Loops (staircase, shown from inside) ·
+Boss (porch light). After the boss, Home shows "ground floor complete"; finished lessons can be replayed from the path.
 Each lesson is data: board lines with spoken cues and recorded timings, narration (ElevenLabs, voice Will,
 recorded with word timestamps), a Read-it pane, 3 questions with a reason for every option, and done-screen text.
 
