@@ -216,3 +216,13 @@ quiz built fresh every time (hand-written questions + generators checked against
 - **Desktop:** the topic row stays horizontal and scrolls with arrow buttons, the mouse wheel, or click-and-drag.
 - **House:** new things are placed against a wall and away from other furniture; upstairs outer walls have windows,
   not doors; the kitchen door is off the counter wall; the balcony has a glass door; items arrive faster.
+
+### Prize wheel and the Learn tab (2026-11-16)
+- The bottom tab "Home" is now **Learn** (open-book icon), so it is not confused with **House**.
+- **Prize wheel:** embers fill a prize jar (default 200 embers, about 2–3 lessons; a grown-up can pick 100/200/300/500).
+  Each full jar is one spin. Prizes are real-life treats: suggested lists for kids (TV time, favourite takeaway, pick
+  dinner…), teens and adults ("treat yourself": a coffee, an episode of your show…), chosen by age in Me.
+  Under-18s need a grown-up check (a times-table question) to change the prizes; kids see "Show this to a grown-up to
+  claim your prize". The last 30 wins are kept. Stored in `cq-rewards` (`v: 1`), re-checked on load.
+- The Learn dashboard has a Prize wheel tile (jar progress, glows when a spin is ready); the done screen shows the jar.
+- Floor 3 (Advanced) storyboard: `docs/storyboards/floor3.html` (loft conversion + smart home, 13 lessons + challenge).

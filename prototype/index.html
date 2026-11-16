@@ -663,6 +663,36 @@ button.deck.locked { cursor: default; }
 .tscroll:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
 .topics.dragging { cursor: grabbing; user-select: none; }
 .topics.dragging .topic { pointer-events: none; }
+
+.dash > .prize-tile { grid-column: 1 / -1; min-height: 0; }
+.prize-tile .bar { display: block; height: 10px; border-radius: 6px; background: rgba(255,255,255,0.12); overflow: hidden; }
+.prize-tile .bar i { display: block; height: 100%; background: linear-gradient(90deg, #FFB547, #FF8FC7); border-radius: 6px; transition: width .6s ease; }
+.prize-tile.ready { border-color: var(--amber); box-shadow: 0 0 22px var(--amber-glow); }
+.prize-tile.ready .mini-wheel { animation: miniSpin 3s linear infinite; }
+@keyframes miniSpin { to { transform: rotate(360deg); } }
+.wheel-dlg { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(15,5,18,0.72); padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.wheel-dlg[hidden] { display: none; }
+.wheel-card { width: min(420px, 100%); max-height: 100%; overflow: auto; background: var(--sheet-bg); border: 1.5px solid var(--line); border-radius: 26px; padding: 20px; display: flex; flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
+.wheel-info { margin: 0; color: var(--muted); font-weight: 800; }
+.wheel-box { position: relative; width: min(300px, 78vw); aspect-ratio: 1; margin: 6px auto 0; }
+.wheel-box .wheel { width: 100%; height: 100%; display: block; }
+.wheel-pointer { position: absolute; top: -8px; left: 50%; width: 30px; transform: translateX(-50%); z-index: 2; }
+.wheel-result { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 16px; background: rgba(110,231,183,0.14); border: 1.5px solid var(--mint); }
+.wheel-result span { color: var(--muted); font-weight: 800; }
+.wheel-result b { font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--cream); }
+.wheel-result small { color: var(--mint); font-weight: 800; font-size: 14px; }
+.jar-line { width: 100%; min-height: 44px; border-radius: 14px; border: 1.5px dashed var(--line); background: transparent; color: var(--muted); font: inherit; font-weight: 800; }
+.jar-line.ready { border: 2px solid var(--amber); color: var(--cream); background: rgba(255,181,71,0.12); cursor: pointer; }
+.prize-items, .prize-wins { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-weight: 700; }
+.prize-wins .muted { list-style: none; margin-left: -20px; }
+.gate, .prize-edit { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: rgba(0,0,0,0.2); }
+.gate[hidden], .prize-edit[hidden] { display: none; }
+.gate input, .prize-edit textarea, .prize-edit select { font: inherit; font-weight: 700; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: rgba(255,255,255,0.08); color: var(--cream); }
+.gate-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.gate-msg { color: var(--coral); font-weight: 800; font-size: 14px; }
+.chip-btn.ghost { background: rgba(255,255,255,0.12); color: var(--cream); }
+.small { font-size: 14px; margin: 0; } .small-h { font-size: 16px; margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .prize-tile.ready .mini-wheel { animation: none; } }
 </style>
 
 <div class="stage">
@@ -748,6 +778,12 @@ button.deck.locked { cursor: default; }
           <span class="row big"><span class="num" id="streakNum">1</span><span class="lbl" id="streakLbl">day in a row</span></span>
           <span class="lbl more" id="streakKey">6 more for a golden door key</span>
         </button>
+        <button class="tile dash-tile prize-tile" id="prizeTile" aria-label="Prize wheel">
+          <span class="row"><b class="tile-t">Prize wheel</b><svg class="mini-wheel" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FFB547"/><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" stroke="#2A1330" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="#2A1330"/></svg></span>
+          <span class="lbl" id="prizeLbl">0 of 200 embers</span>
+          <span class="bar"><i id="prizeBar" style="width: 0%"></i></span>
+          <span class="lbl more" id="prizeMore">Fill the jar to win a prize</span>
+        </button>
       </div>
       </div>
     </div>
@@ -830,6 +866,24 @@ button.deck.locked { cursor: default; }
           <label class="field"><span>Your age</span><select id="meAge"></select></label>
           <div class="field"><span id="colorLbl">Avatar colour</span><div class="swatches" id="meColors" role="radiogroup" aria-labelledby="colorLbl"></div></div>
         </section>
+        <section class="panel" aria-labelledby="prizeH">
+          <h2 class="sub-h" id="prizeH">Prizes</h2>
+          <p class="muted small" id="prizeHint"></p>
+          <ul class="prize-items" id="prizeItems"></ul>
+          <p class="muted small" id="prizePer"></p>
+          <div class="gate" id="gateBox" hidden><label for="gateIn" id="gateQ"></label><input id="gateIn" inputmode="numeric" autocomplete="off"><div class="gate-row"><button class="chip-btn" id="gateOk" type="button">Check</button><button class="chip-btn ghost" id="gateCancel" type="button">Cancel</button></div><span class="gate-msg" id="gateMsg" aria-live="polite"></span></div>
+          <div class="prize-edit" id="prizeEdit" hidden>
+            <label for="prizeText">Prizes, one per line (2 to 8)</label>
+            <textarea id="prizeText" rows="6"></textarea>
+            <label for="prizePerSel">Embers to fill the jar</label>
+            <select id="prizePerSel"><option value="100">100 (about 1 lesson)</option><option value="200">200 (2 to 3 lessons)</option><option value="300">300 (3 to 4 lessons)</option><option value="500">500 (about 6 lessons)</option></select>
+            <span class="gate-msg" id="prizeEditMsg" aria-live="polite"></span>
+            <div class="gate-row"><button class="chip-btn" id="prizeSave" type="button">Save prizes</button><button class="chip-btn ghost" id="prizeReset" type="button">Use the suggested list</button></div>
+          </div>
+          <div class="gate-row"><button class="chip-btn" id="prizeChange" type="button">Change prizes</button></div>
+          <h3 class="sub-h small-h">Prizes won</h3>
+          <ul class="prize-wins" id="prizeWins"></ul>
+        </section>
         <section class="panel" aria-labelledby="statH">
           <h2 class="sub-h" id="statH">Your progress</h2>
           <div class="stat-grid" id="meStats"></div>
@@ -910,6 +964,18 @@ button.deck.locked { cursor: default; }
     <div id="sheetSlot" aria-live="polite"></div>
   </section>
 
+  <div class="wheel-dlg" id="wheelDlg" role="dialog" aria-modal="true" aria-labelledby="wheelH" hidden>
+    <div class="wheel-card">
+      <h2 class="title-xl" id="wheelH">Prize wheel</h2>
+      <p class="wheel-info" id="wheelInfo"></p>
+      <div class="wheel-box"><svg class="wheel-pointer" viewBox="0 0 30 26" aria-hidden="true"><path d="M15 26 L2 2 H28 Z" fill="#FFF1E2" stroke="#2A1330" stroke-width="2"/></svg>
+        <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><circle cx="150" cy="150" r="146" fill="#2A1330"/><g id="wheelG" style="transform-origin: 150px 150px"></g></svg></div>
+      <div class="wheel-result" id="wheelResult" aria-live="polite" hidden><span>You won</span><b id="wheelPrize"></b><small id="wheelClaim"></small></div>
+      <button class="cta mint" style="width:100%" id="wheelSpin">Spin!</button>
+      <button class="cta" style="width:100%" id="wheelClose">Close</button>
+    </div>
+  </div>
+
   <!-- ================= QUIZ RESULTS (not every answer right yet) ================= -->
   <section class="screen pad" id="qresult" aria-label="Quiz results" hidden>
     <div class="scroll rbox">
@@ -940,8 +1006,9 @@ button.deck.locked { cursor: default; }
       <div class="stat"><b id="dEmbers">+30</b><span>embers</span></div>
       <div class="stat"><b id="dCards">3</b><span>new cards</span></div>
     </div>
+    <button class="jar-line" id="doneJar" type="button"></button>
     <button class="cta mint" style="width:100%" id="doneHouse">Place it in My House</button>
-    <button class="cta" style="width:100%" id="backHome">Back home</button>
+    <button class="cta" style="width:100%" id="backHome">Back to learning</button>
   </section>
 
 </div>
@@ -1484,6 +1551,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('coursesMore').textContent = more ? '+' + more + ' more to explore' : 'See all courses';
   }
   function renderMe() {
+    if (typeof renderPrizes === 'function') renderPrizes();
     document.getElementById('meNameInput').value = profile.name;
     var sel = document.getElementById('meAge');
     if (!sel.options.length) for (var a = 5; a <= 18; a++) { var o = document.createElement('option'); o.value = a; o.textContent = a === 18 ? '18 or older' : a; sel.appendChild(o); }
@@ -1726,7 +1794,7 @@ button.deck.locked { cursor: default; }
     var nowTile = document.querySelector('#topics .topic.now'), trow = document.getElementById('topics'); if (nowTile) trow.scrollLeft += nowTile.getBoundingClientRect().left - trow.getBoundingClientRect().left - 16;
     if (nowTile) { var vr = trow.getBoundingClientRect(), tr = nowTile.getBoundingClientRect(); if (tr.bottom > vr.bottom || tr.top < vr.top) trow.scrollTop += tr.top - vr.top - 6; }
     if (window.topicArrows) setTimeout(window.topicArrows, 0);
-    renderHouseCard(); renderHomeTiles(); applyProfile();
+    renderHouseCard(); renderHomeTiles(); applyProfile(); if (typeof renderPrizeTile === 'function') renderPrizeTile();
     setTimeout(watchSlots, 0); scheduleIdle();
     document.getElementById('pyBar').style.width = Math.round(Math.min(state.current, ALL_LESSONS) / ALL_LESSONS * 100) + '%';
     document.getElementById('pyLevel').textContent = 'Python · ' + Math.min(state.current, ALL_LESSONS) + ' of ' + ALL_LESSONS + ' lessons';
@@ -1754,7 +1822,7 @@ button.deck.locked { cursor: default; }
   // ---------- navigation ----------
   var screens = ['home', 'house', 'courses', 'cards', 'me', 'learn', 'quiz', 'qresult', 'done'];
   var NAV = [
-    ['home', 'Home', '<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>'],
+    ['home', 'Learn', '<path d="M3 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0z"/><path d="M21 6c-3-1.5-6-1.5-9 0v13c3-1.5 6-1.5 9 0z"/>'],
     ['house', 'House', '<path d="M3 10l9-6 9 6"/><rect x="6" y="10" width="12" height="10" rx="1"/><rect x="10" y="14" width="4" height="6"/>'],
     ['cards', 'Cards', '<rect x="4" y="5" width="12" height="15" rx="2.5"/><path d="M8 3h9a3 3 0 0 1 3 3v11"/>'],
     ['me', 'Me', '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>']
@@ -1867,6 +1935,135 @@ button.deck.locked { cursor: default; }
   var Q = Q_STRINGS;
   var qi = 0, firstTry = 0, wrongThisQ = false, earned = 0;
 
+  // ================= prize wheel =================
+  // Embers fill a prize jar; each full jar is one spin of the wheel. The prizes are real-life treats chosen by a
+  // grown-up (for under-18s the list is behind a grown-up check), or by the learner themselves when they are 18+.
+  var PRIZE_SETS = {
+    kid: ['30 minutes of TV', 'Your favourite takeaway', 'You pick dinner tonight', '20 minutes extra game time', 'A trip to the park', 'Stay up 15 minutes later'],
+    teen: ['1 hour of gaming', 'You choose the film tonight', 'Your favourite takeaway', 'A lie-in on Saturday', 'Pick a snack at the shop', 'Skip one chore'],
+    adult: ['A coffee and a treat', 'One episode of your show', 'Order your favourite food', 'A 20-minute walk break', 'Buy that book you wanted', 'An hour of gaming']
+  };
+  function prizeGroup() { return profile.age >= 18 ? 'adult' : profile.age >= 13 ? 'teen' : 'kid'; }
+  var rewards = { v: 1, prizes: null, per: 200, used: 0, wins: [] };
+  try {
+    var rw = JSON.parse(localStorage.getItem('cq-rewards') || 'null');
+    if (rw && rw.v === 1) { // saved data is untrusted: keep only well-formed fields
+      if (Array.isArray(rw.prizes)) rewards.prizes = rw.prizes.filter(function (p) { return typeof p === 'string' && p.trim(); }).map(function (p) { return p.trim().slice(0, 40); }).slice(0, 8);
+      if (rewards.prizes && rewards.prizes.length < 2) rewards.prizes = null;
+      if ([100, 200, 300, 500].indexOf(rw.per) >= 0) rewards.per = rw.per;
+      if (typeof rw.used === 'number' && rw.used >= 0) rewards.used = Math.floor(rw.used);
+      if (Array.isArray(rw.wins)) rewards.wins = rw.wins.filter(function (w) { return w && typeof w.p === 'string' && typeof w.t === 'number'; }).slice(-30);
+    }
+  } catch (e) {}
+  function saveRewards() { try { localStorage.setItem('cq-rewards', JSON.stringify(rewards)); } catch (e) {} }
+  function prizeList() { return rewards.prizes || PRIZE_SETS[prizeGroup()]; }
+  function spinsReady() { return Math.max(0, Math.floor(state.embers / rewards.per) - rewards.used); }
+  function jarFill() { return spinsReady() ? rewards.per : state.embers % rewards.per; }
+  var WHEEL_COLS = ['#FFB547', '#7CF5C8', '#FF8FC7', '#8FD3FF', '#C3A6FF', '#FFD27A', '#B8F27C', '#FF9A8B'];
+  function wheelSVG(list) {
+    var n = list.length, r = 140, out = '';
+    list.forEach(function (p, i) {
+      var a0 = (i / n) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / n) * 2 * Math.PI - Math.PI / 2, mid = (a0 + a1) / 2;
+      var x0 = 150 + r * Math.cos(a0), y0 = 150 + r * Math.sin(a0), x1 = 150 + r * Math.cos(a1), y1 = 150 + r * Math.sin(a1);
+      out += '<path d="M150 150 L' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + r + ' ' + r + ' 0 0 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' Z" fill="' + WHEEL_COLS[i % 8] + '" stroke="#2A1330" stroke-width="2"/>';
+      var deg = mid * 180 / Math.PI, words = p.split(' '), lines = [''];
+      words.forEach(function (w) { if ((lines[lines.length - 1] + ' ' + w).trim().length > 13) lines.push(w); else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim(); });
+      out += '<g transform="rotate(' + deg.toFixed(1) + ' 150 150)">' + lines.slice(0, 3).map(function (ln, k) {
+        return '<text x="' + (150 + r * 0.6) + '" y="' + (154 + (k - (Math.min(lines.length, 3) - 1) / 2) * 13) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11.5" fill="#2A1330">' + ln.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</text>';
+      }).join('') + '</g>';
+    });
+    return out + '<circle cx="150" cy="150" r="22" fill="#2A1330" stroke="#FFF1E2" stroke-width="4"/>';
+  }
+  var wheelAngle = 0, spinning = false;
+  function openWheel() {
+    var list = prizeList(), dlg = document.getElementById('wheelDlg');
+    document.getElementById('wheelG').innerHTML = wheelSVG(list);
+    document.getElementById('wheelG').style.transition = 'none'; document.getElementById('wheelG').style.transform = 'rotate(' + wheelAngle + 'deg)';
+    document.getElementById('wheelResult').hidden = true;
+    var ready = spinsReady();
+    document.getElementById('wheelSpin').hidden = !ready;
+    document.getElementById('wheelInfo').textContent = ready ? (ready === 1 ? 'You have 1 spin!' : 'You have ' + ready + ' spins!') : 'Fill the prize jar to spin: ' + jarFill() + ' of ' + rewards.per + ' embers.';
+    dlg.hidden = false; (ready ? document.getElementById('wheelSpin') : document.getElementById('wheelClose')).focus();
+  }
+  function closeWheel() { document.getElementById('wheelDlg').hidden = true; renderPrizeTile(); }
+  document.getElementById('wheelSpin').addEventListener('click', function () {
+    if (spinning || !spinsReady()) return;
+    var list = prizeList(), n = list.length, pick = Math.floor(Math.random() * n), seg = 360 / n;
+    // turn at least five times, then stop with the picked slice under the pointer at the top
+    var target = (360 - (pick + 0.5) * seg + 360) % 360, base = wheelAngle - (wheelAngle % 360);
+    wheelAngle = base + 360 * 5 + target + (Math.random() - 0.5) * seg * 0.6;
+    spinning = true; document.getElementById('wheelSpin').disabled = true;
+    var g = document.getElementById('wheelG');
+    g.style.transition = still ? 'none' : 'transform 4s cubic-bezier(.15,.75,.15,1)';
+    g.style.transform = 'rotate(' + wheelAngle + 'deg)';
+    setTimeout(function () {
+      spinning = false; document.getElementById('wheelSpin').disabled = false;
+      rewards.used++; rewards.wins.push({ p: list[pick], t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards();
+      var res = document.getElementById('wheelResult'); res.hidden = false;
+      document.getElementById('wheelPrize').textContent = list[pick];
+      document.getElementById('wheelClaim').textContent = prizeGroup() === 'adult' ? 'You earned it. Enjoy!' : 'Show this to a grown-up to claim your prize.';
+      var left = spinsReady();
+      document.getElementById('wheelSpin').hidden = !left;
+      document.getElementById('wheelInfo').textContent = left ? 'You have ' + left + ' more ' + (left === 1 ? 'spin' : 'spins') + '!' : 'Next spin in ' + (rewards.per - jarFill()) + ' embers.';
+      burst(document.getElementById('wheelPrize'));
+    }, still ? 50 : 4100);
+  });
+  document.getElementById('wheelClose').addEventListener('click', closeWheel);
+  document.getElementById('wheelDlg').addEventListener('click', function (e) { if (e.target.id === 'wheelDlg' && !spinning) closeWheel(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.getElementById('wheelDlg').hidden && !spinning) closeWheel(); });
+  function renderPrizeTile() {
+    if (!rewards) return; // the home screen can draw before this part of the script has run
+    var ready = spinsReady(), t = document.getElementById('prizeTile');
+    t.classList.toggle('ready', ready > 0);
+    document.getElementById('prizeBar').style.width = Math.round(jarFill() / rewards.per * 100) + '%';
+    document.getElementById('prizeLbl').textContent = ready ? (ready === 1 ? 'A spin is ready!' : ready + ' spins are ready!') : jarFill() + ' of ' + rewards.per + ' embers';
+    document.getElementById('prizeMore').textContent = ready ? 'Tap to spin the wheel' : (prizeGroup() === 'adult' ? 'Treat yourself when the jar is full' : 'Fill the jar to win a prize');
+  }
+  document.getElementById('prizeTile').addEventListener('click', openWheel);
+  // ---- Me: the prize list, and how many embers fill the jar (grown-ups only for under-18s) ----
+  function grownUpCheck(then) {
+    if (prizeGroup() === 'adult') { then(); return; }
+    var a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+    var box = document.getElementById('gateBox'); box.hidden = false;
+    document.getElementById('gateQ').textContent = 'Grown-ups only: what is ' + a + ' × ' + b + '?';
+    var inp = document.getElementById('gateIn'); inp.value = ''; inp.focus();
+    document.getElementById('gateMsg').textContent = '';
+    document.getElementById('gateOk').onclick = function () {
+      if (parseInt(inp.value, 10) === a * b) { box.hidden = true; then(); }
+      else document.getElementById('gateMsg').textContent = 'Not quite. Ask a grown-up to help.';
+    };
+    document.getElementById('gateCancel').onclick = function () { box.hidden = true; };
+  }
+  function renderPrizes() {
+    if (!rewards) return; // the home screen can draw before this part of the script has run
+    var adult = prizeGroup() === 'adult';
+    document.getElementById('prizeHint').textContent = adult ? 'Pick your own treats. They come up on the wheel when your jar is full.' : 'A grown-up chooses the prizes. They come up on the wheel when the jar is full.';
+    var ul = document.getElementById('prizeItems'); ul.innerHTML = '';
+    prizeList().forEach(function (p) { var li = document.createElement('li'); li.textContent = p; ul.appendChild(li); });
+    document.getElementById('prizePer').textContent = rewards.per + ' embers fill the jar';
+    var wl = document.getElementById('prizeWins'); wl.innerHTML = '';
+    rewards.wins.slice(-5).reverse().forEach(function (w) { var li = document.createElement('li'); li.textContent = w.p + ' · ' + new Date(w.t).toLocaleDateString(); wl.appendChild(li); });
+    if (!rewards.wins.length) { var li = document.createElement('li'); li.className = 'muted'; li.textContent = 'No prizes won yet.'; wl.appendChild(li); }
+    document.getElementById('prizeEdit').hidden = true;
+  }
+  document.getElementById('prizeChange').addEventListener('click', function () {
+    grownUpCheck(function () {
+      var ed = document.getElementById('prizeEdit'); ed.hidden = false;
+      document.getElementById('prizeText').value = prizeList().join('\n');
+      document.getElementById('prizePerSel').value = String(rewards.per);
+      document.getElementById('prizeText').focus();
+    });
+  });
+  document.getElementById('prizeSave').addEventListener('click', function () {
+    var list = document.getElementById('prizeText').value.split('\n').map(function (p) { return p.trim().slice(0, 40); }).filter(Boolean).slice(0, 8);
+    if (list.length < 2) { document.getElementById('prizeEditMsg').textContent = 'Add at least 2 prizes, one per line.'; return; }
+    rewards.prizes = list; rewards.per = +document.getElementById('prizePerSel').value || 200;
+    rewards.used = Math.min(rewards.used, Math.floor(state.embers / rewards.per)); // changing the jar size never takes spins away
+    saveRewards(); renderPrizes(); renderPrizeTile();
+  });
+  document.getElementById('prizeReset').addEventListener('click', function () { rewards.prizes = null; saveRewards(); renderPrizes(); });
+
+  document.getElementById('doneJar').addEventListener('click', function () { if (spinsReady()) openWheel(); });
   // ================= fresh quizzes =================
   // Every time a quiz starts it is built again: some questions are made with new values, the hand-written ones fill
   // the rest, and the order of the questions and of their answers is shuffled. A replay is never the same quiz twice.
@@ -2283,6 +2480,9 @@ button.deck.locked { cursor: default; }
     document.getElementById('dRight').textContent = firstTry + '/' + Q.length;
     document.getElementById('dEmbers').textContent = '+' + earned;
     document.getElementById('dCards').textContent = ensureCards();
+    var dj = document.getElementById('doneJar'), sr = spinsReady();
+    dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
+    dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;
     show('done');
   }
 
