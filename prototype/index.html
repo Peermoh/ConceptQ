@@ -575,7 +575,10 @@ button.deck.locked { cursor: default; }
 .c-ic.games { background: #7CF5C8; }
 #home .dash-tile, #home .house-card { background: rgba(22, 9, 28, 0.84); border-color: rgba(255, 241, 226, 0.14); }
 .buddy-next { position: absolute; right: 92%; top: 22%; white-space: nowrap; min-height: 34px; padding: 0 12px; border-radius: 999px; background: var(--amber); color: #2A1A05; font-weight: 900; font-size: 13px; border: 0; box-shadow: 0 6px 16px rgba(0,0,0,0.35); opacity: 0; transform: scale(0.8); transition: opacity 0.25s ease, transform 0.25s ease; pointer-events: none; }
-.buddy.parked .buddy-next { opacity: 1; transform: none; pointer-events: auto; }
+.buddy.parked .buddy-next, .buddy.nav-mode .buddy-next { opacity: 1; transform: none; pointer-events: auto; }
+.nav-slot { width: 70px; height: 64px; left: 30%; bottom: calc(var(--navh, 76px) + 30px); }
+.buddy.nav-mode .buddy-next { right: auto; left: 50%; top: -62%; transform: translateX(-50%); background: var(--mint); color: #08281C; }
+.buddy.nav-mode.flying .buddy-next { opacity: 0; }
 .buddy.parked.flying .buddy-next { opacity: 0; }
 /* ================= Courses screen ================= */
 #courses { background: var(--night); }
@@ -669,11 +672,6 @@ button.deck.locked { cursor: default; }
       </section>
 
       <div class="dash" aria-label="Your dashboard">
-        <button class="house-card" id="houseCard" data-nav="house">
-        <svg class="house-mini" id="houseMini" viewBox="0 0 120 90" aria-hidden="true"></svg>
-        <span class="hc-text"><b>My House</b><span id="houseStatus">3 items waiting to be placed</span></span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
         <button class="tile dash-tile" id="coursesTile" data-nav="courses" aria-label="Courses. See all courses.">
           <span class="row"><b class="tile-t">Courses</b><span class="c-stack" aria-hidden="true"><i class="c-ic py">Py</i><i class="c-ic web">&lt;/&gt;</i><i class="c-ic math">÷</i></span></span>
           <span class="lbl" id="pyLevel">Python · beginner</span>
@@ -696,6 +694,7 @@ button.deck.locked { cursor: default; }
 
     </div>
     <div class="buddy-slot park-slot" id="parkSlot"></div>
+    <div class="buddy-slot nav-slot" id="navSlot"></div>
     <div class="buddy" id="buddy">
       <svg class="buddy-bed" viewBox="0 0 120 110" aria-hidden="true">
         <rect x="2" y="96" width="116" height="10" rx="5" fill="#C98F62" stroke="#2A1330" stroke-width="2"/>
@@ -1620,7 +1619,7 @@ button.deck.locked { cursor: default; }
   // ================= Nibb follows you and keeps busy =================
   var buddy = document.getElementById('buddy'), lumiSpot = document.getElementById('lumiSpot'), homeScroll = document.getElementById('homeScroll');
   var buddyMode = 'hero', sleeping = false, slotSeen = { hero: true, topic: false };
-  var slots = { hero: lumiSpot, topic: document.getElementById('topicSlot'), park: document.getElementById('parkSlot') };
+  var slots = { hero: lumiSpot, topic: document.getElementById('topicSlot'), park: document.getElementById('parkSlot'), nav: document.getElementById('navSlot') };
   // put the topic slot just above the next topic tile (only on layout changes, never on vertical scroll)
   function placeTopicSlot() {
     var tile = document.querySelector('#topics .topic.now'), slot = slots.topic, row = slot.parentNode;
@@ -1639,11 +1638,13 @@ button.deck.locked { cursor: default; }
     var from = buddy.getBoundingClientRect();
     slots[mode].appendChild(buddy);
     var to = buddy.getBoundingClientRect();
-    buddy.classList.toggle('point-down', mode === 'topic');
+    buddy.classList.toggle('point-down', mode === 'topic' || mode === 'nav');
+    buddy.classList.toggle('nav-mode', mode === 'nav');
     buddy.classList.toggle('point-up', false);
     buddy.classList.toggle('parked', mode === 'park');
-    var nb = document.getElementById('buddyNext'); nb.tabIndex = mode === 'park' ? 0 : -1;
-    nb.textContent = state.current >= 9 ? '↑ Back to top' : '↑ Next: ' + TOPICS[state.current].name;
+    var nb = document.getElementById('buddyNext'); nb.tabIndex = mode === 'park' || mode === 'nav' ? 0 : -1;
+    if (mode === 'nav') nb.textContent = houseWaiting ? houseWaiting + (houseWaiting === 1 ? ' new item' : ' new items') + ' to place!' : 'Something new was built!';
+    else nb.textContent = state.current >= 9 ? '↑ Back to top' : '↑ Next: ' + TOPICS[state.current].name;
     if (buddy._placed && !still && buddy.animate && from.width && to.width) {
       // if his old spot already scrolled off screen, start the flight from the screen edge so it is all visible
       var hr0 = document.getElementById('home').getBoundingClientRect();
@@ -1663,6 +1664,8 @@ button.deck.locked { cursor: default; }
   }
   function chooseSlot() {
     if (document.getElementById('home').hidden) return;
+    // something new in the house: fly down and point at the House button in the menu
+    if (houseNews()) { moveBuddy('nav'); return; }
     moveBuddy(slotSeen.hero ? 'hero' : (slotSeen.topic && !slots.topic.hidden) ? 'topic' : 'park');
   }
   var buddyIO = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
@@ -1672,12 +1675,22 @@ button.deck.locked { cursor: default; }
   function watchSlots() {
     placeTopicSlot();
     if (buddyIO) { buddyIO.disconnect(); buddyIO.observe(lumiSpot); buddyIO.observe(slots.topic); }
-    var nav = document.querySelector('#home .nav'); if (nav) document.getElementById('home').style.setProperty('--navh', nav.offsetHeight + 'px');
+    var nav = document.querySelector('#home .nav'), homeEl = document.getElementById('home');
+    if (nav) {
+      homeEl.style.setProperty('--navh', nav.offsetHeight + 'px');
+      var hb = nav.querySelector('[data-nav="house"]');
+      if (hb) { var r = hb.getBoundingClientRect(), hr = homeEl.getBoundingClientRect(); slots.nav.style.left = Math.max(4, r.left - hr.left + r.width / 2 - 35).toFixed(0) + 'px'; }
+    }
+    clearTimeout(watchSlots._news);
+    if (houseNews()) watchSlots._news = setTimeout(function () { newsDismissed = true; chooseSlot(); }, 9000);
     chooseSlot();
   }
   function placeBuddy() { watchSlots(); } // kept for older callers
-  homeScroll.addEventListener('scroll', function () { wakeBuddy(); scheduleIdle(); }, { passive: true });
-  document.getElementById('buddyNext').addEventListener('click', function () { homeScroll.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' }); });
+  homeScroll.addEventListener('scroll', function () { wakeBuddy(); scheduleIdle(); if (buddyMode === 'nav' && homeScroll.scrollTop > 40) { newsDismissed = true; chooseSlot(); } }, { passive: true });
+  document.getElementById('buddyNext').addEventListener('click', function () {
+    if (buddyMode === 'nav') { show('house'); return; }
+    homeScroll.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
+  });
   document.getElementById('topics').addEventListener('scroll', placeTopicSlot, { passive: true });
   window.addEventListener('resize', watchSlots);
 
@@ -1737,6 +1750,12 @@ button.deck.locked { cursor: default; }
   }
   // Same earning rules as the House tab: lesson i is finished when state.current > i.
   var HOUSE_ITEMS = [['poster', 1, 0], ['desk', 1, 1], ['sofa', 1, 2], ['bookshelf', 1, 3], ['plant', 1, 3], ['lamp', 2, 5], ['rug', 1, -1]];
+  var houseWaiting = 0;
+  // Is there something new in the house since the learner last opened it? (a part built or an item earned)
+  function houseSeen() { try { var v = parseInt(localStorage.getItem('cq-house-seen'), 10); return isFinite(v) ? v : 0; } catch (e) { return 0; } }
+  function markHouseSeen() { try { localStorage.setItem('cq-house-seen', String(state.current)); } catch (e) {} newsDismissed = false; }
+  var newsDismissed = false;
+  function houseNews() { return !newsDismissed && state.current > houseSeen(); }
   function renderHouseCard() {
     var p = state.current, earned = 0, placed = 0;
     HOUSE_ITEMS.forEach(function (it) { if (p > it[2]) earned += it[1]; });
@@ -1745,20 +1764,8 @@ button.deck.locked { cursor: default; }
       if (Array.isArray(h.placed[r])) h.placed[r].forEach(function (it) { var id = it && it.id; if (typeof id === 'string' && Object.prototype.hasOwnProperty.call(cap, id) && cap[id] > 0) { cap[id]--; placed++; } });
     }); } catch (e) {}
     var waiting = Math.max(0, earned - placed);
-    document.getElementById('houseStatus').textContent = p < 4
-      ? ['Empty land. Your first lesson puts up your welcome sign.', 'Your sign is up. Next: building supplies.', 'Supplies are here. Next: the foundation.', 'Foundation laid. Next lesson raises the walls.'][p]
-      : (waiting ? waiting + (waiting === 1 ? ' item is' : ' items are') + ' waiting to be placed' : 'Every item is placed. Finish a lesson to earn more.');
-    // tiny picture of the house at its current stage
-    var INK = '#2A1330', g = '<ellipse cx="60" cy="80" rx="54" ry="8" fill="#5DBB63" opacity=".55"/>';
-    if (p >= 3) g += '<rect x="22" y="70" width="76" height="8" rx="2" fill="#A79BA5"/>';
-    else g += '<rect x="22" y="70" width="76" height="8" rx="2" fill="none" stroke="#FFFFFF" stroke-dasharray="4 3" opacity=".8"/>';
-    if (p >= 1 && p < 4) g += '<rect x="8" y="58" width="2.5" height="14" fill="#8A5A35"/><rect x="5" y="50" width="22" height="10" rx="2" fill="#FFE7A8" stroke="#2A1330" stroke-width="1"/>';
-    if (p >= 2 && p < 4) g += '<rect x="66" y="56" width="12" height="12" fill="#D9A06C" stroke="#2A1330" stroke-width="1"/><rect x="80" y="58" width="11" height="10" fill="#C98F5E" stroke="#2A1330" stroke-width="1"/>';
-    if (p >= 4) g += '<rect x="26" y="38" width="68" height="33" fill="#F6E3CC" stroke="' + INK + '" stroke-width="1.5"/><path d="M20 40 L60 14 L100 40 Z" fill="#B5533F" stroke="' + INK + '" stroke-width="1.5" stroke-linejoin="round"/>' +
-      '<rect x="70" y="46" width="14" height="11" fill="' + (p >= 6 ? '#FFD88F' : '#BFE7F5') + '" stroke="#8A5A35" stroke-width="2"/>';
-    if (p >= 4) g += '<rect x="36" y="50" width="13" height="21" rx="2" fill="' + (p >= 5 ? '#B5533F' : '#3A2530') + '" stroke="' + INK + '" stroke-width="1.2"/>';
-    if (p >= 5) g += '<rect x="9" y="58" width="3" height="16" fill="#8A5A35"/><rect x="4" y="53" width="13" height="7" rx="3.5" fill="#4F7FD1"/>';
-    document.getElementById('houseMini').innerHTML = g;
+    houseWaiting = waiting;
+    return waiting;
   }
 
   // ---------- navigation ----------
@@ -1790,7 +1797,7 @@ button.deck.locked { cursor: default; }
     if (!keepNav) { var navBtn = document.querySelector('#' + id + ' [data-navbar] [data-nav="' + id + '"]'); if (navBtn && document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-navbar]')) navBtn.focus(); else { scr.setAttribute('tabindex', '-1'); scr.focus({ preventScroll: true }); } }
     if (id === 'home') refreshHome();
     // reload the house each time, so it picks up lessons finished since it was last opened
-    if (id === 'house') { document.getElementById('houseFrame').src = 'house.html?v=' + state.current + (pendingBuild !== null ? '&build=' + pendingBuild : ''); pendingBuild = null; }
+    if (id === 'house') { markHouseSeen(); document.getElementById('houseFrame').src = 'house.html?v=' + state.current + (pendingBuild !== null ? '&build=' + pendingBuild : ''); pendingBuild = null; }
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-nav]'); if (!b) return;
