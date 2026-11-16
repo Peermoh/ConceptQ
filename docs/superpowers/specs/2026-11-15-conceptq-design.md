@@ -98,7 +98,8 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
 - Saves carry a version (`v: 2`); saved furniture is re-checked on load (known ids, whole-number positions only).
 
 ### Playable lessons in the prototype (2026-11-16)
-Hello, Python (door, poster) · Variables (foundation, desk) · Numbers (walls, sofa) · Strings (bookshelf).
+Hello, Python (door, poster) · Variables (foundation, desk) · Numbers (walls, sofa) · Strings (bookshelf) ·
+Input (mailbox) · True / False (2 lamps).
 Each lesson is data: board lines with spoken cues and recorded timings, narration (ElevenLabs, voice Will,
 recorded with word timestamps), a Read-it pane, 3 questions with a reason for every option, and done-screen text.
 
