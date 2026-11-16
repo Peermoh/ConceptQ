@@ -241,9 +241,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   ROOMS.loftland = { name: 'Loft landing', rx: 5, ry: 0, rw: 5, rh: 5, floor: '#E9C9A0', floor2: '#DFBB8F', wallL: '#F4E2CC', wallR: '#EAD3B6' };
   ROOMS.archive  = { name: 'Archive',      rx: 0, ry: 5, rw: 4, rh: 5, floor: '#DCE3EA', floor2: '#CED7E0', wallL: '#EEF2F6', wallR: '#E2E8EE' };
   ROOMS.control  = { name: 'Control room', rx: 4, ry: 5, rw: 6, rh: 5, floor: '#D9E6F7', floor2: '#CBDBF0', wallL: '#EAF1FA', wallR: '#DEE8F5' };
-  var FLOORS = { 1: ['study', 'stairs', 'entrance', 'living'], 2: ['bedroom', 'landing', 'kitchen', 'playroom'], 3: ['loftbed', 'loftland', 'archive', 'control'] };
-  var ORDER = FLOORS[1].concat(FLOORS[2], FLOORS[3]);
-  function floorOfRoom(r) { return FLOORS[3].indexOf(r) >= 0 ? 3 : FLOORS[2].indexOf(r) >= 0 ? 2 : 1; }
+  // the garden (Expert): four outdoor plots with hedges for walls, shown as a fourth "floor" inside
+  ROOMS.shed     = { name: 'Garden shed', rx: 0, ry: 0, rw: 5, rh: 5, floor: '#D9B48A', floor2: '#CFA77A', wallL: '#B98A5E', wallR: '#A97B52', garden: 'shed' };
+  ROOMS.beds     = { name: 'Vegetable beds', rx: 5, ry: 0, rw: 5, rh: 5, floor: '#9C7A56', floor2: '#8E6E4C', wallL: '#79B861', wallR: '#68A852', garden: 'hedge' };
+  ROOMS.patio    = { name: 'Patio', rx: 0, ry: 5, rw: 4, rh: 5, floor: '#E2DCD2', floor2: '#D4CDC1', wallL: '#79B861', wallR: '#68A852', garden: 'hedge' };
+  ROOMS.terrace  = { name: 'Roof terrace', rx: 4, ry: 5, rw: 6, rh: 5, floor: '#E2B27A', floor2: '#D6A46C', wallL: '#79B861', wallR: '#68A852', garden: 'hedge' };
+  var FLOORS = { 1: ['study', 'stairs', 'entrance', 'living'], 2: ['bedroom', 'landing', 'kitchen', 'playroom'], 3: ['loftbed', 'loftland', 'archive', 'control'], 4: ['shed', 'beds', 'patio', 'terrace'] };
+  var ORDER = FLOORS[1].concat(FLOORS[2], FLOORS[3], FLOORS[4]);
+  function floorOfRoom(r) { return FLOORS[4].indexOf(r) >= 0 ? 4 : FLOORS[3].indexOf(r) >= 0 ? 3 : FLOORS[2].indexOf(r) >= 0 ? 2 : 1; }
   var VIEW_FLOOR = 1; // which floor the inside view shows
   // any item can go in any room: the only limits are free space, the window and the door
   var ITEMS = {
@@ -264,6 +269,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     clipboard: { name: 'Inspector\'s clipboard', from: 'Testing', kind: 'wall', size: 1, count: 1, rooms: null },
     blueprints: { name: 'Shared blueprint table', from: 'Team coding', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
     ctrlpanel: { name: 'Control panel', from: 'Coding with AI', kind: 'wall', size: 2, count: 1, rooms: null },
+    tap:       { name: 'Water tap', from: 'Iterators', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
+    barrel:    { name: 'Rain barrel', from: 'Generators', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
+    lightbox:  { name: 'Light switch box', from: 'Decorators', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     printer:   { name: 'Blueprint printer', from: 'Classes I', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     badges:    { name: 'Room badges', from: 'Classes II', kind: 'wall', size: 1, count: 1, rooms: null },
     xray:      { name: 'X-ray scanner', from: 'Namespaces', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
@@ -285,9 +293,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // The main app saves how many lessons are finished in 'cq-progress' (same site, so we can read it here).
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
-  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 35) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode', 'Classes I', 'Classes II', 'Namespaces', 'Inheritance', 'Comprehensions', 'Lambda and closures', 'Files pro', 'Testing', 'Team coding', 'Coding with AI', 'the floor-3 Master Builder challenge'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31, blueprints: 32, ctrlpanel: 33 }; // rug: a welcome gift, always earned
+  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 46) PROGRESS = Math.floor(pr.current); } catch (e) {}
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode', 'Classes I', 'Classes II', 'Namespaces', 'Inheritance', 'Comprehensions', 'Lambda and closures', 'Files pro', 'Testing', 'Team coding', 'Coding with AI', 'the floor-3 Master Builder challenge', 'Iterators', 'Generators', 'Decorators', 'Context managers', 'Type hints and dataclasses', 'Logging and timing', 'Concurrency', 'JSON and APIs', 'Everyday tools', 'Regular expressions', 'the garden challenge'];
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31, blueprints: 32, ctrlpanel: 33, tap: 35, barrel: 36, lightbox: 37 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
@@ -296,13 +304,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
   var UPSTAIRS = PROGRESS >= 13; // Sets builds the floor-2 walls and lowers the roof
   var LOFT = PROGRESS >= 26; // Classes II puts a floor and stairs into the roof space
-  function floorsOpen() { return LOFT ? [1, 2, 3] : UPSTAIRS ? [1, 2] : [1]; }
-  var FLOOR_LABEL = { 1: 'Downstairs', 2: 'Upstairs', 3: 'Loft' };
+  var GARDEN = PROGRESS >= 36; // Iterators builds the garden shed and its tap
+  function floorsOpen() { return GARDEN ? [1, 2, 3, 4] : LOFT ? [1, 2, 3] : UPSTAIRS ? [1, 2] : [1]; }
+  var FLOOR_LABEL = { 1: 'Downstairs', 2: 'Upstairs', 3: 'Loft', 4: 'Garden' };
   var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
-  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.', 25: 'Next: Classes II builds the loft floor and rooms.', 26: 'The loft is open: tap Loft inside. Next: Namespaces wires it.', 27: 'Next: Inheritance furnishes the loft.', 28: 'Next: Comprehensions builds a lift between the floors.', 29: 'Next: Lambda and closures fits smart switches.', 30: 'Next: Files pro fills the archive room.', 31: 'Next: Testing brings the inspector.', 32: 'Inspection passed! Next: Team coding fits the solar panels.', 33: 'Solar panels on! Next: Coding with AI switches on the control room.', 34: 'Next: the Master Builder challenge makes the roof smart.', 35: 'Your house is finished: three floors, a loft and a smart roof!' };
+  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.', 25: 'Next: Classes II builds the loft floor and rooms.', 26: 'The loft is open: tap Loft inside. Next: Namespaces wires it.', 27: 'Next: Inheritance furnishes the loft.', 28: 'Next: Comprehensions builds a lift between the floors.', 29: 'Next: Lambda and closures fits smart switches.', 30: 'Next: Files pro fills the archive room.', 31: 'Next: Testing brings the inspector.', 32: 'Inspection passed! Next: Team coding fits the solar panels.', 33: 'Solar panels on! Next: Coding with AI switches on the control room.', 34: 'Next: the Master Builder challenge makes the roof smart.', 35: 'Your house is finished! Next: Iterators starts the garden with a shed and a tap.', 36: 'The garden has begun: tap Garden inside to see the plots. Next: Generators fits a rain barrel.', 37: 'Next: Decorators strings lights across the garden.', 38: 'Next: Context managers fits a self-closing gate.', 39: 'Next: Type hints and dataclasses labels the plant beds.', 40: 'Next: Logging and timing puts a smart meter on the shed.', 41: 'Next: Concurrency fits the sprinklers.', 42: 'Next: JSON and APIs puts an antenna on the roof terrace.', 43: 'Next: Everyday tools fills the tool wall.', 44: 'Next: Regular expressions brings the seed sieve.', 45: 'Next: the Master Builder challenge makes the garden water itself.', 46: 'Everything is built: the house, the smart roof and a garden that waters itself!' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'blueprints', 'ctrlpanel', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'blueprints', 'ctrlpanel', 'tap', 'barrel', 'lightbox', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -317,13 +326,21 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function archiveCells() { return PROGRESS >= 31 ? 3 : 0; } // Files pro fills the archive's back wall with shelves
   function kitchenCells() { return PROGRESS >= 17 ? 3 : PROGRESS >= 16 ? 2 : 0; }
   function slotBlocked(side, i) {
+    if (ROOM_CTX && ROOMS[ROOM_CTX] && ROOMS[ROOM_CTX].garden === 'hedge') return true; // nothing hangs on a hedge
     if (ROOM_CTX === 'kitchen' && side === 'R' && i < kitchenCells()) return true; // the counter is in the way
     if (ROOM_CTX === 'archive' && side === 'R' && i < archiveCells()) return true; // so are the archive shelves
     return [WINDOW, DOOR].some(function (o) { return o.side === side && i < o.from + o.len && i + 1 > o.from; });
   }
   function cellBlocked(x, y) { return x === 0 && y === 3; } // just inside the door
-  var ROOM_CTX = null; // the room being checked, so the stairwell can keep its stair tiles clear
-  function stairsCell(c) { var xy = c.split(','); return (STAIRS_BUILT && (ROOM_CTX === 'stairs' || ROOM_CTX === 'landing' || ROOM_CTX === 'loftland') && +xy[0] >= 2 && +xy[1] <= 1) || (ROOM_CTX === 'kitchen' && +xy[1] === 0 && +xy[0] < kitchenCells()) || (LIFT_ON && LIFT_ROOMS.indexOf(ROOM_CTX) >= 0 && +xy[0] === 3 && +xy[1] === 3) || (ROOM_CTX === 'archive' && +xy[1] === 0 && +xy[0] < archiveCells()); } // the landing has the top of the stairs
+  var ROOM_CTX = null; // the room being checked, so the stairwell can keep its stair tiles (and the tile at their foot) clear
+  function stairsCell(c) { var xy = c.split(','); return (STAIRS_BUILT && (ROOM_CTX === 'stairs' || ROOM_CTX === 'landing' || ROOM_CTX === 'loftland') && +xy[0] >= 2 && +xy[1] <= (ROOM_CTX === 'stairs' ? 2 : 1)) || (ROOM_CTX === 'kitchen' && +xy[1] === 0 && +xy[0] < kitchenCells()) || (LIFT_ON && LIFT_ROOMS.indexOf(ROOM_CTX) >= 0 && +xy[0] === 3 && +xy[1] === 3) || (ROOM_CTX === 'archive' && +xy[1] === 0 && +xy[0] < archiveCells()); } // the landing has the top of the stairs
+  // the stairwell's back wall: a dark opening up to the next floor, above the top step
+  function stairOpening(v) {
+    var o = poly([P(v, 2.1, 0, 112), P(v, 3.95, 0, 112), P(v, 3.95, 0, 900), P(v, 2.1, 0, 900)], '#3A2530');
+    o += '<path d="M' + pts([P(v, 2.1, 0, 900), P(v, 2.1, 0, 112), P(v, 3.95, 0, 112), P(v, 3.95, 0, 900)]).replace(/ /g, ' L') + '" fill="none" stroke="#8A5A35" stroke-width="5"></path>';
+    var t = P(v, 3.02, 0, 170); o += '<text x="' + t[0] + '" y="' + t[1] + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="13" fill="#FFE7A8">↑ upstairs</text>';
+    return o;
+  }
   // a staircase climbing towards the back wall: n steps, drawn from the top step to the bottom one
   function stairsArt(v, x0, y0, w, d, n, stepH) {
     var s = '';
@@ -331,7 +348,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     return s;
   }
 
-  var state = { placed: { study: [], stairs: [], entrance: [], living: [], bedroom: [], landing: [], kitchen: [], playroom: [], loftbed: [], loftland: [], archive: [], control: [] } };
+  var state = { placed: { study: [], stairs: [], entrance: [], living: [], bedroom: [], landing: [], kitchen: [], playroom: [], loftbed: [], loftland: [], archive: [], control: [], shed: [], beds: [], patio: [], terrace: [] } };
   try { var loadUsed = {}, s = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (s && s.placed && typeof s.placed === 'object') ORDER.forEach(function (r) { ROOM_CTX = r; if (Array.isArray(s.placed[r])) state.placed[r] = s.placed[r].reduce(function (keep, p) {
       // saved data is untrusted: accept only known items at whole-number positions, and keep only known fields
       if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !Object.prototype.hasOwnProperty.call(ITEMS, p.id)) return keep;
@@ -361,7 +378,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     workbench: ['study', 'playroom', 'stairs', 'living'], harness: ['entrance', 'landing', 'stairs', 'study'], sorter: ['entrance', 'stairs', 'landing', 'living'],
     printer: ['study', 'playroom', 'bedroom', 'landing'], badges: ['loftland', 'loftbed', 'control', 'archive'], xray: ['loftland', 'control', 'loftbed', 'archive'],
     bunkbed: ['loftbed', 'control', 'loftland', 'archive'], portraits: ['loftbed', 'loftland', 'control', 'archive'],
-    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], blueprints: ['control', 'loftland', 'study', 'landing'], ctrlpanel: ['control', 'loftland', 'study', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], blueprints: ['control', 'loftland', 'study', 'landing'], tap: ['shed', 'beds', 'patio', 'terrace'], barrel: ['beds', 'patio', 'terrace', 'shed'], lightbox: ['patio', 'terrace', 'beds', 'shed'], ctrlpanel: ['control', 'loftland', 'study', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -447,6 +464,12 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
               '<text x="' + (n[0] + 4) + '" y="' + (n[1] + 14) + '" font-family="JetBrains Mono, monospace" font-weight="700" font-size="7" fill="#2A1330">' + n[3] + '</text>';
       });
       return nb;
+    }
+    if (id === 'lightbox') { // a weatherproof switch box, with a string of lights leading away from it
+      var lb = '<rect x="' + (W / 2 - 13) + '" y="-118" width="26" height="32" rx="4" fill="#5E6B78" stroke="#2E3640" stroke-width="2"></rect><rect x="' + (W / 2 - 5) + '" y="-110" width="10" height="16" rx="2" fill="#E2E6EC"></rect><rect x="' + (W / 2 - 3) + '" y="-108" width="6" height="7" rx="1" fill="#6EE7B7"></rect>';
+      lb += '<path d="M' + (W / 2 + 13) + ' -100 Q' + (W / 2 + 30) + ' -86 ' + (W - 4) + ' -112" fill="none" stroke="#5E3B20" stroke-width="1.4"></path>';
+      [0.25, 0.5, 0.75, 1].forEach(function (t, i) { var x = W / 2 + 13 + (W / 2 - 17) * t, y = -100 + Math.sin(t * Math.PI) * 10 - t * 12; lb += '<circle cx="' + x + '" cy="' + (y + 3) + '" r="3" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7', '#FFD88F'][i] + '"></circle>'; });
+      return lb;
     }
     if (id === 'ctrlpanel') { // the smart home's brain: a screen with room readings and an Install button
       var cp = '<rect x="6" y="-128" width="' + (W - 12) + '" height="62" rx="5" fill="#3A3A44" stroke="#22222A" stroke-width="2"></rect><rect x="12" y="-122" width="' + (W - 24) + '" height="38" rx="2" fill="#0E2A22"></rect>';
@@ -553,6 +576,29 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       var ah = 60 * zs, x8 = gx + 0.14, y8 = gy + 0.16, w8 = w - 0.28, d8 = d - 0.32;
       s += box(v, x8, y8, w8, d8, ah, '#C9B8A6', '#9C8670', '#B8A592');
       [0.25, 0.5, 0.75].forEach(function (f, k) { var c = P(v, x8 + w8 * 0.5, y8 + d8, ah * f); s += '<rect x="' + (c[0] - 9 * zs) + '" y="' + (c[1] - 5 * zs) + '" width="' + 18 * zs + '" height="' + 7 * zs + '" rx="' + 1.5 * zs + '" fill="' + ['#8FD3FF', '#FFC861', '#FF8FC7'][k] + '" stroke="#6B5A48" stroke-width="' + Math.max(0.5, zs) + '"></rect>'; });
+    } else if (id === 'tap') {
+      // a garden standpipe with a brass tap and a bucket under it
+      var tx = gx + 0.42, ty = gy + 0.4, ph2 = 52 * zs;
+      s += box(v, tx, ty, 0.16, 0.16, ph2, '#8A93A0', '#6B7380', '#7A8290');
+      var tp = P(v, tx + 0.08, ty + 0.16, ph2 - 8 * zs); s += '<rect x="' + (tp[0] - 2 * zs) + '" y="' + (tp[1] - 2 * zs) + '" width="' + 9 * zs + '" height="' + 4 * zs + '" rx="' + 1.5 * zs + '" fill="#E0A11B"></rect><circle cx="' + tp[0] + '" cy="' + (tp[1] - 5 * zs) + '" r="' + 3.5 * zs + '" fill="#E0A11B" stroke="#8A5A35" stroke-width="' + Math.max(0.5, zs) + '"></circle>';
+      s += box(v, gx + 0.3, gy + 0.62, 0.36, 0.3, 16 * zs, '#4F7FD1', '#3B66B5', '#4573C4');
+      var wt2 = P(v, gx + 0.48, gy + 0.77, 16 * zs); s += '<ellipse cx="' + wt2[0] + '" cy="' + wt2[1] + '" rx="' + 7 * zs + '" ry="' + 3 * zs + '" fill="#8FD3FF"></ellipse>';
+    } else if (id === 'lightbox') {
+      // a garden post with a weatherproof switch box, and a short string of lights from its top
+      var lp2 = P(v, gx + 0.5, gy + 0.5, 0), lt2 = P(v, gx + 0.5, gy + 0.5, 70 * zs);
+      s += '<line x1="' + lp2[0] + '" y1="' + lp2[1] + '" x2="' + lt2[0] + '" y2="' + lt2[1] + '" stroke="#8A5A35" stroke-width="' + Math.max(1.4, 4 * zs) + '"></line>';
+      var bxp = P(v, gx + 0.5, gy + 0.5, 34 * zs); s += '<rect x="' + (bxp[0] - 7 * zs) + '" y="' + (bxp[1] - 9 * zs) + '" width="' + 14 * zs + '" height="' + 16 * zs + '" rx="' + 2 * zs + '" fill="#5E6B78" stroke="#2E3640" stroke-width="' + Math.max(0.6, 1.4 * zs) + '"></rect><rect x="' + (bxp[0] - 3 * zs) + '" y="' + (bxp[1] - 5 * zs) + '" width="' + 6 * zs + '" height="' + 7 * zs + '" rx="' + zs + '" fill="#6EE7B7"></rect>';
+      s += '<path d="M' + lt2[0] + ' ' + lt2[1] + ' q' + 18 * zs + ' ' + 14 * zs + ' ' + 36 * zs + ' ' + 2 * zs + '" fill="none" stroke="#5E3B20" stroke-width="' + Math.max(0.6, zs) + '"></path>';
+      [0.3, 0.6, 0.9].forEach(function (t, i) { s += '<circle class="twinkle" cx="' + (lt2[0] + 36 * zs * t) + '" cy="' + (lt2[1] + 9 * zs * Math.sin(t * Math.PI) + 2 * zs * t) + '" r="' + Math.max(1.2, 3 * zs) + '" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][i] + '"></circle>'; });
+    } else if (id === 'barrel') {
+      // a blue rain barrel on bricks, with a pipe from the gutter and a tap
+      var bx2 = gx + 0.18, by2 = gy + 0.18, bh = 50 * zs;
+      s += box(v, bx2, by2, 0.64, 0.64, 8 * zs, '#B5533F', '#8E3D2F', '#9C4535');
+      var bc2 = P(v, gx + 0.5, gy + 0.5, 8 * zs), bt2 = P(v, gx + 0.5, gy + 0.5, bh);
+      s += '<path d="M' + (bc2[0] - 15 * zs) + ' ' + bc2[1] + ' V' + bt2[1] + ' A' + 15 * zs + ' ' + 7 * zs + ' 0 0 0 ' + (bc2[0] + 15 * zs) + ' ' + bt2[1] + ' V' + bc2[1] + ' A' + 15 * zs + ' ' + 7 * zs + ' 0 0 1 ' + (bc2[0] - 15 * zs) + ' ' + bc2[1] + ' Z" fill="#3B66B5"></path>';
+      s += '<ellipse cx="' + bt2[0] + '" cy="' + bt2[1] + '" rx="' + 15 * zs + '" ry="' + 7 * zs + '" fill="#4F7FD1" stroke="#2B4AA8" stroke-width="' + Math.max(0.6, zs) + '"></ellipse>';
+      [0.35, 0.7].forEach(function (f) { var hb = P(v, gx + 0.5, gy + 0.5, 8 * zs + (bh - 8 * zs) * f); s += '<path d="M' + (hb[0] - 15 * zs) + ' ' + hb[1] + ' A' + 15 * zs + ' ' + 7 * zs + ' 0 0 0 ' + (hb[0] + 15 * zs) + ' ' + hb[1] + '" fill="none" stroke="#2B4AA8" stroke-width="' + Math.max(0.6, 1.4 * zs) + '"></path>'; });
+      s += '<line x1="' + bt2[0] + '" y1="' + bt2[1] + '" x2="' + bt2[0] + '" y2="' + (bt2[1] - 40 * zs) + '" stroke="#8A93A0" stroke-width="' + Math.max(1, 3 * zs) + '"></line>';
     } else if (id === 'blueprints') {
       // a drawing table with the house plan on it, and a stack of saved versions (commits) beside it
       var tb = d > w, LB = tb ? d : w, SB = tb ? w : d;
@@ -850,7 +896,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (worldKey === 'canyon') {
       [[13.5, 9], [-3.5, 7]].forEach(function (r) { var p = P(v, r[0], r[1]); s += '<ellipse cx="' + p[0] + '" cy="' + (p[1] - 6) + '" rx="22" ry="12" fill="#C0644F"></ellipse><ellipse cx="' + (p[0] - 4) + '" cy="' + (p[1] - 10) + '" rx="12" ry="6" fill="#D9805F"></ellipse>'; });
     }
-    [[-3, 1, 1], [-1.5, -3.5, 0.9], [3.5, -3.2, 0.85], [8, -3.6, 1], [13, -1.2, 0.95], [-4.2, 5.5, 1.05]].forEach(function (t) { s += tree(v, t[0], t[1], t[2]); });
+    [[-3, 1, 1], [-1.5, -3.5, 0.9], [3.5, -3.2, 0.85], [8, -3.6, 1], [13, -1.2, 0.95], [-4.2, 5.5, 1.05]].forEach(function (t) { if (PROGRESS >= 36 && t[0] === 13) t = [15.6, -2.4, 0.9]; s += tree(v, t[0], t[1], t[2]); });
     return s;
   }
   function worldFront(v) {
@@ -993,6 +1039,40 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function upLit() { return FLOORS[2].some(function (r) { return hasLamp(r); }); }
   // Floor 3 starts outside: a garage workshop and the pip delivery van, then safety scaffolding, then deliveries
   var SCAFFOLD = PROGRESS >= 23 && PROGRESS < 32; // the Testing lesson's inspection takes it down
+  // the garden shed in the overview: wooden walls round the back corner of its plot
+  function shedArt(v) {
+    var h = 34, a = '';
+    a += poly([P(v, 0, 0, 0), P(v, 5, 0, 0), P(v, 5, 0, h), P(v, 0, 0, h)], '#A97B52', ' stroke="#6E4428" stroke-width="0.8"') + poly([P(v, 0, 0, 0), P(v, 0, 5, 0), P(v, 0, 5, h), P(v, 0, 0, h)], '#B98A5E', ' stroke="#6E4428" stroke-width="0.8"');
+    for (var k = 1; k < 5; k++) { var b1 = P(v, k, 0, 0), b2 = P(v, k, 0, h), c1 = P(v, 0, k, 0), c2 = P(v, 0, k, h); a += '<line x1="' + b1[0] + '" y1="' + b1[1] + '" x2="' + b2[0] + '" y2="' + b2[1] + '" stroke="#8A5A35" stroke-width="0.7"></line><line x1="' + c1[0] + '" y1="' + c1[1] + '" x2="' + c2[0] + '" y2="' + c2[1] + '" stroke="#8A5A35" stroke-width="0.7"></line>'; }
+    return a;
+  }
+  // the garden outside, built lesson by lesson behind and beside the garage
+  function gardenOutside(v) {
+    var g = '';
+    // 35 Iterators: a garden shed behind the garage, with a tap on its side
+    var sx0 = 12.0, sx1 = 13.8, sy0 = -1.8, sy1 = 0.4, sh = 34, sd = '';
+    sd += poly([P(v, sx0, sy1, 0), P(v, sx1, sy1, 0), P(v, sx1, sy1, sh), P(v, sx0, sy1, sh)], '#B98A5E', ' stroke="#4A2C3E" stroke-width="1"') + poly([P(v, sx1, sy0, 0), P(v, sx1, sy1, 0), P(v, sx1, sy1, sh), P(v, sx1, sy0, sh)], '#A97B52', ' stroke="#4A2C3E" stroke-width="1"');
+    sd += poly([P(v, sx0 - 0.15, sy0 - 0.15, sh + 10), P(v, sx1 + 0.15, sy0 - 0.15, sh + 10), P(v, sx1 + 0.15, sy1 + 0.15, sh), P(v, sx0 - 0.15, sy1 + 0.15, sh)], '#5E8C4A', ' stroke="#4A2C3E" stroke-width="1"');
+    sd += poly([P(v, sx0 + 0.6, sy1, 0), P(v, sx0 + 1.2, sy1, 0), P(v, sx0 + 1.2, sy1, 24), P(v, sx0 + 0.6, sy1, 24)], '#8A5A35');
+    var tp3 = P(v, sx1, sy1 - 0.5, 10); sd += '<rect x="' + (tp3[0] - 1) + '" y="' + (tp3[1] - 10) + '" width="3" height="10" fill="#8A93A0"></rect><circle cx="' + (tp3[0] + 1) + '" cy="' + (tp3[1] - 11) + '" r="3" fill="#E0A11B"></circle>';
+    g += '<g data-part="35">' + sd + '</g>';
+    if (PROGRESS >= 37) { // 36 Generators: a rain barrel fed from the shed roof
+      var rb = P(v, sx1 + 0.4, sy1 - 1.2, 0), rt = P(v, sx1 + 0.4, sy1 - 1.2, 22);
+      g += '<g data-part="36"><path d="M' + (rb[0] - 8) + ' ' + rb[1] + ' V' + rt[1] + ' A8 3.5 0 0 0 ' + (rb[0] + 8) + ' ' + rt[1] + ' V' + rb[1] + ' A8 3.5 0 0 1 ' + (rb[0] - 8) + ' ' + rb[1] + ' Z" fill="#3B66B5" stroke="#2B4AA8" stroke-width="1"></path><ellipse cx="' + rt[0] + '" cy="' + rt[1] + '" rx="8" ry="3.5" fill="#4F7FD1" stroke="#2B4AA8"></ellipse>' +
+           '<path d="M' + rt[0] + ' ' + rt[1] + ' V' + (rt[1] - 14) + ' H' + (rt[0] - 10) + '" fill="none" stroke="#8A93A0" stroke-width="2"></path></g>';
+    }
+    if (PROGRESS >= 38) { // 37 Decorators: string lights on posts along the right side of the garden
+      var la = P(v, 15.6, 6.2, 0), lat = P(v, 15.6, 6.2, 46), lb3 = P(v, 15.6, 11.8, 0), lbt = P(v, 15.6, 11.8, 46), lc = P(v, 13.6, 0.6, 30), sl = '';
+      sl += '<line x1="' + la[0] + '" y1="' + la[1] + '" x2="' + lat[0] + '" y2="' + lat[1] + '" stroke="#8A5A35" stroke-width="3"></line><line x1="' + lb3[0] + '" y1="' + lb3[1] + '" x2="' + lbt[0] + '" y2="' + lbt[1] + '" stroke="#8A5A35" stroke-width="3"></line>';
+      [[lc, lat], [lat, lbt]].forEach(function (seg) {
+        var a = seg[0], b = seg[1], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2 + 14;
+        sl += '<path d="M' + a[0] + ' ' + a[1] + ' Q' + mx + ' ' + my + ' ' + b[0] + ' ' + b[1] + '" fill="none" stroke="#5E3B20" stroke-width="1"></path>';
+        for (var q = 1; q < 8; q++) { var t = q / 8, x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * my + t * t * b[1]; sl += '<circle class="twinkle" style="animation-delay:-' + (q * 0.3) + 's" cx="' + x + '" cy="' + (y + 2) + '" r="2.4" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][q % 3] + '"></circle>'; }
+      });
+      g += '<g data-part="37">' + sl + '</g>';
+    }
+    return g;
+  }
   function garage(v) {
     // the workshop stands to the right of the house, with the pip van on its drive
     var g = '', H2 = 44, x0 = 11.8, x1 = 14.8, y0 = 1.2, y1 = 5.2;
@@ -1228,6 +1308,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       s += '<g data-part="6">' + g + fc + '</g>';
     }
     if (SCAFFOLD) s += scaffolding(v, H);
+    if (PROGRESS >= 36) s += gardenOutside(v);
     if (PROGRESS >= 32) { // inspection passed: a green tick sticker beside the front door
       var tk = P(v, 3.0, 10.02, 40);
       s += '<g data-part="31"><circle cx="' + tk[0] + '" cy="' + tk[1] + '" r="8" fill="#6EE7B7" stroke="#08281C" stroke-width="1.2"></circle><path d="M' + (tk[0] - 4) + ' ' + tk[1] + ' l3 3 l5 -6" fill="none" stroke="#08281C" stroke-width="2"></path></g>';
@@ -1244,6 +1325,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // ---------- house view ----------
   var HV = { ox: 195, oy: 150, w: 34, h: 17 };
   var HV3 = { ox: 160, oy: 150, w: 28, h: 14 };
+  var HV4 = { ox: 150, oy: 160, w: 25, h: 12.5 }; // the garden: zoom out a little more so the shed fits
   var HVI = { ox: 195, oy: 120, w: 37, h: 18.5 }; // inside: no scenery, so the house can be bigger
   function roomMap(r) {
     var R = ROOMS[r];
@@ -1251,7 +1333,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   }
   function drawHouse() {
     // from Packages on, the garage stands beside the house: zoom out a little and shift right so it fits
-    var v = houseMode === 'inside' ? HVI : PROGRESS >= 22 ? HV3 : HV, s = '<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD28A" stop-opacity=".85"></stop><stop offset="1" stop-color="#FFB547" stop-opacity="0"></stop></radialGradient></defs>';
+    var v = houseMode === 'inside' ? HVI : PROGRESS >= 36 ? HV4 : PROGRESS >= 22 ? HV3 : HV, s = '<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD28A" stop-opacity=".85"></stop><stop offset="1" stop-color="#FFB547" stop-opacity="0"></stop></radialGradient></defs>';
     document.getElementById('houseView').classList.toggle('inside', houseMode === 'inside');
     if (houseMode === 'outside') {
       readScene(); setWorldLabel();
@@ -1272,16 +1354,23 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       s += poly([P(v, R.rx, R.ry), P(v, R.rx + R.rw, R.ry), P(v, R.rx + R.rw, R.ry + R.rh), P(v, R.rx, R.ry + R.rh)], R.floor);
     });
     var H = 52;
+    if (VIEW_FLOOR === 4) { // hedges all round the garden
+      var HG = 18;
+      s += poly([P(v, 0, 0, 0), P(v, 10, 0, 0), P(v, 10, 0, HG), P(v, 0, 0, HG)], '#68A852') + poly([P(v, 0, 0, 0), P(v, 0, 10, 0), P(v, 0, 10, HG), P(v, 0, 0, HG)], '#79B861');
+      s += poly([P(v, 0, 0, HG), P(v, 10, 0, HG), P(v, 10, -0.4, HG), P(v, -0.4, -0.4, HG), P(v, -0.4, 10, HG), P(v, 0, 10, HG)], '#4E8E3E');
+      s += shedArt(v);
+    } else {
     s += poly([P(v, 0, 0, 0), P(v, 10, 0, 0), P(v, 10, 0, H), P(v, 0, 0, H)], '#E8CDB8') + poly([P(v, 0, 0, 0), P(v, 0, 10, 0), P(v, 0, 10, H), P(v, 0, 0, H)], '#F3DDCB');
     s += poly([P(v, 0, 0, H), P(v, 10, 0, H), P(v, 10, -0.25, H), P(v, -0.25, -0.25, H), P(v, -0.25, 10, H), P(v, 0, 10, H)], '#C8664F');
+    }
     if (VIEW_FLOOR === 2 && PROGRESS >= 15) s += '<g data-part="14">' + wallpaper(v, 10, 6, 48) + '</g>';
-    function partition(a, b) { var h = 12; return poly([P(v, a[0], a[1], 0), P(v, b[0], b[1], 0), P(v, b[0], b[1], h), P(v, a[0], a[1], h)], '#E2CDB0', ' stroke="#4A2C3E" stroke-width="0.8"'); }
+    function partition(a, b) { var h = VIEW_FLOOR === 4 ? 8 : 12; return poly([P(v, a[0], a[1], 0), P(v, b[0], b[1], 0), P(v, b[0], b[1], h), P(v, a[0], a[1], h)], VIEW_FLOOR === 4 ? '#79B861' : '#E2CDB0', ' stroke="' + (VIEW_FLOOR === 4 ? '#4E8E3E' : '#4A2C3E') + '" stroke-width="0.8"'); }
     function items(r) {
       var out = '', m = roomMap(r), zs = 0.42, list = state.placed[r].slice();
       if (r === 'kitchen') out += kitchenArt(v, m.gx, m.gy, m.sx, m.sy, zs);
       if (r === 'archive') out += archiveArt(v, m.gx, m.gy, m.sx, m.sy, zs);
       if (LIFT_ON && LIFT_ROOMS.indexOf(r) >= 0) out += '<g data-part="28">' + liftArt(v, m.gx(3), m.gy(3), m.sx, m.sy, zs, VIEW_FLOOR) + '</g>';
-      if (PROGRESS >= 30) { // Lambda: a smart switch by every room's door, glowing blue
+      if (PROGRESS >= 30 && !ROOMS[r].garden) { // Lambda: a smart switch by every room's door, glowing blue
         var sw = P(v, ROOMS[r].rx + 0.15, ROOMS[r].ry + ROOMS[r].rh - 0.3, 22);
         out += '<g data-part="29"><rect x="' + (sw[0] - 3) + '" y="' + (sw[1] - 4) + '" width="6" height="8" rx="1.5" fill="#FFFFFF" stroke="#5E9FCC" stroke-width="1"></rect><circle cx="' + sw[0] + '" cy="' + sw[1] + '" r="1.6" fill="#3B82F6"></circle></g>';
       }
@@ -1297,7 +1386,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       return out;
     }
     // the stairwell: a dashed outline until the Loops lesson builds the stairs
-    if (VIEW_FLOOR >= 2) { // the top of the stairs: an opening with a railing
+    if (VIEW_FLOOR === 4) {} // the garden has no stairs
+    else if (VIEW_FLOOR >= 2) { // the top of the stairs: an opening with a railing
       s += poly([P(v, 7.6, 0.4), P(v, 9.6, 0.4), P(v, 9.6, 3.8), P(v, 7.6, 3.8)], '#5E3B20') + poly([P(v, 7.8, 0.6), P(v, 9.4, 0.6), P(v, 9.4, 3.6), P(v, 7.8, 3.6)], '#3A2530');
       s += '<path d="M' + pts([P(v, 7.6, 0.4, 14), P(v, 7.6, 3.8, 14), P(v, 9.6, 3.8, 14)]).replace(/ /g, ' L') + '" fill="none" stroke="#8A5A35" stroke-width="2.5"></path>';
       [0.4, 1.5, 2.6, 3.8].forEach(function (y) { var a = P(v, 7.6, y, 0), b = P(v, 7.6, y, 14); s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#8A5A35" stroke-width="1.6"></line>'; });
@@ -1332,7 +1422,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     else document.getElementById('houseSummary').textContent = !WALLS_UP
       ? 'Your house is being built. ' + ['Finish Hello, Python to put up your welcome sign.', 'Finish Variables to bring the building supplies.', 'Finish Numbers to lay the foundation.', 'Finish Strings to raise the walls and roof.'][PROGRESS]
       : kinds + ' items earned from lessons. Placed: ' + total + '.' + (next ? ' Next: finish ' + ITEMS[next].locked + ' to earn the ' + ITEMS[next].name.toLowerCase() + '.' : '');
-    document.getElementById('houseSub').textContent = houseMode === 'outside' ? (ROOF_LIFTED ? 'Floor 2 · being built' : LOFT ? 'Three floors · outside' : UPSTAIRS ? 'Two floors · outside' : 'Ground floor · outside') : (UPSTAIRS ? FLOOR_LABEL[VIEW_FLOOR] + ' · tap a room' : 'Inside · tap a room');
+    document.getElementById('houseSub').textContent = houseMode === 'outside' ? (ROOF_LIFTED ? 'Floor 2 · being built' : GARDEN ? 'House and garden · outside' : LOFT ? 'Three floors · outside' : UPSTAIRS ? 'Two floors · outside' : 'Ground floor · outside') : (UPSTAIRS ? FLOOR_LABEL[VIEW_FLOOR] + ' · tap a room' : 'Inside · tap a room');
     document.getElementById('outBtn').hidden = houseMode === 'outside';
     document.getElementById('worldBtn').hidden = houseMode !== 'outside';
     document.getElementById('resetBtn').hidden = houseMode !== 'outside';
@@ -1437,20 +1527,28 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += '<rect x="-400" y="' + P(v, 0, GRID)[1] + '" width="1200" height="800" fill="#2A1330" opacity=".25"></rect>';
     // walls
     var TALL = 900; // walls run up past the top of the screen, so there is no empty space above the room
+    // on wide screens the walls carry on past the room's own edges (a little darker), so there are no empty bands at the sides
+    s += poly([P(v, 0, GRID, 0), P(v, 0, GRID + 12, 0), P(v, 0, GRID + 12, TALL), P(v, 0, GRID, TALL)], R.wallL) + poly([P(v, GRID, 0, 0), P(v, GRID + 12, 0, 0), P(v, GRID + 12, 0, TALL), P(v, GRID, 0, TALL)], R.wallR);
+    s += poly([P(v, 0, GRID, 0), P(v, 0, GRID + 12, 0), P(v, 0, GRID + 12, TALL), P(v, 0, GRID, TALL)], '#2A1330', ' opacity=".18"') + poly([P(v, GRID, 0, 0), P(v, GRID + 12, 0, 0), P(v, GRID + 12, 0, TALL), P(v, GRID, 0, TALL)], '#2A1330', ' opacity=".18"');
     s += poly([P(v, 0, 0, 0), P(v, 0, GRID, 0), P(v, 0, GRID, TALL), P(v, 0, 0, TALL)], R.wallL);
     s += poly([P(v, 0, 0, 0), P(v, GRID, 0, 0), P(v, GRID, 0, TALL), P(v, 0, 0, TALL)], R.wallR);
     s += '<path d="M' + pts([P(v, 0, GRID, 300), P(v, 0, 0, 300), P(v, GRID, 0, 300)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9AE96" stroke-width="4"></path>';
     s += '<path d="M' + P(v, 0, 0, 0)[0] + ' ' + P(v, 0, 0, 0)[1] + ' V-600" stroke="#000" stroke-opacity=".06" stroke-width="2"></path>';
+    if (R.garden === 'hedge') { // a hedge a little taller than you, with the sky above it
+      s += poly([P(v, 0, 0, 170), P(v, 0, GRID, 170), P(v, 0, GRID, TALL), P(v, 0, 0, TALL)], '#BFE3F7') + poly([P(v, 0, 0, 170), P(v, GRID, 0, 170), P(v, GRID, 0, TALL), P(v, 0, 0, TALL)], '#CDEBFA');
+      for (var hx = 0; hx <= GRID; hx += 0.5) { var hl = P(v, 0, hx, 170), hr = P(v, hx, 0, 170); s += '<circle cx="' + hl[0] + '" cy="' + hl[1] + '" r="14" fill="' + R.wallL + '"></circle><circle cx="' + hr[0] + '" cy="' + hr[1] + '" r="14" fill="' + R.wallR + '"></circle>'; }
+    }
     if (FLOORS[2].indexOf(r) >= 0 && PROGRESS >= 15) s += wallpaper(v, GRID, 14, 900);
     var wmc = { ox: v.ox, oy: v.oy, w: v.w, h: v.h, wx: 0, wy: 0 };
-    s += '<g transform="' + wallMatrix(wmc, 'L', 1.5, 1, 1) + '"><circle cx="0" cy="-215" r="24" fill="#FFFFFF" stroke="#8A5A35" stroke-width="5"></circle><path d="M0 -215 V-231 M0 -215 L11 -209" stroke="#2A1330" stroke-width="3" stroke-linecap="round"></path></g>';
+    if (!R.garden) s += '<g transform="' + wallMatrix(wmc, 'L', 1.5, 1, 1) + '"><circle cx="0" cy="-215" r="24" fill="#FFFFFF" stroke="#8A5A35" stroke-width="5"></circle><path d="M0 -215 V-231 M0 -215 L11 -209" stroke="#2A1330" stroke-width="3" stroke-linecap="round"></path></g>';
     s += '<path d="M' + pts([P(v, 0, GRID, 8), P(v, 0, 0, 8), P(v, GRID, 0, 8)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9AE96" stroke-width="3"></path>';
     // window on the right wall, door on the left wall
     var wm = { ox: v.ox, oy: v.oy, w: v.w, h: v.h, wx: 0, wy: 0 };
-    s += '<g transform="' + wallMatrix(wm, WINDOW.side, WINDOW.from, 1, 1.4) + '"><rect x="0" y="-128" width="' + (1.1 * L_R) + '" height="58" rx="4" fill="#8A5A35"></rect><rect x="5" y="-123" width="' + (1.1 * L_R - 10) + '" height="48" fill="#BFE7F5"></rect><path d="M' + (0.55 * L_R) + ' -123 v48 M5 -99 h' + (1.1 * L_R - 10) + '" stroke="#8A5A35" stroke-width="3"></path></g>';
-    if (floorOfRoom(r) >= 2 && R.rx === 0) // this wall is the outside of the house: a window, not a door
+    if (r === 'stairs' && STAIRS_BUILT) s += stairOpening(v); // the stairs climb to an opening in the ceiling, not into a window
+    else if (R.garden !== 'hedge') s += '<g transform="' + wallMatrix(wm, WINDOW.side, WINDOW.from, 1, 1.4) + '"><rect x="0" y="-128" width="' + (1.1 * L_R) + '" height="58" rx="4" fill="#8A5A35"></rect><rect x="5" y="-123" width="' + (1.1 * L_R - 10) + '" height="48" fill="#BFE7F5"></rect><path d="M' + (0.55 * L_R) + ' -123 v48 M5 -99 h' + (1.1 * L_R - 10) + '" stroke="#8A5A35" stroke-width="3"></path></g>';
+    if (floorOfRoom(r) >= 2 && floorOfRoom(r) <= 3 && R.rx === 0) // this wall is the outside of the house: a window, not a door
       s += '<g transform="' + wallMatrix(wm, DOOR.side, DOOR.from, 1, 1.4) + '"><rect x="0" y="-128" width="' + (0.95 * L_R) + '" height="58" rx="4" fill="#8A5A35"></rect><rect x="5" y="-123" width="' + (0.95 * L_R - 10) + '" height="48" fill="#BFE7F5"></rect><path d="M' + (0.475 * L_R) + ' -123 v48" stroke="#8A5A35" stroke-width="3"></path></g>';
-    else s += '<g transform="' + wallMatrix(wm, DOOR.side, DOOR.from, 1, 1.4, DOOR.len) + '"><rect x="0" y="-100" width="' + (0.85 * L_R) + '" height="100" rx="3" fill="#B5533F"></rect><circle cx="' + (0.7 * L_R) + '" cy="-50" r="3" fill="#FFC861"></circle></g>';
+    else s += '<g transform="' + wallMatrix(wm, DOOR.side, DOOR.from, 1, 1.4, DOOR.len) + '"><rect x="0" y="-100" width="' + (0.85 * L_R) + '" height="100" rx="3" fill="' + (R.garden === 'hedge' ? '#8A5A35' : '#B5533F') + '"></rect><circle cx="' + (0.7 * L_R) + '" cy="-50" r="3" fill="#FFC861"></circle></g>';
     // floor tiles
     for (var x = 0; x < GRID; x++) for (var y = 0; y < GRID; y++) s += poly([P(v, x, y), P(v, x + 1, y), P(v, x + 1, y + 1), P(v, x, y + 1)], (x + y) % 2 ? R.floor : R.floor2, ' stroke="#C9AE96" stroke-width="0.6"');
     if (r === 'kitchen') s += kitchenArt(v, function (x) { return x; }, function (y) { return y; }, 1, 1, 1);
@@ -1597,7 +1695,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
-    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], blueprints: ['Team coding', '', ''], ctrlpanel: ['Coding with AI', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
+    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], blueprints: ['Team coding', '', ''], ctrlpanel: ['Coding with AI', '', ''], tap: ['Iterators', '', ''], barrel: ['Generators', '', ''], lightbox: ['Decorators', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1678,6 +1776,27 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       if (cardState.book >= 0) { var f4 = FILES2[cardState.book]; al2.push('<span class="new">(p / ' + pyStr(f4[0].split('/')[0]) + ' / ' + pyStr(f4[0].split('/')[1]) + ').open(' + pyStr(f4[1]) + ').read()  <span class="c"># → ' + esc(f4[2]) + ', ' + f4[3] + '</span></span>'); }
       if (cardState.step) al2.push('<span class="new">[f.name <span class="o">for</span> f <span class="o">in</span> p.glob(' + pyStr('*/*.png') + ')]  <span class="c"># → [\'cat.png\']</span></span>');
       code.innerHTML = al2.join('\n'); tryB.hidden = !!cardState.step; tryB.textContent = 'Find every picture';
+    } else if (p.id === 'tap') {
+      idea.innerHTML = 'The tank is an <b>iterator</b>: each turn of the tap is <code>next(tap)</code>, one cup at a time.';
+      var cups = ['cup 1', 'cup 2', 'cup 3'], n4 = cardState.step;
+      var tl = ['tap = iter(' + esc(pyListSafe(cups)) + ')'];
+      for (var k4 = 0; k4 < Math.min(n4, 3); k4++) tl.push((k4 === n4 - 1 ? '<span class="new">' : '') + 'next(tap)  <span class="c"># → \'' + cups[k4] + '\'</span>' + (k4 === n4 - 1 ? '</span>' : ''));
+      if (n4 > 3) tl.push('<span class="new" style="color:#FF7A6B">next(tap)  <span class="c"># StopIteration: the tank is empty</span></span>');
+      code.innerHTML = tl.join('\n'); tryB.hidden = false; tryB.textContent = n4 > 3 ? 'Refill the tank' : 'Turn the tap';
+    } else if (p.id === 'barrel') {
+      idea.innerHTML = 'A <b>generator</b> runs only up to the next <code>yield</code>, then waits until you ask again.';
+      var days = [['Mon', 5], ['Tue', 0], ['Wed', 8]], n5 = cardState.step, got = days.filter(function (d) { return d[1]; });
+      var bl2 = ['<span class="o">def</span> rain(days):', '    <span class="o">for</span> day, litres <span class="o">in</span> days:', '        <span class="o">if</span> litres:', '            <span class="o">yield</span> litres', 'barrel = rain(week)'];
+      for (var k5 = 0; k5 < Math.min(n5, got.length); k5++) bl2.push((k5 === n5 - 1 ? '<span class="new">' : '') + 'next(barrel)  <span class="c"># → ' + got[k5][1] + ' (' + got[k5][0] + ')</span>' + (k5 === n5 - 1 ? '</span>' : ''));
+      if (n5 > got.length) bl2.push('<span class="new" style="color:#FF7A6B">next(barrel)  <span class="c"># StopIteration: no more rainy days</span></span>');
+      code.innerHTML = bl2.join('\n'); tryB.hidden = false; tryB.textContent = n5 > got.length ? 'Start a new week' : 'Ask for water';
+    } else if (p.id === 'lightbox') {
+      var on3 = !!cardState.broken;
+      idea.innerHTML = 'A <b>decorator</b> wraps a function: <code>water()</code> still waters, and now the lights come on too.';
+      var dl = ['<span class="o">def</span> lights(f):', '    <span class="o">def</span> wrap():', '        print("lights on")', '        f()', '    <span class="o">return</span> wrap'];
+      dl.push((on3 ? '<span class="new">@lights</span>\n' : '') + '<span class="o">def</span> water():', '    print("splash")', 'water()');
+      dl.push('<span class="new"><span class="c"># → ' + (on3 ? 'lights on, splash' : 'splash') + '</span></span>');
+      code.innerHTML = dl.join('\n'); tryB.hidden = false; tryB.textContent = on3 ? 'Take the decorator off' : 'Add @lights';
     } else if (p.id === 'blueprints') {
       idea.innerHTML = 'The whole team shares this plan. Every panel is a <b>commit</b>. Try a <b>branch</b>, then <b>merge</b> it.';
       var hist = cardState.hist || (cardState.hist = ['Add panel 3', 'Add panel 2', 'Add panel 1']);
@@ -1878,6 +1997,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
     else if (p.id === 'vacuum') { cardState.dirty.forEach(function (x) { x[1] = false; }); renderCard(); say(document.getElementById('roomBubble'), 'Vroom! map(clean, todo) cleaned every dirty room.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'archcab') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'glob found every .png in the archive folders.', true, document.getElementById('roomNibb')); }
+    else if (p.id === 'tap') { cardState.step = cardState.step > 3 ? 0 : cardState.step + 1; renderCard(); say(document.getElementById('roomBubble'), cardState.step === 0 ? 'Refilled! iter() gives a fresh iterator.' : cardState.step > 3 ? 'StopIteration! A for loop stops right here, quietly.' : 'One cup. The tap remembers where it got to.', cardState.step <= 3, document.getElementById('roomNibb')); }
+    else if (p.id === 'barrel') { cardState.step = cardState.step > 2 ? 0 : cardState.step + 1; renderCard(); say(document.getElementById('roomBubble'), cardState.step === 0 ? 'A new week: calling rain() makes a new generator.' : cardState.step > 2 ? 'No more yields, so StopIteration.' : 'It ran to the next yield and paused. Tuesday had no rain, so it skipped it.', cardState.step <= 2, document.getElementById('roomNibb')); }
+    else if (p.id === 'lightbox') { cardState.broken = !cardState.broken; renderCard(); say(document.getElementById('roomBubble'), cardState.broken ? '@lights wrapped water(): same function, now with lights!' : 'Without the decorator, water() just splashes.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'blueprints') { cardState.step++; if (cardState.step === 1) cardState.hist.unshift('Add test panel'); renderCard(); say(document.getElementById('roomBubble'), cardState.step === 1 ? 'A branch! The test panel is a commit on its own copy.' : 'Merged! The test panel is part of main now.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'ctrlpanel') { cardState.step++; renderCard(); say(document.getElementById('roomBubble'), ['', 'The test caught my bug. Good thing you checked!', 'Now 10 is cold and 25 is not. All tests pass.', 'Installed. You were in charge the whole time.'][cardState.step], cardState.step !== 1, document.getElementById('roomNibb')); }
     else if (p.id === 'clipboard') { cardState.broken = !cardState.broken; renderCard(); say(document.getElementById('roomBubble'), cardState.broken ? 'Uh oh: assert lamp.on failed. A test caught the bug!' : 'Fixed! All three checks pass again.', !cardState.broken, document.getElementById('roomNibb')); }
@@ -2086,6 +2208,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     32: 'Solar panels on the roof! The team fitted them one commit at a time: panel 1, panel 2, panel 3.',
     33: 'The control room is on! Nibb suggests code, and you read it, test it and fix it before you install it.',
     34: 'The smart roof is on! The weather station reads the sky, and the roof lights shine at night. Your house is finished!',
+    35: 'A garden shed, with a tap on the side! Each turn of the tap is next(tap): one cup at a time.',
+    36: 'A rain barrel! It fills from the shed roof and gives water only when you ask, like a generator.',
+    37: 'String lights across the garden! A decorator wraps a function, the way lights wrap the posts.',
     24: 'Three dormer windows, all from one blueprint! One class, three objects, each its own colour.',
     25: 'The loft has a floor, stairs and rooms. Every room shares the house name: a class variable. Tap Loft inside to look.',
     26: 'The loft is wired. The cables are hidden in the walls, like the names inside an object: obj.__dict__.',
@@ -2101,7 +2226,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (n === 18 || n === 20 || (n >= 21 && n <= 24)) { houseMode = 'outside'; drawHouse(); }
     if (n >= 25 && n <= 30) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); } // the loft, the lift, the switches and the archive
     if (n === 31 || n === 32 || n === 34) { houseMode = 'outside'; drawHouse(); }
-    if (n === 33) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); } // the scaffolding comes down // the attic window and the balcony are seen from outside
+    if (n === 33) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); }
+    if (n >= 35) { houseMode = 'outside'; drawHouse(); } // the garden is built outside // the scaffolding comes down // the attic window and the balcony are seen from outside
     if (n >= 13 && n <= 16) { houseMode = 'inside'; VIEW_FLOOR = 2; drawHouse(); } // plates, wallpaper and the kitchen are upstairs
     if (n === 12 && !still) { var rd = document.querySelector('#houseSvg .roof-g'); if (rd) rd.classList.add('roof-drop'); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }
