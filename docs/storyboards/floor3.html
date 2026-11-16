@@ -1,0 +1,232 @@
+<title>Floor 3 Storyboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; each room is a frame (the house so far) beside its lesson plan. Dark, like the app. */
+:root {
+  --deep: #1A0B1F;
+  --night: #2A1330;
+  --sheet: #33193A;
+  --line: rgba(255, 236, 214, 0.14);
+  --cream: #FFF1E2;
+  --muted: #D9BFD2;
+  --amber: #FFB547;
+  --amber-soft: rgba(255, 181, 71, 0.16);
+  --mint: #6EE7B7;
+  --coral: #FF7A6B;
+  --chalk: #2E4A3C;
+  --font-display: 'Paytone One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html { background: var(--deep); }
+body { background: var(--deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.05; }
+h2 { font-size: 26px; }
+h3 { font-size: 22px; line-height: 1.15; }
+p { margin: 0; max-width: 68ch; }
+code, .code { font-family: var(--font-code); font-size: 13.5px; }
+.eyebrow { font-weight: 900; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 12px; }
+header p { font-size: 17px; color: var(--muted); }
+
+.decide { background: var(--sheet); border: 1.5px solid var(--amber); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.decide ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.decide li { max-width: 72ch; }
+.decide b { color: var(--amber); }
+
+.strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.strip a { flex: 0 0 auto; width: 104px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 800; display: flex; flex-direction: column; gap: 4px; border-radius: 12px; padding: 6px; }
+.strip a:hover, .strip a:focus-visible { background: var(--night); color: var(--cream); outline: none; }
+.strip svg { width: 92px; height: 77px; display: block; }
+
+.room { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; padding-top: 28px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.frame { display: flex; flex-direction: column; gap: 10px; }
+.frame svg { width: 100%; max-width: 280px; aspect-ratio: 6 / 5; height: auto; border-radius: 16px; background: var(--night); }
+.frame .cap { font-size: 13px; color: var(--muted); }
+.frame .cap b { color: var(--amber); }
+.plan { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--night); color: var(--muted); }
+.tag b { color: var(--cream); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.steps li { counter-increment: s; background: var(--chalk); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps li::before { content: counter(s) ". " attr(data-t); font-weight: 900; font-size: 14px; color: #F4F7EE; }
+.steps code { color: #DDEBD8; white-space: pre-wrap; word-break: break-word; }
+.living { background: var(--amber-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.living b { color: var(--amber); }
+
+section.more { display: flex; flex-direction: column; gap: 14px; padding-top: 28px; border-top: 1px solid var(--line); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); font-weight: 900; }
+td code { color: var(--mint); }
+
+@media (max-width: 700px) {
+  .room { grid-template-columns: 1fr; }
+  .frame svg { max-width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .new { animation: glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">ConceptQ · Python · Advanced</span>
+    <h1>Floor 3 storyboard</h1>
+    <p>The house has two floors and a roof. Advanced turns the roof space into a third floor (a loft) and makes the whole house smart. It is built the way a real loft conversion is: workshop, safety scaffolding, deliveries, dormer windows, floor and stairs, wiring, furniture, a lift, smart switches, an archive room, inspection, solar panels, then the control room. Covers PCAP sections 1–6.</p>
+  </header>
+
+  <div class="decide">
+    <span class="eyebrow">Four choices to confirm before I write lessons</span>
+    <ol>
+      <li><b>Split classes into two lessons (recommended).</b> Classes are the heart of PCAP: blueprints and objects first, then class vs instance variables. That makes 13 lessons plus the Master Builder challenge.</li>
+      <li><b>No second crane.</b> The roof stays on. Dormer windows open up the roof space, which is how real lofts are built. The basement in the curriculum doc moves into the loft as an archive room, because digging under a finished house is not logical.</li>
+      <li><b>Git and AI lessons are simulations in the app:</b> commits, branches and an AI suggestion to check are acted out on screen. Nothing needs installing.</li>
+      <li><b>Garage project: a smart-home dashboard</b> that reads sensor readings from a file, uses classes for each device, and has tests. It replaces the weather app, because internet APIs come in Expert.</li>
+    </ol>
+  </div>
+
+  <nav class="strip" id="strip" aria-label="Build order"></nav>
+  <div id="rooms"></div>
+
+  <section class="more">
+    <span class="eyebrow">Wires between rooms</span>
+    <h2>Where floor 3 connects to what you already built</h2>
+    <p class="muted">A glowing wire appears once both ends exist. Tapping it shows one Python fact.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Link</th><th>Python fact it shows</th></tr></thead>
+      <tbody>
+        <tr><td>Toolbox ↔ Workshop</td><td><code>import math</code> was someone else's module; now you make your own package</td></tr>
+        <tr><td>Smoke alarm ↔ Safety scaffolding</td><td><code>try</code>/<code>except</code> grows <code>else</code>, <code>finally</code> and your own error classes</td></tr>
+        <tr><td>Bookshelf ↔ Parcel sorter</td><td>every string is made of Unicode characters: <code>ord("A")</code> is 65</td></tr>
+        <tr><td>Key rack ↔ X-ray scanner</td><td>an object's attributes live in a dictionary: <code>obj.__dict__</code></td></tr>
+        <tr><td>Kettle ↔ Smart switches</td><td>functions are values: pass one to <code>map()</code>, return one from a function</td></tr>
+        <tr><td>Filing cabinet ↔ Archive room</td><td><code>open()</code> grows binary modes, and <code>pathlib</code> finds the files</td></tr>
+        <tr><td>Glass cabinet ↔ Inspector</td><td><code>assert</code> checks what must always be true, like a tuple that never changes</td></tr>
+        <tr><td>Wardrobe ↔ Lift</td><td>a list comprehension builds a whole list in one line</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Flashcards</span>
+    <h2>Three new categories</h2>
+    <p>Floor 3 adds <b>Blueprints</b> (classes, objects, inheritance), <b>Power tools</b> (comprehensions, lambda, map and filter, closures) and <b>Teamwork</b> (testing, Git, working with AI). About 4 cards per lesson, roughly 56 in total.</p>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Coverage check</span>
+    <h2>PCAP sections 1–6</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Exam section</th><th>Topics</th><th>Lessons</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Modules and packages</td><td>import variants, <code>__name__</code>, <code>sys.path</code>, <code>__init__.py</code>, <code>__pycache__</code>, pip, virtual environments</td><td>1</td></tr>
+        <tr><td>2 · Exceptions</td><td>order of excepts, tuples, <code>as</code>, <code>else</code>/<code>finally</code>, hierarchy, raise and re-raise, custom exceptions, chaining</td><td>2</td></tr>
+        <tr><td>3 · Strings</td><td>ASCII, Unicode, UTF-8, <code>ord</code>/<code>chr</code>, <code>str</code> vs <code>bytes</code>, checks, comparing and sorting text</td><td>3</td></tr>
+        <tr><td>4 · Object-oriented programming</td><td>classes, objects, <code>__init__</code>, methods, class vs instance variables, namespaces, <code>__dict__</code>, introspection, inheritance, <code>super()</code>, MRO, polymorphism</td><td>4–7</td></tr>
+        <tr><td>5 · Advanced constructs and I/O</td><td>comprehensions, <code>match</code>, loop <code>else</code>, lambda, <code>map</code>/<code>filter</code>, closures, file modes, binary files, <code>pathlib</code></td><td>8–10</td></tr>
+        <tr><td>6 · Testing, debugging, collaboration</td><td><code>assert</code>, <code>unittest</code>, finding causes of bugs, Git, code review, using AI responsibly</td><td>11–13</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+// Each room: what it builds (in building order), the item it earns, and its lesson steps [title, example].
+var ROOMS = [
+  { n: 'Packages', t: 'Your own toolboxes', build: 'Workshop in the garage', why: 'Before building a loft you need a workshop. A package is a workshop of labelled toolboxes (modules); pip is the delivery van.', item: 'Workbench with labelled drawers', tap: 'Open a drawer: it is a module. The bench itself is the package, and its label is <code>__init__.py</code>. Tap the van to “pip install” a new drawer.',
+    steps: [['Your own module', '# tools.py\ndef hammer(): ...'], ['Import it', 'import tools\ntools.hammer()'], ['from, as, and why not *', 'from tools import hammer as h\n# import * hides where names come from'], ['dir() and sys.path', 'dir(tools)   sys.path'], ['Run or import?', 'if __name__ == "__main__":'], ['Packages', 'workshop/__init__.py\nworkshop/saws.py'], ['__pycache__', 'saved, ready-to-run copies'], ['pip and requirements.txt', 'pip install requests\nrequests==2.32'], ['Virtual environments', 'python -m venv .venv']] },
+  { n: 'Exceptions in depth', t: 'Safety first', build: 'Scaffolding with safety nets', why: 'Working high up needs nets and harnesses. finally is the harness you always unclip, whatever happened.', item: 'Hard hat and harness hook', tap: 'Press “Slip!”: the net catches a <code>FallError</code>, <code>else</code> cheers when nothing went wrong, and <code>finally</code> always unclips the harness.',
+    steps: [['Order matters', 'except ValueError before Exception'], ['Several at once', 'except (ValueError, TypeError):'], ['Look at it: as', 'except ValueError as e:\n    print(e)'], ['else: nothing went wrong', 'try: … except: … else: …'], ['finally: always', 'finally:\n    unclip_harness()'], ['The family tree', 'Exception → ArithmeticError → ZeroDivisionError'], ['raise, and raise again', 'raise ValueError("too high")\nexcept …: raise'], ['Your own errors', 'class FallError(Exception): pass'], ['Chains', 'raise SafetyError() from e']] },
+  { n: 'Text and Unicode', t: 'Every letter is a number', build: 'Parcel sorter by the front door', why: 'Loft parts arrive labelled in many languages. The sorter reads any label, because every character is a Unicode number.', item: 'Parcel sorter', tap: 'Drop a parcel labelled “Ñ”, “中” or “🙂”: the sorter shows <code>ord()</code>, its UTF-8 bytes, and which shelf it goes on.',
+    steps: [['ASCII', 'ord("A")  # 65'], ['Back again', 'chr(97)  # "a"'], ['Beyond ASCII', '"é"  "中"  "🙂"'], ['UTF-8 bytes', '"é".encode()  # b\'\\xc3\\xa9\''], ['str vs bytes', 'b"hi".decode()  # "hi"'], ['Counting', 'len("é")  len("é".encode())'], ['What kind of character?', '.isalpha()  .isspace()  .isupper()'], ['Comparing text', '"Z" < "a"  # True: 90 < 97'], ['Sorting without the surprise', 'sorted(words, key=str.lower)']] },
+  { n: 'Classes I', t: 'Blueprints and objects', build: 'Three dormer windows', why: 'One blueprint, three windows: each dormer is an object made from the same class, with its own colour.', item: 'Blueprint table', tap: 'Draw a window from the blueprint: <code>Dormer("blue")</code> makes a new object. Make three, then change one: the others stay the same.',
+    steps: [['A class is a blueprint', 'class Dormer:\n    pass'], ['An object is a thing made from it', 'd = Dormer()'], ['__init__ sets it up', 'def __init__(self, colour):'], ['self is this one', 'self.colour = colour'], ['Attributes', 'd.colour  # "blue"'], ['Methods', 'def open(self): …\nd.open()'], ['Many objects', 'a = Dormer("red")\nb = Dormer("blue")'], ['Each keeps its own', 'a.colour = "gold"  # b unchanged'], ['Safe setup', 'if width <= 0: raise ValueError']] },
+  { n: 'Classes II', t: 'Shared and own', build: 'Loft floor, stairs up and loft rooms', why: 'Every loft room shares the house name (a class variable) but has its own size (an instance variable).', item: 'Room name badges', tap: 'Change <code>Room.house</code> and every badge changes; change one room’s <code>size</code> and only that badge does.',
+    steps: [['Class variable: shared', 'class Room:\n    house = "Nova\'s"'], ['Instance variable: its own', 'self.size = size'], ['Change it for everyone', 'Room.house = "Mia\'s"'], ['A twin hides the shared one', 'r.house = "x"  # only r'], ['Methods that change things', 'def paint(self, c): self.colour = c'], ['__str__: how it prints', 'def __str__(self): return …'], ['Private by habit', 'self._secret'], ['Count the objects', 'Room.count += 1'], ['Design a class', 'Lamp: on, brightness, switch()']] },
+  { n: 'Namespaces', t: 'Look inside', build: 'Wiring inside the loft walls', why: 'The wires are hidden in the walls, like names inside an object. The X-ray shows both.', item: 'X-ray scanner', tap: 'Point it at the wall: the hidden wires light up, and the scanner prints the wall’s <code>__dict__</code>.',
+    steps: [['A namespace maps names', 'name → object'], ['Local, enclosing, global, built-in', 'LEGB'], ['An object’s names', 'lamp.__dict__'], ['A class’s names', 'Lamp.__dict__'], ['Ask before you touch', 'hasattr(lamp, "on")'], ['Get and set by name', 'getattr(lamp, "on")\nsetattr(lamp, "on", True)'], ['What is it?', 'isinstance(lamp, Lamp)\ntype(lamp).__name__'], ['Name mangling', 'self.__code  →  _Lamp__code'], ['Everything inside', 'dir(lamp)']] },
+  { n: 'Inheritance', t: 'Families of classes', build: 'Loft furniture', why: 'Bed, BunkBed and SofaBed all come from Furniture: they share what Furniture can do, and add their own.', item: 'Family portrait wall', tap: 'Tap a portrait to see its class and what it inherits. Tap <code>BunkBed.__mro__</code> to see the order Python looks things up.',
+    steps: [['A child class', 'class Bed(Furniture):'], ['It gets the parent’s methods', 'Bed().move()'], ['Override one', 'def move(self): …'], ['super() calls the parent', 'super().__init__(name)'], ['Same call, different things', 'for f in furniture: f.describe()'], ['isinstance knows the family', 'isinstance(bed, Furniture)  # True'], ['Two parents', 'class SofaBed(Sofa, Bed):'], ['The diamond and the MRO', 'SofaBed.__mro__'], ['Same thing, or equal?', 'a is b   vs   a == b']] },
+  { n: 'Comprehensions', t: 'Build and sort in one line', build: 'A lift between all three floors', why: 'The lift carries things up and sorts them on the way: a comprehension builds a list in one line, and match decides where each thing goes.', item: 'Sorting conveyor', tap: 'Put a box on the belt: <code>match</code> sends it to the right floor, and the comprehension on the screen lists every box on floor 3.',
+    steps: [['List comprehension', '[n * n for n in range(5)]'], ['With a condition', '[n for n in nums if n > 0]'], ['Dictionary comprehension', '{w: len(w) for w in words}'], ['Set comprehension', '{c for c in "banana"}'], ['Nested', '[[0] * 3 for _ in range(3)]'], ['match and case', 'match floor:\n    case 1: …'], ['Many cases and _', 'case 2 | 3: …\ncase _: …'], ['Match a shape', 'case (x, 0): …'], ['Loop else', 'for … : … break\nelse: print("not found")']] },
+  { n: 'Lambda and closures', t: 'Functions as values', build: 'Smart switches in every room', why: 'One function, mapped over every room, switches all the lights. A closure remembers each room’s own setting.', item: 'Robot vacuum', tap: 'Tell it which rooms to clean with <code>filter(lambda r: r.dirty, rooms)</code>, then watch it go.',
+    steps: [['lambda: a tiny function', 'double = lambda n: n * 2'], ['Sort with a key', 'sorted(rooms, key=lambda r: r.size)'], ['map: do it to every item', 'list(map(str.upper, names))'], ['filter: keep some', 'list(filter(lambda n: n > 0, nums))'], ['Functions are values', 'switch = turn_on\nswitch(lamp)'], ['A function that makes functions', 'def make_dimmer(level): …'], ['Closures remember', 'dim50 = make_dimmer(50)'], ['nonlocal', 'nonlocal count'], ['When to use which', 'comprehension or map?']] },
+  { n: 'Files pro', t: 'Text, bytes and paths', build: 'Archive room in the loft', why: 'Photos and notes are kept on labelled shelves: binary files and text files, found by their path.', item: 'Archive cabinet', tap: 'Open the photo drawer (binary, <code>"rb"</code>) and the notes drawer (text, <code>"r"</code>), and follow a <code>Path</code> to a file.',
+    steps: [['All the modes', '"r"  "w"  "a"  "x"  "r+"'], ['"x": only if it is new', 'open("log.txt", "x")'], ['Text or binary', '"rb"  "wb"'], ['Bytes in, bytes out', 'data = f.read()  # b\'…\''], ['pathlib', 'from pathlib import Path'], ['Join with /', 'Path("archive") / "photos"'], ['Does it exist?', 'p.exists()   p.is_file()'], ['Read and write quickly', 'p.read_text()   p.write_text(s)'], ['Find files', 'p.glob("*.png")']] },
+  { n: 'Testing', t: 'The inspector visits', build: 'Inspection passed: scaffolding comes down', why: 'Before anyone moves into the loft, the inspector tests every switch, door and pipe. Pass, and the scaffolding comes down.', item: 'Inspector’s clipboard', tap: 'Run the checklist: each line is an <code>assert</code>. Break one switch and watch which test fails, and why.',
+    steps: [['assert', 'assert lamp.on is True'], ['A test function', 'def test_lamp_turns_on(): …'], ['unittest', 'class LampTest(unittest.TestCase):'], ['assertEqual and friends', 'self.assertEqual(a, b)'], ['Run the tests', 'python -m unittest'], ['Edge cases', 'brightness 0, 100, -1?'], ['Find the cause', 'read the traceback, then print'], ['Fix and re-run', 'red → green'], ['Test first?', 'write the check, then the code']] },
+  { n: 'Team coding', t: 'Building together', build: 'Solar panels, one commit per panel', why: 'The team fits the solar panels. Each panel is a commit; a test panel goes on a branch first, then is merged.', item: 'Shared blueprint table', tap: 'Scroll the history: every panel is a commit with a message. Try a branch, then merge it.',
+    steps: [['Why version control', 'every change saved, nothing lost'], ['A repository', 'git init'], ['Save a change', 'git add  git commit -m "Panel 1"'], ['The history', 'git log'], ['Branches', 'git switch -c test-panel'], ['Merge', 'git merge test-panel'], ['When two changes clash', 'a merge conflict'], ['Share with the team', 'git push   git pull'], ['Code review', 'a pull request and kind comments']] },
+  { n: 'Coding with AI', t: 'Nibb’s control room', build: 'Control room in the loft', why: 'The smart home’s brain. Nibb can suggest code, and you are the one who checks it.', item: 'Control panel', tap: 'Ask Nibb for a function. It has a bug on purpose: find it, test it, and only then press “Install”.',
+    steps: [['Ask clearly', 'say what, with an example'], ['Read before you run', 'every line'], ['Test it', 'assert works(…)'], ['Spot the bug', 'off by one? wrong case?'], ['Improve it together', 'ask why, ask for a simpler way'], ['Keep secrets secret', 'no passwords in prompts'], ['Be honest', 'say when AI helped'], ['When not to use AI', 'learning something new? try first']] },
+  { n: 'Challenge', t: 'Master Builder: the smart roof', build: 'Weather station and roof lights', why: 'Everything on floor 3 working together: the smart roof reads the weather and lights the house.', item: '—', tap: 'Sensor readings from a file, a class for each device, a comprehension to find the cold rooms, tests, and the roof lights up at night.',
+    steps: [['Read the sensors', 'Path("sensors.csv").read_text()'], ['A class per device', 'class Thermometer(Device):'], ['Find the cold rooms', '[r for r in rooms if r.temp < 18]'], ['Safe when a sensor fails', 'except SensorError:'], ['Test it', 'assert roof.lights_on_at(21)']] }
+];
+var NS = 'http://www.w3.org/2000/svg';
+// The house in cross-section; stage k draws everything up to room k (0 = the two-storey house from floor 2).
+function house(k) {
+  var C = { wall: '#5E2A5C', edge: '#8A4A85', roof: '#D9503F', amber: '#FFB547', mint: '#6EE7B7', cream: '#FFF1E2', wood: '#B7793C', steel: '#9AA3AF', coral: '#FF7A6B' };
+  var s = [];
+  function part(i, svg, until) { if (k >= i && (until === undefined || k < until)) s.push(k === i ? '<g class="new">' + svg + '</g>' : svg); }
+  s.push('<rect x="0" y="182" width="240" height="18" fill="#3A5A2E"/>');
+  // the two-storey house with its roof and balcony
+  s.push('<rect x="60" y="62" width="140" height="120" fill="' + C.wall + '" stroke="' + C.edge + '" stroke-width="2"/><line x1="60" y1="122" x2="200" y2="122" stroke="' + C.edge + '" stroke-width="2"/>');
+  s.push('<rect x="76" y="148" width="18" height="34" fill="' + C.wood + '"/>');
+  [[110, 134], [160, 134], [80, 76], [130, 76], [168, 76]].forEach(function (w) { s.push('<rect x="' + w[0] + '" y="' + w[1] + '" width="20" height="16" fill="' + (k >= 9 ? C.amber : '#BFE7F5') + '" opacity="' + (k >= 9 ? 1 : 0.6) + '"/>'); });
+  s.push('<rect x="200" y="112" width="18" height="4" fill="' + C.wood + '"/><path d="M200 100 h18 v12" fill="none" stroke="' + C.cream + '" stroke-width="1.5"/>');
+  s.push('<path d="M50 62 L130 22 L210 62 Z" fill="' + C.roof + '" stroke="#A33A2C" stroke-width="2"/>');
+  // 1 workshop in the garage, with the delivery van
+  part(1, '<rect x="4" y="140" width="50" height="42" fill="#6E4E46" stroke="#4A2C3E" stroke-width="1.5"/><path d="M0 140 L29 124 L58 140 Z" fill="#8E3D2F"/><rect x="12" y="160" width="34" height="8" fill="' + C.wood + '"/><rect x="14" y="152" width="6" height="8" fill="' + C.coral + '"/><rect x="24" y="152" width="6" height="8" fill="' + C.mint + '"/>');
+  // 2 scaffolding with safety nets, down again after the inspection (11)
+  part(2, '<g stroke="' + C.steel + '" stroke-width="2">' + [52, 96, 140, 184, 214].map(function (x) { return '<line x1="' + x + '" y1="182" x2="' + x + '" y2="30"/>'; }).join('') + [150, 112, 74, 40].map(function (y) { return '<line x1="52" y1="' + y + '" x2="214" y2="' + y + '"/>'; }).join('') + '</g><rect x="52" y="30" width="162" height="44" fill="' + C.mint + '" opacity=".18"/>', 11);
+  // 3 parcel sorter by the front door
+  part(3, '<rect x="98" y="164" width="20" height="18" fill="' + C.wood + '"/><rect x="100" y="158" width="7" height="6" fill="' + C.amber + '"/><rect x="109" y="156" width="7" height="8" fill="#8FD3FF"/>');
+  // 4 three dormers from one blueprint
+  part(4, [78, 110, 142].map(function (x) { var y = 22 + Math.abs(x + 10 - 130) * 0.5; return '<path d="M' + x + ' ' + (y + 18) + ' v-12 l10 -7 l10 7 v12 z" fill="#E6CDB6" stroke="#4A2C3E" stroke-width="1"/><rect x="' + (x + 5) + '" y="' + (y + 9) + '" width="10" height="8" fill="' + (k >= 13 ? C.mint : '#BFE7F5') + '"/>'; }).join(''));
+  // 5 the loft floor and stairs up
+  part(5, '<line x1="62" y1="60" x2="198" y2="60" stroke="' + C.wood + '" stroke-width="3"/><path d="M172 120 l6 -8 h6 l6 -8 h6 l6 -8" fill="none" stroke="' + C.cream + '" stroke-width="1.5" opacity=".7"/>');
+  // 6 wiring inside the walls (shown as if by X-ray)
+  part(6, '<path d="M66 178 V66 H194 M130 60 V40" fill="none" stroke="' + C.amber + '" stroke-width="1.5" stroke-dasharray="4 3"/>');
+  // 7 loft furniture
+  part(7, '<rect x="96" y="48" width="22" height="10" fill="#8FD3FF"/><rect x="96" y="44" width="6" height="6" fill="#FFF1E2"/>');
+  // 8 a lift through all three floors
+  part(8, '<rect x="186" y="60" width="10" height="122" fill="none" stroke="' + C.cream + '" stroke-width="1.5"/><rect x="187" y="96" width="8" height="10" fill="' + C.amber + '"/>');
+  // 10 archive shelves in the loft
+  part(10, '<rect x="146" y="46" width="16" height="12" fill="' + C.steel + '"/><line x1="146" y1="52" x2="162" y2="52" stroke="#6B7380"/>');
+  // 11 inspection passed: a green tick on the door
+  part(11, '<circle cx="85" cy="142" r="7" fill="' + C.mint + '"/><path d="M81 142 l3 3 l5 -6" fill="none" stroke="#08281C" stroke-width="2"/>');
+  // 12 solar panels on the right slope
+  part(12, [0, 1, 2].map(function (i) { var x = 148 + i * 18, y = 31 + i * 9; return '<path d="M' + x + ' ' + y + ' l16 8 l-3 5 l-16 -8 z" fill="#2B4AA8" stroke="#8FD3FF" stroke-width="1"/>'; }).join(''));
+  // 13 the control room glows in a dormer
+  part(13, '<circle cx="152" cy="44" r="10" fill="' + C.mint + '" opacity=".35"/>');
+  // 14 challenge: weather station and roof lights
+  part(14, '<line x1="130" y1="22" x2="130" y2="6" stroke="' + C.cream + '" stroke-width="2"/><path d="M124 8 l6 -4 l6 4" fill="none" stroke="' + C.cream + '" stroke-width="2"/>' + [60, 80, 100, 120, 140, 160, 180, 200].map(function (x, i) { var y = x < 130 ? 62 - (x - 50) * 0.5 : 22 + (x - 130) * 0.5; return '<circle cx="' + x + '" cy="' + (y - 2) + '" r="2.4" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][i % 3] + '"/>'; }).join(''));
+  return '<svg viewBox="0 0 240 200" xmlns="' + NS + '" role="img" aria-label="The house after ' + (k ? ROOMS[k - 1].n : 'floor 2') + '">' + s.join('') + '</svg>';
+}
+function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+var strip = document.getElementById('strip'), rooms = document.getElementById('rooms');
+strip.innerHTML = '<a href="#start">' + house(0) + 'Start: two floors</a>' + ROOMS.map(function (r, i) {
+  return '<a href="#room-' + (i + 1) + '">' + house(i + 1) + (i + 1 === ROOMS.length ? 'Challenge' : (i + 1) + '. ' + r.n) + '</a>';
+}).join('');
+rooms.innerHTML = '<span id="start"></span>' + ROOMS.map(function (r, i) {
+  var last = i + 1 === ROOMS.length;
+  return '<article class="room" id="room-' + (i + 1) + '">' +
+    '<div class="frame">' + house(i + 1) + '<span class="cap">Builds: <b>' + r.build + '</b>. ' + r.why + '</span></div>' +
+    '<div class="plan"><span class="eyebrow">' + (last ? 'Master Builder challenge · smart roof' : 'Room ' + (i + 1) + ' of 13') + '</span>' +
+    '<h3>' + r.n + ': ' + r.t + '</h3>' +
+    '<div class="tags">' + (last ? '' : '<span class="tag">Item <b>' + r.item + '</b></span>') + '<span class="tag"><b>' + r.steps.length + '</b> steps</span><span class="tag"><b>' + (last ? 5 : 7) + '+</b> questions, fresh each time</span></div>' +
+    '<ol class="steps">' + r.steps.map(function (st) { return '<li data-t="' + st[0].replace(/"/g, '&quot;') + '"><code>' + esc(st[1]) + '</code></li>'; }).join('') + '</ol>' +
+    '<div class="living"><b>' + (last ? 'The challenge.' : 'Living item.') + '</b> ' + r.tap + '</div></div></article>';
+}).join('');
+</script>
