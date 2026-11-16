@@ -72,13 +72,18 @@ wires. It should feel like a game for a 12-year-old and still be credible for an
   (Python live; Web pages and Maths with code marked "Soon"), cards due and streak. The house is not drawn on Home.
 - **My House is its own tab**, drawn in 2.5D (isometric) with three zoom levels:
   outside (closed house in a living world) → inside (only the house, no scenery) → one room full screen.
-- **It starts as empty land.** Hello, Python sets the front door, Variables pours the foundation, Numbers raises the walls.
-  Only then can you go inside.
+- **It starts as empty land and builds in real building order** (revised 2026-11-16, so nothing appears before
+  what holds it up):
+  Hello, Python → welcome sign (`print` writes words for everyone to see) · Variables → crates of building
+  supplies (`bricks = 100`: a labelled box holding a value) · Numbers → the foundation, measured `10 * 10 = 100` ·
+  Strings → walls and roof (a string is a row of letters, like a wall is a row of bricks); you can now go inside ·
+  Input → front door and mailbox (how things come in from outside; until then an open doorway) ·
+  True / False → lamps · Decisions → garden gate · Loops → stairs · Boss → porch light.
 - **Lessons earn furniture**, placed by drag or tap-to-place onto glowing spots:
 
   | Lesson | Item | Real-life idea it stands for |
   |---|---|---|
-  | Hello, Python | Poster `>> hi` | The first thing your program says |
+  | Hello, Python | Poster `>> hi` | The first thing your program says (builds: welcome sign) |
   | Variables | Desk | Labelled drawers: a name holding a value |
   | Numbers | Sofa | Seats: counting and adding (`seats = 2 + 1`) |
   | Strings | Bookshelf (+ plant bonus for finishing it) | Books are text; a row of letters |

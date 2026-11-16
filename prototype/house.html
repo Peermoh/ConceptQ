@@ -236,7 +236,11 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss'];
   var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
-  var WALLS_UP = PROGRESS >= 3; // Hello lays the door, Variables the foundation, Numbers raises the walls
+  // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
+  // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
+  var WALLS_UP = PROGRESS >= 4;
+  var OWNER = 'Nova';
+  try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
   var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
@@ -515,23 +519,41 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       '<rect x="-2" y="-27" width="' + (Wpx + 4) + '" height="3" fill="#E2CDB0"></rect>';
   }
   // before the walls: an empty plot that fills in lesson by lesson
+  function svgText(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // before the walls: the building site fills in lesson by lesson
   function buildSite(v) {
-    var s = '', H = 66;
-    if (PROGRESS >= 2) s += '<g data-part="1">' + poly([P(v, -0.3, -0.3, 0), P(v, 10.3, -0.3, 0), P(v, 10.3, 10.3, 0), P(v, -0.3, 10.3, 0)], '#A79BA5') +
-      poly([P(v, -0.3, 10.3, 0), P(v, 10.3, 10.3, 0), P(v, 10.3, 10.3, -9), P(v, -0.3, 10.3, -9)], '#8E8287') + poly([P(v, 10.3, -0.3, 0), P(v, 10.3, 10.3, 0), P(v, 10.3, 10.3, -9), P(v, 10.3, -0.3, -9)], '#7E727C') + '</g>';
-    // chalk outline of the walls to come, with corner stakes
-    s += '<path d="M' + pts([P(v, 0, 10, 0), P(v, 10, 10, 0), P(v, 10, 0, 0), P(v, 0, 0, 0), P(v, 0, 10, 0)]).replace(/ /g, ' L') + '" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="7 6" opacity=".85"></path>';
-    [[0, 0], [10, 0], [10, 10], [0, 10]].forEach(function (c) { var a = P(v, c[0], c[1], 0); s += '<rect x="' + (a[0] - 2) + '" y="' + (a[1] - 16) + '" width="4" height="16" fill="#8A5A35"></rect><rect x="' + (a[0] - 4) + '" y="' + (a[1] - 18) + '" width="8" height="4" fill="#FF7A6B"></rect>'; });
-    if (PROGRESS >= 1) { // the front door frame stands on its own
-      s += '<g data-part="0"><g transform="' + frontPlane(v, 1.4, 10, true) + '"><rect x="-3" y="-52" width="' + (1.2 * Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4) + 6) + '" height="52" rx="3" fill="#8A5A35"></rect><rect x="0" y="-48" width="' + (1.2 * Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4)) + '" height="48" rx="2" fill="#B5533F"></rect>' +
-        '<rect x="-6" y="-72" width="' + (1.2 * Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4) + 12) + '" height="16" rx="3" fill="#FFE7A8" stroke="#2A1330" stroke-width="1.2"></rect>' +
-        '<text x="' + (0.6 * Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4)) + '" y="-60" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="10" fill="#2A1330">Hello!</text></g></g>';
+    var s = '';
+    // Numbers: the foundation, measured out 10 x 10
+    if (PROGRESS >= 3) s += '<g data-part="2">' + poly([P(v, -0.3, -0.3, 0), P(v, 10.3, -0.3, 0), P(v, 10.3, 10.3, 0), P(v, -0.3, 10.3, 0)], '#A79BA5') +
+      poly([P(v, -0.3, 10.3, 0), P(v, 10.3, 10.3, 0), P(v, 10.3, 10.3, -9), P(v, -0.3, 10.3, -9)], '#8E8287') + poly([P(v, 10.3, -0.3, 0), P(v, 10.3, 10.3, 0), P(v, 10.3, 10.3, -9), P(v, 10.3, -0.3, -9)], '#7E727C') +
+      (function () { var g = '', k; for (k = 1; k < 10; k++) { var a1 = P(v, k, 0, 0), b1 = P(v, k, 10, 0), a2 = P(v, 0, k, 0), b2 = P(v, 10, k, 0);
+        g += '<path d="M' + a1[0] + ' ' + a1[1] + ' L' + b1[0] + ' ' + b1[1] + ' M' + a2[0] + ' ' + a2[1] + ' L' + b2[0] + ' ' + b2[1] + '" stroke="#8E8287" stroke-width="0.8"></path>'; }
+        var c = P(v, 2.6, 7.4, 0); return g + '<text x="' + c[0] + '" y="' + (c[1] + 4) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="11" fill="#5E5460">10 * 10 = 100</text>'; })() + '</g>';
+    else s += '<path d="M' + pts([P(v, 0, 10, 0), P(v, 10, 10, 0), P(v, 10, 0, 0), P(v, 0, 0, 0), P(v, 0, 10, 0)]).replace(/ /g, ' L') + '" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="7 6" opacity=".85"></path>' +
+      [[0, 0], [10, 0], [10, 10], [0, 10]].map(function (c) { var a = P(v, c[0], c[1], 0); return '<rect x="' + (a[0] - 2) + '" y="' + (a[1] - 16) + '" width="4" height="16" fill="#8A5A35"></rect><rect x="' + (a[0] - 4) + '" y="' + (a[1] - 18) + '" width="8" height="4" fill="#FF7A6B"></rect>'; }).join('');
+    // Variables: crates of building supplies, each a labelled box holding a value
+    if (PROGRESS >= 2) {
+      var crates = [[5.4, 1.2, 'bricks = 100'], [8.2, 1.8, 'wood = 20'], [6.4, 4.2, 'glass = 8']], g2 = '';
+      crates.forEach(function (c) {
+        g2 += box(v, c[0], c[1], 1.1, 1.1, 20, '#D9A06C', '#A8744A', '#8A5A35') + box(v, c[0], c[1], 1.1, 0.12, 20, '#C98F5E', '#96633D', '#7A4E2C');
+        var t = P(v, c[0] + 0.55, c[1] + 0.55, 30);
+        g2 += '<rect x="' + (t[0] - 33) + '" y="' + (t[1] - 11) + '" width="66" height="15" rx="4" fill="#FFF1E2" stroke="#2A1330" stroke-width="1"></rect><text x="' + t[0] + '" y="' + (t[1] + 0.5) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="8.5" fill="#2A1330">' + c[2] + '</text>';
+      });
+      s += '<g data-part="1">' + g2 + '</g>';
     }
-    // sign: what the next lesson builds
-    var sg = P(v, 7.5, 11.6);
+    // Hello, Python: the welcome sign (print writes words for everyone to see)
+    if (PROGRESS >= 1) {
+      var w = P(v, 3.5, 11.2);
+      s += '<g data-part="0"><rect x="' + (w[0] - 40) + '" y="' + (w[1] - 34) + '" width="5" height="34" fill="#8A5A35"></rect><rect x="' + (w[0] + 35) + '" y="' + (w[1] - 34) + '" width="5" height="34" fill="#8A5A35"></rect>' +
+        '<rect x="' + (w[0] - 58) + '" y="' + (w[1] - 74) + '" width="116" height="44" rx="7" fill="#FFE7A8" stroke="#2A1330" stroke-width="2"></rect>' +
+        '<text x="' + w[0] + '" y="' + (w[1] - 55) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="12" fill="#2A1330">' + svgText(OWNER) + '’s house</text>' +
+        '<text x="' + w[0] + '" y="' + (w[1] - 40) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="8.5" fill="#6B4A5E">print("Welcome!")</text></g>';
+    }
+    // small sign: what the next lesson builds
+    var sg = P(v, 9, 11);
     s += '<rect x="' + (sg[0] - 2) + '" y="' + (sg[1] - 34) + '" width="4" height="34" fill="#8A5A35"></rect><rect x="' + (sg[0] - 52) + '" y="' + (sg[1] - 62) + '" width="104" height="32" rx="6" fill="#F6E3CC" stroke="#8A5A35" stroke-width="3"></rect>' +
-         '<text x="' + sg[0] + '" y="' + (sg[1] - 48) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="10" fill="#2A1330">' + ['Your house goes here', 'Door is up!', 'Foundation done!'][PROGRESS] + '</text>' +
-         '<text x="' + sg[0] + '" y="' + (sg[1] - 36) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="8.5" fill="#6B4A5E">Next: ' + ['Hello, Python', 'Variables', 'Numbers'][PROGRESS] + '</text>';
+         '<text x="' + sg[0] + '" y="' + (sg[1] - 48) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="10" fill="#2A1330">' + ['Your house goes here', 'Sign is up!', 'Supplies are here!', 'Foundation laid!'][PROGRESS] + '</text>' +
+         '<text x="' + sg[0] + '" y="' + (sg[1] - 36) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="8.5" fill="#6B4A5E">Next: ' + ['Hello, Python', 'Variables', 'Numbers', 'Strings'][PROGRESS] + '</text>';
     return s;
   }
   function exterior(v) {
@@ -558,12 +580,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     // gable window (attic, dark until Intermediate)
     s += '<g transform="' + frontPlane(v, 10, 4.5, false) + '"><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="11" fill="#8A5A35"></circle><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="8" fill="#5E4A6E"></circle></g>';
     // front door, step and porch light
-    s += '<g transform="' + frontPlane(v, 1.4, 10, true) + '">' +
-         '<rect x="-3" y="-50" width="' + (1.2 * L + 6) + '" height="50" rx="3" fill="#8A5A35"></rect>' +
+    // front door: an open doorway until the Input lesson hangs the door (things come in from outside)
+    s += '<g transform="' + frontPlane(v, 1.4, 10, true) + '"><rect x="-3" y="-50" width="' + (1.2 * L + 6) + '" height="50" rx="3" fill="#8A5A35"></rect><rect x="0" y="-47" width="' + (1.2 * L) + '" height="47" rx="2" fill="#3A2530"></rect></g>';
+    if (PROGRESS >= 5) s += '<g data-part="4"><g transform="' + frontPlane(v, 1.4, 10, true) + '">' +
          '<rect x="0" y="-47" width="' + (1.2 * L) + '" height="47" rx="2" fill="#B5533F"></rect>' +
          '<rect x="5" y="-41" width="' + (1.2 * L - 10) + '" height="14" rx="2" fill="#9C4535"></rect>' +
          '<circle cx="' + (1.2 * L - 7) + '" cy="-22" r="2.4" fill="#FFC861"></circle>' +
-         '</g>';
+         '</g></g>';
     // porch light beside the door: dark until the boss is beaten
     var lit = PROGRESS >= 9;
     s += '<g' + (lit ? ' data-part="8"' : '') + '><g transform="' + frontPlane(v, 1.4, 10, true) + '">' +
@@ -593,7 +616,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += bz(7, 6.6, 0.9, 0.9, zc - 10, 40, '#6E4E46', '#9C5A48', '#8A4E3E');
     var ct = P(v, 7.45, 7.05, zc + 32);
     if (!still) [0, 1, 2].forEach(function (i) { s += '<circle class="smoke" style="animation-delay:-' + (i * 1.1) + 's" cx="' + ct[0] + '" cy="' + ct[1] + '" r="6" fill="#F2EEF6"></circle>'; });
-    s = '<g data-part="2">' + s + '</g>'; // the whole house: the walls lesson raises it
+    s = '<g data-part="3">' + s + '</g>'; // the whole house: the Strings lesson raises it
     // mailbox by the path
     var mb = P(v, 3.6, 11.3);
     if (PROGRESS >= 5) s += '<g data-part="4"><rect x="' + (mb[0] - 1.5) + '" y="' + (mb[1] - 22) + '" width="3" height="22" fill="#8A5A35"></rect><rect x="' + (mb[0] - 9) + '" y="' + (mb[1] - 31) + '" width="18" height="10" rx="5" fill="#4F7FD1" stroke="#2A1330" stroke-width="1"></rect></g>';
@@ -679,7 +702,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var total = 0, kinds = 0; TRAY.forEach(function (id) { if (!ITEMS[id].locked) { kinds += ITEMS[id].count; total += usedCount(id); } });
     var next = TRAY.filter(function (id) { return id in NEED && ITEMS[id].locked; }).sort(function (a, b) { return NEED[a] - NEED[b]; })[0];
     document.getElementById('houseSummary').textContent = !WALLS_UP
-      ? 'Your house is being built. ' + ['Finish Hello, Python to set the front door.', 'Finish Variables to pour the foundation.', 'Finish Numbers to raise the walls.'][PROGRESS]
+      ? 'Your house is being built. ' + ['Finish Hello, Python to put up your welcome sign.', 'Finish Variables to bring the building supplies.', 'Finish Numbers to lay the foundation.', 'Finish Strings to raise the walls and roof.'][PROGRESS]
       : kinds + ' items earned from lessons. Placed: ' + total + '.' + (next ? ' Next: finish ' + ITEMS[next].locked + ' to earn the ' + ITEMS[next].name.toLowerCase() + '.' : '');
     document.getElementById('houseSub').textContent = houseMode === 'outside' ? 'Ground floor · outside' : 'Inside · tap a room';
     document.getElementById('outBtn').hidden = houseMode === 'outside';
@@ -1138,22 +1161,23 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   drawHouse();
   // ---------- build moment: the app opens this page with ?build=<lesson> right after a lesson ----------
   var BUILT = {
-    0: 'Your front door is up! print() says Hello to everyone who visits.',
-    1: 'The foundation is poured! Everything stands on it, just like your programs stand on variables.',
-    2: 'The walls are up! Tap the house to go inside and place your items.',
-    3: 'You earned a bookshelf! Tap the house, open a room and place it.',
-    4: 'A mailbox! Messages from outside arrive here, like input().',
+    0: 'Your welcome sign is up! print() writes words for everyone to see.',
+    1: 'Building supplies are here! Each crate has a label and a value, just like a variable: bricks = 100.',
+    2: 'The foundation is laid: 10 * 10 = 100 tiles. Numbers measure everything before we build.',
+    3: 'The walls and roof are up! A string is a row of letters, like a wall is a row of bricks. Tap the house to go inside.',
+    4: 'The front door and mailbox are in! input() is how things come in from outside.',
     5: 'Two lamps! Place them, then tap one to switch it on and off.',
     6: 'A garden gate! It only opens if the condition is True.',
     7: 'Your staircase is built! A loop climbs it one step at a time. Floor 2 opens with the next level.',
     8: 'The porch light is on and the moth is happy! You finished the whole ground floor!'
   };
+
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
-    var part = document.querySelector('#houseSvg [data-part="' + n + '"]');
+    var parts = document.querySelectorAll('#houseSvg [data-part="' + n + '"]'), part = parts[0];
     if (part && !still) {
-      part.classList.add(n === 2 ? 'build-rise' : 'build-drop');
+      for (var pi = 0; pi < parts.length; pi++) parts[pi].classList.add(n === 3 ? 'build-rise' : 'build-drop');
       setTimeout(function () { // dust where it lands
         var bb = part.getBBox(), g = document.createElementNS('http://www.w3.org/2000/svg', 'g'), y = bb.y + bb.height;
         for (var k = 0; k < 6; k++) {
@@ -1165,7 +1189,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         }
         document.getElementById('houseSvg').appendChild(g);
         setTimeout(function () { g.remove(); }, 1400);
-      }, n === 2 ? 1500 : 1150);
+      }, n === 3 ? 1500 : 1150);
     }
     say(bubble, 'Watch this...', false, nb);
     setTimeout(function () { say(bubble, BUILT[n] || 'Lesson done! Look what you built.', true, nb); }, still ? 0 : 1500);
