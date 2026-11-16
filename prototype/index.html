@@ -819,7 +819,7 @@ button.deck.locked { cursor: default; }
   <section class="screen" id="learn" aria-label="Lesson" hidden>
     <div class="qhead pad">
       <button class="iconbtn" data-go="home" aria-label="Back to path"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <div class="lanterns" id="learnProg" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span></div>
+      <div class="lanterns" id="learnProg" aria-hidden="true"></div>
     </div>
     <div class="scroll pad">
       <span class="qtag" id="learnTag">Room 4 · Learn</span>
@@ -2771,7 +2771,7 @@ button.deck.locked { cursor: default; }
     BOARD = LD.board; Q = LD.quiz;
     applyNarrator();
     lesson.step = 0; lesson.seen = BOARD.map(function () { return false; }); lesson.paused = null; lesson.pos = null;
-    document.getElementById('learnProg').innerHTML = BOARD.map(function (x, k) { return '<span' + (k === 0 ? ' class="on"' : '') + '></span>'; }).join('') + '<span></span>';
+    document.getElementById('learnProg').innerHTML = BOARD.map(function () { return '<span></span>'; }).join('');
     document.getElementById('boardLines').innerHTML = '';
     document.getElementById('learnTag').textContent = LD.tag;
     document.getElementById('learnTitle').textContent = LD.title;
@@ -3039,7 +3039,7 @@ button.deck.locked { cursor: default; }
       s.appendChild(b);
     });
     var bars = document.querySelectorAll('#learnProg span');
-    bars.forEach(function (sp, i) { sp.classList.toggle('on', i === 0 || lesson.seen[i - 1]); });
+    bars.forEach(function (sp, i) { sp.classList.toggle('on', !!lesson.seen[i] || i === lesson.step); });
   }
   document.getElementById('playBtn').addEventListener('click', function () {
     if (lesson.playing) stopBoard(true); else playOrResume();
