@@ -746,14 +746,17 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     }
     return out;
   }
-  // String tools: a repeating pattern on the upstairs walls, like "◆" * 8
-  function wallpaper(v, len, rows, z0, dz, size) {
-    var out = '';
-    for (var a = 0.5; a < len; a += 1) for (var r = 0; r < rows; r++) {
-      var z = z0 + r * dz, c = r % 2 ? '#FFB0D8' : '#C3A6FF', o = (r % 2) * 0.5, dx = size / 40;
-      out += poly([P(v, a + o, 0, z + size), P(v, a + o + dx, 0, z), P(v, a + o, 0, z - size), P(v, a + o - dx, 0, z)], c, ' opacity=".45"');
-      out += poly([P(v, 0, a + o, z + size), P(v, 0, a + o + dx, z), P(v, 0, a + o, z - size), P(v, 0, a + o - dx, z)], c, ' opacity=".45"');
+  // String tools: striped wallpaper on the upstairs walls, one stripe repeated like "|" * 20.
+  // Stripes stay inside each wall: they stop short of the corner, the wall's end, and the floor, so nothing pokes out.
+  function wallpaper(v, len, z0, z1) {
+    var out = '', w = 0.09;
+    for (var a = 0.3; a <= len - 0.25; a += 0.5) {
+      var c = Math.round(a * 2) % 2 ? '#FFB0D8' : '#C3A6FF';
+      out += poly([P(v, a, 0, z0), P(v, a + w, 0, z0), P(v, a + w, 0, z1), P(v, a, 0, z1)], c, ' opacity=".35"');
+      out += poly([P(v, 0, a, z0), P(v, 0, a + w, z0), P(v, 0, a + w, z1), P(v, 0, a, z1)], c, ' opacity=".35"');
     }
+    // a rail along the bottom of both walls
+    out += '<path d="M' + pts([P(v, 0, len - 0.05, z0), P(v, 0, 0, z0), P(v, len - 0.05, 0, z0)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9A2C8" stroke-width="2" opacity=".7"></path>';
     return out;
   }
   function upLit() { return FLOORS[2].some(function (r) { return hasLamp(r); }); }
@@ -945,7 +948,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var H = 52;
     s += poly([P(v, 0, 0, 0), P(v, 10, 0, 0), P(v, 10, 0, H), P(v, 0, 0, H)], '#E8CDB8') + poly([P(v, 0, 0, 0), P(v, 0, 10, 0), P(v, 0, 10, H), P(v, 0, 0, H)], '#F3DDCB');
     s += poly([P(v, 0, 0, H), P(v, 10, 0, H), P(v, 10, -0.25, H), P(v, -0.25, -0.25, H), P(v, -0.25, 10, H), P(v, 0, 10, H)], '#C8664F');
-    if (VIEW_FLOOR === 2 && PROGRESS >= 15) s += '<g data-part="14">' + wallpaper(v, 10, 3, 12, 14, 4) + '</g>';
+    if (VIEW_FLOOR === 2 && PROGRESS >= 15) s += '<g data-part="14">' + wallpaper(v, 10, 6, 48) + '</g>';
     function partition(a, b) { var h = 12; return poly([P(v, a[0], a[1], 0), P(v, b[0], b[1], 0), P(v, b[0], b[1], h), P(v, a[0], a[1], h)], '#E2CDB0', ' stroke="#4A2C3E" stroke-width="0.8"'); }
     function items(r) {
       var out = '', m = roomMap(r), zs = 0.42, list = state.placed[r].slice();
@@ -1101,7 +1104,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += poly([P(v, 0, 0, 0), P(v, GRID, 0, 0), P(v, GRID, 0, TALL), P(v, 0, 0, TALL)], R.wallR);
     s += '<path d="M' + pts([P(v, 0, GRID, 300), P(v, 0, 0, 300), P(v, GRID, 0, 300)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9AE96" stroke-width="4"></path>';
     s += '<path d="M' + P(v, 0, 0, 0)[0] + ' ' + P(v, 0, 0, 0)[1] + ' V-600" stroke="#000" stroke-opacity=".06" stroke-width="2"></path>';
-    if (FLOORS[2].indexOf(r) >= 0 && PROGRESS >= 15) s += wallpaper(v, GRID, 6, 70, 46, 6);
+    if (FLOORS[2].indexOf(r) >= 0 && PROGRESS >= 15) s += wallpaper(v, GRID, 14, 900);
     var wmc = { ox: v.ox, oy: v.oy, w: v.w, h: v.h, wx: 0, wy: 0 };
     s += '<g transform="' + wallMatrix(wmc, 'L', 1.5, 1, 1) + '"><circle cx="0" cy="-215" r="24" fill="#FFFFFF" stroke="#8A5A35" stroke-width="5"></circle><path d="M0 -215 V-231 M0 -215 L11 -209" stroke="#2A1330" stroke-width="3" stroke-linecap="round"></path></g>';
     s += '<path d="M' + pts([P(v, 0, GRID, 8), P(v, 0, 0, 8), P(v, GRID, 0, 8)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9AE96" stroke-width="3"></path>';
@@ -1603,7 +1606,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     11: 'The corner posts are set in concrete at fixed spots, like a tuple: (0, 0), (10, 0)… they will never move.',
     12: 'Four walls, one per side, no repeats: a set! Down comes the roof. Your house has two floors now!',
     13: 'Every upstairs door has a name plate. Look up a room by its name, like a dictionary: rooms["kitchen"].',
-    14: 'Wallpaper! One pattern, repeated along every wall, like "◆" * 8.',
+    14: 'Wallpaper! One stripe, repeated all along the walls, like "|" * 20.',
     15: 'The kitchen is in: a sink and a stove. Every recipe in it is a function, written once, cooked many times.',
     16: 'An oven with dials! Leave a dial alone and it uses its default, like level=3.',
     17: 'Errors happen in every kitchen. The smoke alarm catches them so the house carries on: try and except.',

@@ -1,7 +1,7 @@
 KEY, IDX = 'strtools', 14
 META = dict(tag='String tools · Second floor', title='String tools: shaping text', topic='string tools',
             lastBtn='Hang the wallpaper', doneTitle='The wallpaper is up!',
-            doneText='You learned string tools: replace, split, join, strip, find, step slices and neat f-strings. The upstairs walls have patterned wallpaper, a pattern repeated like "◆" * 8. Your notice board is in the house.')
+            doneText='You learned string tools: replace, split, join, strip, find, step slices and neat f-strings. The upstairs walls have patterned wallpaper, stripes repeated like "|" * 20. Your notice board is in the house.')
 QUIZ = [
  ('What does this show?', 'print("cat".replace("c", "h"))', ['hat', 'cat', 'hcat', 'An error'], 0,
   ['replace swaps c for h: hat.', 'replace gives a new string with the change in it.', 'replace swaps, it does not add.', 'replace is a normal string method.']),
