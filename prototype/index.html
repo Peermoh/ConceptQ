@@ -400,7 +400,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .teacher.talking { filter: drop-shadow(0 0 10px rgba(124,245,200,0.6)); }
 .board-ctrl { display: flex; align-items: center; gap: 10px; }
 .playbtn { width: 56px; height: 56px; border-radius: 50%; background: var(--amber); color: #2A1A05; display: grid; place-items: center; box-shadow: inset 0 -4px 0 var(--amber-deep), 0 8px 20px var(--amber-glow); flex-shrink: 0; }
-.steps { flex: 1; display: flex; gap: 6px; }
+.stopbtn { width: 44px; height: 44px; border-radius: 50%; background: var(--panel-2); border: 1.5px solid var(--line); color: var(--cream); display: grid; place-items: center; flex-shrink: 0; }
+.steps { flex: 1; display: flex; gap: 6px; min-width: 0; }
 .steps button { flex: 1; min-height: 44px; border-radius: 12px; background: var(--panel); border: 1.5px solid var(--line); font-size: 13px; color: var(--muted); }
 .steps button.on { border-color: var(--amber); color: var(--cream); }
 .steps button.seen { color: var(--cream); }
@@ -577,6 +578,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         </div>
         <div class="board-ctrl">
           <button class="playbtn" id="playBtn" aria-label="Play lesson"></button>
+          <button class="stopbtn" id="stopBtn" aria-label="Stop and start again from the beginning"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg></button>
           <div class="steps" id="steps"></div>
         </div>
         <div class="caption" id="caption" aria-live="polite"></div>
@@ -2189,7 +2191,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     LD = LESSON_DATA[n]; openLessonIdx = n;
     if (typeof stopBoard === 'function') stopBoard();
     BOARD = LD.board; VOICE = LD.voice; Q = LD.quiz;
-    lesson.step = 0; lesson.seen = BOARD.map(function () { return false; });
+    lesson.step = 0; lesson.seen = BOARD.map(function () { return false; }); lesson.paused = null; lesson.pos = null;
     document.getElementById('boardLines').innerHTML = '';
     document.getElementById('learnTag').textContent = LD.tag;
     document.getElementById('learnTitle').textContent = LD.title;
@@ -2231,7 +2233,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   function clockNow() {
     var c = lesson.clock; if (!c) return 0;
     if (c.mode === 'audio') return voiceEl.currentTime;
-    if (c.mode === 'tts' && c.ch >= 0) return Math.max(c.ch / CHARS_PER_SEC, (performance.now() - c.ttsStart) / 1000 * 0.6);
+    if (c.mode === 'tts' && c.ch >= 0) return Math.max(c.ch / CHARS_PER_SEC, (c.chBase || 0) / CHARS_PER_SEC + (performance.now() - c.ttsStart) / 1000 * 0.6);
     return (performance.now() - c.start) / 1000;
   }
   function cueTime(step, k) {
@@ -2240,9 +2242,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     var j = step.cue ? step.say.indexOf(step.cue[k]) : -1;
     return j >= 0 ? j / CHARS_PER_SEC : k * 1.6;
   }
-  function speak(text, tok, idx) {
+  // resume (optional): carry on from a pause, at resume.t seconds into the recording,
+  // or for the device voice from character resume.ch of the sentence
+  function speak(text, tok, idx, resume) {
     return new Promise(function (resolve) {
-      var est = Math.max(2600, text.length * 62);
+      var est = Math.max(2600, text.length * 62) - (resume ? resume.t * 1000 : 0);
+      if (est < 600) est = 600;
       var finished = false;
       function done() { if (!finished) { finished = true; voiceEl._end = null; resolve(); } }
       voiceEl._end = done;
@@ -2251,12 +2256,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         if (!lesson.voice || !hasTTS) { setTimeout(done, est); return; }
         try {
           speechSynthesis.cancel();
-          var u = new SpeechSynthesisUtterance(text);
+          var chBase = resume && resume.ch > 0 ? resume.ch : 0;
+          var u = new SpeechSynthesisUtterance(text.slice(chBase));
           var v = pickVoice(); if (v) u.voice = v;
           u.rate = 0.98; u.pitch = 1.0;
           u.onend = done; u.onerror = done;
-          u.onstart = function () { lesson.clock = { mode: 'tts', ch: 0, ttsStart: performance.now(), start: lesson.clock ? lesson.clock.start : performance.now() }; };
-          u.onboundary = function (ev) { if (lesson.clock && lesson.clock.mode === 'tts') lesson.clock.ch = ev.charIndex; };
+          u.onstart = function () { lesson.clock = { mode: 'tts', ch: chBase, chBase: chBase, ttsStart: performance.now(), start: lesson.clock ? lesson.clock.start : performance.now() }; };
+          u.onboundary = function (ev) { if (lesson.clock && lesson.clock.mode === 'tts') lesson.clock.ch = chBase + ev.charIndex; };
           setTimeout(done, est + 4000);
           speechSynthesis.speak(u);
         } catch (e) { setTimeout(done, est); }
@@ -2266,8 +2272,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
           voiceEl._unlockTok = null;
           voiceEl.pause();
           voiceEl.muted = false;
-          voiceEl.src = VOICE[idx];
-          voiceEl.currentTime = 0;
+          var startAt = resume && resume.mode === 'audio' ? resume.t : 0;
+          if (voiceEl.getAttribute('src') !== VOICE[idx]) voiceEl.src = VOICE[idx];
+          try { voiceEl.currentTime = startAt; } catch (e) {}
+          if (startAt && voiceEl.readyState < 1) voiceEl.addEventListener('loadedmetadata', function () { try { voiceEl.currentTime = startAt; } catch (e) {} }, { once: true });
           var usedFallback = false;
           function fallback() { if (!usedFallback && !finished) { usedFallback = true; if (lesson.clock.mode === 'audio') { lesson.clock.mode = 'silent'; lesson.clock.start = performance.now(); } deviceVoice(); } }
           voiceEl.onended = done;
@@ -2279,6 +2287,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
           return;
         } catch (e) { /* fall through to the device voice */ }
       }
+      // not playing the recording: keep the clock running from where it is (start was already set for a resume)
+      if (lesson.clock && lesson.clock.mode === 'audio') lesson.clock.mode = 'silent';
       deviceVoice();
     });
   }
@@ -2306,14 +2316,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     if (!rig.classList.contains('writing') && !rig.style.transform) return;
     rig.classList.remove('writing'); rig.classList.add('going-home'); rig.style.transform = '';
   }
-  async function writeLine(box, kind, text, tok, perChar) {
-    var el = document.createElement('div');
-    el.className = 'chalk ' + kind;
-    var span = document.createElement('span'); var cur = document.createElement('i'); cur.className = 'cur';
-    el.appendChild(span); el.appendChild(cur); box.appendChild(el);
-    for (var i = 1; i <= text.length; i++) {
+  // lesson.pos remembers exactly where the writing is (line k, letter c) so a pause can resume there
+  async function writeLine(box, kind, text, tok, perChar, from) {
+    var el, span, cur;
+    if (from && from.el) { el = from.el; span = el.querySelector('span'); cur = el.querySelector('.cur'); if (!cur) { cur = document.createElement('i'); cur.className = 'cur'; el.appendChild(cur); } }
+    else {
+      el = document.createElement('div'); el.className = 'chalk ' + kind;
+      span = document.createElement('span'); cur = document.createElement('i'); cur.className = 'cur';
+      el.appendChild(span); el.appendChild(cur); box.appendChild(el);
+    }
+    for (var i = (from && from.c ? from.c + 1 : 1); i <= text.length; i++) {
       if (tok !== lesson.token) return false;
       span.textContent = text.slice(0, i);
+      lesson.pos.c = i;
       if (i === 1 || i % 2 === 0 || i === text.length) teacherTo(cur);
       await sleep(perChar || (kind === 'code' ? 55 : 48), tok);
     }
@@ -2321,26 +2336,36 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     if (kind === 'title') el.classList.add('done');
     return true;
   }
-  async function playStep(i) {
+  async function playStep(i, resume) {
     var tok = ++lesson.token;
     lesson.step = i; lesson.seen[i] = true; renderSteps();
     var board = document.getElementById('board');
     var box = document.getElementById('boardLines');
-    teacherRest();
-    if (box.children.length) { board.classList.add('wipe'); if (!(await sleep(450, tok))) return; board.classList.remove('wipe'); }
-    box.innerHTML = '';
     var step = BOARD[i];
+    if (!resume) {
+      lesson.pos = { k: 0, c: 0, fresh: true }; // nothing written yet: a pause now just restarts this step
+      teacherRest();
+      if (box.children.length) { board.classList.add('wipe'); if (!(await sleep(450, tok))) return; board.classList.remove('wipe'); }
+      box.innerHTML = '';
+      lesson.pos = { k: 0, c: 0 };
+      lesson.clock = { mode: 'silent', start: performance.now(), ch: -1 };
+    } else {
+      // pick the clock up where it stopped
+      lesson.clock = { mode: resume.mode, start: performance.now() - resume.t * 1000, ch: resume.ch, chBase: resume.ch > 0 ? resume.ch : 0, ttsStart: performance.now() };
+    }
     document.getElementById('caption').textContent = step.say;
     setTalking(true);
-    lesson.clock = { mode: 'silent', start: performance.now(), ch: -1 };
-    var talk = speak(step.say, tok, i).then(function () { if (tok === lesson.token) setTalking(false); });
-    for (var k = 0; k < step.lines.length; k++) {
+    var talk = speak(step.say, tok, i, resume).then(function () { if (tok === lesson.token) setTalking(false); });
+    for (var k = resume ? resume.k : 0; k < step.lines.length; k++) {
+      var partial = resume && k === resume.k && resume.c > 0 ? { el: box.children[k], c: resume.c } : null;
+      lesson.pos = { k: k, c: partial ? resume.c : 0 };
       // wait until the voice reaches the words for this line (a tiny head start looks natural)
-      while (clockNow() < cueTime(step, k) - 0.12) { if (!(await sleep(40, tok))) return; }
+      if (!partial) while (clockNow() < cueTime(step, k) - 0.12) { if (!(await sleep(40, tok))) return; }
       var gap = (k + 1 < step.lines.length ? cueTime(step, k + 1) - cueTime(step, k) : 1.4) - 0.25;
       var perChar = Math.max(18, Math.min(60, gap * 1000 / step.lines[k][1].length));
-      if (!(await writeLine(box, step.lines[k][0], step.lines[k][1], tok, perChar))) return;
+      if (!(await writeLine(box, step.lines[k][0], step.lines[k][1], tok, perChar, partial))) return;
     }
+    lesson.pos = { k: step.lines.length, c: 0 };
     teacherRest(); // writing done: back to the corner while he finishes talking
     await talk;
     if (tok !== lesson.token) return;
@@ -2349,12 +2374,34 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     if (lesson.playing && i < BOARD.length - 1) playStep(i + 1);
     else { lesson.playing = false; renderPlay(); if (i === BOARD.length - 1) document.getElementById('caption').textContent = 'That\'s the lesson! Tap "I\'m ready for questions" when you are.'; }
   }
-  function stopBoard() {
+  function stopBoard(keepPlace) {
+    var wasPlaying = lesson.playing && lesson.pos;
+    if (keepPlace && wasPlaying) {
+      var c = lesson.clock || { mode: 'silent' };
+      lesson.paused = lesson.pos.fresh ? { step: lesson.step, fresh: true }
+        : { step: lesson.step, k: lesson.pos.k, c: lesson.pos.c, t: clockNow(), mode: c.mode, ch: c.mode === 'tts' ? (c.ch || 0) : -1 };
+    } else lesson.paused = null;
+    document.getElementById('board').classList.remove('wipe');
     lesson.token++; lesson.playing = false;
     if (hasTTS) try { speechSynthesis.cancel(); } catch (e) {}
     voiceEl.pause();
     teacherRest();
     setTalking(false); renderPlay();
+  }
+  // Stop: back to the very beginning, board wiped
+  function resetBoard() {
+    stopBoard();
+    lesson.step = 0; lesson.pos = null; lesson.seen = BOARD.map(function () { return false; });
+    document.getElementById('boardLines').innerHTML = '';
+    document.getElementById('caption').textContent = 'Tap play. Nibb will explain ' + LD.topic + ' on the board, out loud.';
+    renderSteps();
+  }
+  function playOrResume() {
+    unlockAudio();
+    lesson.playing = true; renderPlay();
+    if (lesson.paused) { var P = lesson.paused; lesson.paused = null; playStep(P.step, P.fresh ? null : P); return; }
+    var next = lesson.seen[lesson.step] && lesson.step < BOARD.length - 1 && !document.getElementById('boardLines').children.length ? lesson.step + 1 : lesson.step;
+    playStep(next);
   }
   function renderPlay() {
     var b = document.getElementById('playBtn');
@@ -2369,20 +2416,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       var b = document.createElement('button');
       b.textContent = LD.labels[i];
       b.className = (i === lesson.step ? 'on ' : '') + (lesson.seen[i] ? 'seen' : '');
-      b.addEventListener('click', function () { unlockAudio(); lesson.playing = true; renderPlay(); playStep(i); });
+      b.addEventListener('click', function () { unlockAudio(); lesson.paused = null; lesson.playing = true; renderPlay(); playStep(i); });
       s.appendChild(b);
     });
     var bars = document.querySelectorAll('#learnProg span');
     bars.forEach(function (sp, i) { sp.classList.toggle('on', i === 0 || lesson.seen[i - 1]); });
   }
   document.getElementById('playBtn').addEventListener('click', function () {
-    unlockAudio();
-    if (lesson.playing) { stopBoard(); return; }
-    lesson.playing = true; renderPlay();
-    var next = lesson.seen[lesson.step] && lesson.step < BOARD.length - 1 && !document.getElementById('boardLines').children.length ? lesson.step + 1 : lesson.step;
-    playStep(next);
+    if (lesson.playing) stopBoard(true); else playOrResume();
   });
-  document.getElementById('replayBtn').addEventListener('click', function () { unlockAudio(); lesson.playing = true; renderPlay(); playStep(0); });
+  document.getElementById('stopBtn').addEventListener('click', resetBoard);
+  document.getElementById('replayBtn').addEventListener('click', function () { unlockAudio(); lesson.paused = null; lesson.playing = true; renderPlay(); playStep(0); });
   document.getElementById('voiceBtn').addEventListener('click', function (e) {
     lesson.voice = !lesson.voice; e.currentTarget.setAttribute('aria-pressed', lesson.voice); if (!lesson.voice) { var c = lesson.clock; if (c && c.mode !== 'silent') { var now = clockNow(); c.mode = 'silent'; c.start = performance.now() - now * 1000; } if (hasTTS) speechSynthesis.cancel(); voiceEl.pause(); if (voiceEl._end) voiceEl._end(); }
     e.currentTarget.querySelector('span').textContent = lesson.voice ? 'Voice on' : 'Voice off';
@@ -2398,7 +2442,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       document.getElementById('tabRead').setAttribute('aria-selected', !watch);
       document.getElementById('watchPane').hidden = !watch;
       document.getElementById('readPane').hidden = watch;
-      if (!watch) stopBoard();
+      if (!watch) stopBoard(true);
+      else if (!lesson.playing) playOrResume();
     });
   });
   document.getElementById('teacher').innerHTML = lumiSVG('happy');
