@@ -23,8 +23,9 @@
 .path-row { position: relative; }
 .park-slot { width: 70px; height: 64px; right: 10px; bottom: calc(var(--navh, 76px) + 6px); }
 .buddy { position: absolute; inset: 0; width: 100%; height: 100%; }
-.buddy.arrive { animation: buddyArrive 0.38s cubic-bezier(.2,.8,.2,1); }
-@keyframes buddyArrive { from { transform: scale(0.3) translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+.buddy { transform-origin: 0 0; }
+.buddy.flying .buddy-point { opacity: 0 !important; }        /* the pointer appears once he has landed */
+.buddy.flying .lumi { filter: drop-shadow(-10px 10px 8px rgba(124,245,200,0.35)); }
 .buddy .lumi { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: auto; }
 .buddy-point { position: absolute; left: 34%; top: 92%; width: 32%; height: 35%; opacity: 0; transition: opacity 0.2s ease; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
 .buddy.point-down .buddy-point { opacity: 1; animation: pointDown 0.8s ease-in-out infinite; }
@@ -47,7 +48,7 @@
 .buddy.sleeping .zzz text { animation: zFloat 2.4s ease-in-out infinite; }
 .buddy.sleeping .zzz .z2 { animation-delay: 0.8s; } .buddy.sleeping .zzz .z3 { animation-delay: 1.6s; }
 @keyframes zFloat { 0% { opacity: 0; transform: translate(0, 8px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -10px); } }
-@media (prefers-reduced-motion: reduce) { .buddy.arrive { animation: none; } .buddy.sleeping .lumi { animation: none; transform: translate(16%, 9%) rotate(80deg) scale(0.68); } .buddy.sleeping.side-left .lumi { transform: translate(-16%, 9%) rotate(-80deg) scale(0.68); } .buddy-point, .zzz text { animation: none !important; } .buddy.sleeping .zzz text { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .buddy.sleeping .lumi { animation: none; transform: translate(16%, 9%) rotate(80deg) scale(0.68); } .buddy.sleeping.side-left .lumi { transform: translate(-16%, 9%) rotate(-80deg) scale(0.68); } .buddy-point, .zzz text { animation: none !important; } .buddy.sleeping .zzz text { opacity: 1; } }
 .home-hero .bubble { left: 122px; top: 4px; }
 #home .lesson-card, #home .house-card, #home .course, #home .tile, #home .topic, #home .topbar .chip, #home .brand {
   background: rgba(22, 9, 28, 0.84); border-color: rgba(255, 241, 226, 0.14); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1125,10 +1126,29 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   function moveBuddy(mode) {
     if (mode === buddyMode && buddy.parentNode === slots[mode]) return;
     buddyMode = mode;
+    // Fly, don't teleport: note where he is, move him into the new slot, then animate from the old
+    // spot to the new one along an arc (lift up, tilt into the flight, shrink or grow on the way).
+    var from = buddy.getBoundingClientRect();
     slots[mode].appendChild(buddy);
+    var to = buddy.getBoundingClientRect();
     buddy.classList.toggle('point-down', mode === 'topic');
     buddy.classList.toggle('point-up', mode === 'park');
-    buddy.classList.remove('arrive'); void buddy.offsetWidth; if (!still) buddy.classList.add('arrive');
+    if (buddy._placed && !still && buddy.animate && from.width && to.width) {
+      // if his old spot already scrolled off screen, start the flight from the screen edge so it is all visible
+      var hr0 = document.getElementById('home').getBoundingClientRect();
+      var fromTop = Math.max(hr0.top - from.height * 0.4, Math.min(from.top, hr0.bottom - from.height * 0.6));
+      var dx = from.left - to.left, dy = fromTop - to.top, sc = from.width / to.width;
+      var lift = 24, tilt = dx > 0 ? -14 : 14, swing = dx > 0 ? -28 : 28;
+      if (buddy._flight) buddy._flight.cancel();
+      buddy._flight = buddy.animate([
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')' },
+        { transform: 'translate(' + (dx * 0.45 + swing) + 'px,' + (dy * 0.45 - lift) + 'px) scale(' + ((sc + 1) / 2) + ') rotate(' + tilt + 'deg)', offset: 0.5 },
+        { transform: 'translate(0,-6px) rotate(' + (-tilt / 3) + 'deg)', offset: 0.85 },
+        { transform: 'none' }
+      ], { duration: 700, easing: 'cubic-bezier(.45,0,.25,1)' });
+      buddy.classList.add('flying'); buddy._flight.onfinish = buddy._flight.oncancel = function () { buddy.classList.remove('flying'); };
+    }
+    buddy._placed = true;
   }
   function chooseSlot() {
     if (document.getElementById('home').hidden) return;
