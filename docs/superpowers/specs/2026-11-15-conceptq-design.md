@@ -120,13 +120,17 @@ recorded with word timestamps), a Read-it pane, 3 questions with a reason for ev
   Stored in `cq-profile`.
 - **Day streak** is real: opening the app on the next day adds one; missing a day starts again at 1.
 
-### Narration voice (2026-11-16)
-- Chosen voice: Microsoft neural **Ryan** (`en-GB-RyanNeural`, British male), replacing ElevenLabs Will.
-- Audio is generated once per lesson line, with per-word timings (`wt`) that drive the board cues and the
-  karaoke caption. The prototype clips were generated through Edge's read-aloud service; for the published app,
-  regenerate the same voice through Azure Speech (official API, free monthly allowance far above our needs).
-  `tools/revoice_ryan.py` shows the generation and timing alignment.
-- Narration reads each board line aloud ("We write: pens equals three") so voice and board match word for word.
+### Narration voices (2026-11-16)
+- Two voices; the learner picks one in Me: **Ryan** (`en-GB-RyanNeural`, British English, default) or
+  **Prabhat** (`en-IN-PrabhatNeural`, Indian English). Both are free Microsoft neural voices.
+- Each step's narration reads its board lines aloud ("We write: pens equals three"), so voice and board match.
+- Audio is one MP3 per step per voice in `prototype/audio/<voice>/<lesson>-<step>.mp3`, loaded when a lesson
+  opens (the page itself is ~0.25 MB). Per-word timings for both voices are in `LESSON_TIMES` and drive the board
+  cues and the karaoke caption. `tools/lesson_content.py` holds the lesson text; `tools/record_voices.py`
+  regenerates the audio and timings (for the published app, regenerate through Azure Speech).
+- A mute button beside Play/Stop turns the voice off instantly (the board carries on at reading pace); the choice
+  is remembered and matches the "Nibb reads lessons out loud" setting.
+- Lessons are 4-6 steps each (50 steps in total) with 4-6 quiz questions; Read it is generated from the steps.
 
 ### Data
 - Progress on the device only (localStorage/IndexedDB) with export/import backup, because iOS can clear site data after ~7 days unless the app is added to the home screen.
