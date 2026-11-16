@@ -2,10 +2,10 @@ import asyncio, os, re, json, sys, certifi
 certifi.where = lambda: '/root/.ccr/ca-bundle.crt'   # this environment's proxy CA
 import edge_tts
 sys.path.insert(0, '.')
-from lesson_content_floor2 import L
+from content_f2 import L
 PROXY = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
 VOICES = {'ryan': 'en-GB-RyanNeural', 'prabhat': 'en-IN-PrabhatNeural'}
-OUT = '/tmp/claude-0/-home-user/04fb4c8a-c3c6-5b70-a037-a38267535510/scratchpad/lantern/audio'
+OUT = '/tmp/claude-0/-home-user/04fb4c8a-c3c6-5b70-a037-a38267535510/scratchpad/lantern/audio_steps'  # per-step clips; deep/combine.py joins them into lantern/audio/<voice>/<key>.mp3
 norm = lambda w: re.sub(r'[^a-z0-9]', '', w.lower())
 def align(text, bounds):
     toks = [(m.start(), m.group()) for m in re.finditer(r'\S+', text)]

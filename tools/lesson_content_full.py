@@ -3,7 +3,7 @@ import json, copy
 from lesson_content import L as BASE
 L = copy.deepcopy(BASE)
 _v = json.load(open("lessons.json"))['vars']
-L['vars'] = dict(labels=_v['labels'], steps=[tuple(x) for x in _v['steps']])
+L['vars'] = dict(labels=_v['labels'][:6], steps=[tuple(x) for x in _v['steps'][:6]])
 def add(key, at, label, lines, say, cue):
     assert len(lines) == len(cue), (key, label)
     pos = -1
