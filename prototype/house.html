@@ -720,6 +720,20 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   };
   var worldKey = 'spring';
   try { var wk = localStorage.getItem('cq-iso-world'); if (WORLDS[wk]) worldKey = wk; } catch (e) {}
+  // The house follows the main page's scene (cq-scene): the same world and the same time of day.
+  // The aquarium world has no garden version, so the house shows spring there.
+  var houseTime = 'day';
+  function readScene() {
+    var sc = null; try { sc = JSON.parse(localStorage.getItem('cq-scene') || 'null'); } catch (e) {}
+    if (sc && typeof sc === 'object') { var w = sc.world === 'ocean' ? 'spring' : sc.world; if (WORLDS[w]) worldKey = w; }
+    var t = sc && sc.time && sc.time !== 'auto' ? sc.time : null;
+    if (!t) { var h = new Date().getHours(); t = h >= 5 && h < 9 ? 'morning' : h >= 9 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'sunset' : 'night'; }
+    houseTime = { morning: 1, day: 1, sunset: 1, night: 1 }[t] ? t : 'day';
+  }
+  readScene();
+  var TIME_SKY = { morning: ['#F7A8B8', '#FFE0C2'], sunset: ['#6A2E5E', '#F59A72'], night: ['#0D0A24', '#352560'] };
+  var TIME_TINT = { morning: ['#FF9AA8', 0.10], day: ['#FFFFFF', 0], sunset: ['#4A1240', 0.30], night: ['#07061C', 0.50] };
+  function tintLayer(k) { var t = TIME_TINT[houseTime]; return t[1] ? '<rect x="-600" y="-700" width="1600" height="2200" fill="' + t[0] + '" opacity="' + (t[1] * k).toFixed(2) + '" pointer-events="none"></rect>' : ''; }
 
   function tree(v, gx, gy, k) {
     var W = WORLDS[worldKey], b = P(v, gx, gy), x = b[0], y = b[1], s = '';
@@ -752,11 +766,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     return s;
   }
   function worldBack(v) {
-    var W = WORLDS[worldKey], s = '';
-    s += '<defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + W.sky[0] + '"></stop><stop offset="1" stop-color="' + W.sky[1] + '"></stop></linearGradient>' +
+    var W = WORLDS[worldKey], s = '', SK = TIME_SKY[houseTime] || W.sky;
+    s += '<defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + SK[0] + '"></stop><stop offset="1" stop-color="' + SK[1] + '"></stop></linearGradient>' +
          '<pattern id="wdots" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="' + W.ground + '"></rect><circle cx="5" cy="6" r="1.4" fill="' + W.dot + '"></circle><circle cx="16" cy="15" r="1.4" fill="' + W.dot + '"></circle></pattern></defs>';
     s += '<rect x="-600" y="-700" width="1600" height="780" fill="url(#wsky)"></rect>';
-    s += '<circle cx="330" cy="-30" r="' + (worldKey === 'snow' ? 20 : 26) + '" fill="' + (worldKey === 'snow' ? '#FFF6D8' : '#FFE58A') + '"></circle>';
+    if (houseTime === 'night') { // stars and a crescent moon, like the main page at night
+      for (var si = 0; si < 26; si++) s += '<circle class="twinkle" style="animation-delay:-' + (si * 0.37).toFixed(2) + 's" cx="' + (-560 + (si * 137) % 1540) + '" cy="' + (-660 + (si * 89) % 600) + '" r="' + (1 + (si % 3) * 0.5) + '" fill="#FFF4E0"></circle>';
+      s += '<circle cx="250" cy="-50" r="34" fill="#FFF1D2" opacity=".18"></circle><circle cx="250" cy="-50" r="18" fill="#FFF1D2"></circle><circle cx="244" cy="-54" r="3.5" fill="#E8D9B8"></circle><circle cx="255" cy="-44" r="2.5" fill="#E8D9B8"></circle>';
+    } else s += '<circle cx="330" cy="' + (houseTime === 'sunset' ? 10 : houseTime === 'morning' ? 0 : -30) + '" r="' + (worldKey === 'snow' ? 20 : 26) + '" fill="' + (houseTime === 'sunset' ? '#FF9A5A' : worldKey === 'snow' ? '#FFF6D8' : '#FFE58A') + '"></circle>';
     [[-60, -70, 70], [120, -40, 95], [300, -90, 120]].forEach(function (c, i) {
       s += '<g class="cloud" style="animation-duration:' + c[2] + 's;animation-delay:-' + (c[2] * 0.4 * (i + 1)) + 's"><g transform="translate(' + c[0] + ' ' + c[1] + ')" fill="#FFFFFF" opacity=".92"><ellipse cx="0" cy="0" rx="34" ry="12"></ellipse><circle cx="-12" cy="-8" r="14"></circle><circle cx="10" cy="-12" r="17"></circle><circle cx="26" cy="-3" r="11"></circle></g></g>';
     });
@@ -1087,8 +1104,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         var cg = poly([P(v, 4.9, 8.63, zrf(8.6) + 8), P(v, 5.5, 8.63, zrf(8.6) + 8), P(v, 5.5, 8.63, zrf(8.6) + 16), P(v, 4.9, 8.63, zrf(8.6) + 16)], '#7CF5C8', ' stroke="#08281C" stroke-width="0.8"');
         s += '<g data-part="33">' + cg + '</g>';
       }
-      if (PROGRESS >= 35) { // roof lights: bright when it is really night where you are, like roof_lights(hour)
-        var hr = new Date().getHours(), night = hr >= 19 || hr < 6, rl = '';
+      if (PROGRESS >= 35) { // roof lights: bright in the evening and at night (the same time of day as the main page), like roof_lights(hour)
+        var night = houseTime === 'night' || houseTime === 'sunset', rl = '';
         for (var li = 0; li <= 12; li++) { var lp = P(v, li * 10 / 12, 10.62, zrf(10.6) - 2); rl += (night ? '<circle cx="' + lp[0] + '" cy="' + lp[1] + '" r="6" fill="#FFE7A8" opacity=".35"></circle>' : '') + '<circle class="twinkle" style="animation-delay:-' + (li * 0.3) + 's" cx="' + lp[0] + '" cy="' + lp[1] + '" r="2.6" fill="' + ['#FFD88F', '#7CF5C8', '#FF8FC7'][li % 3] + '"></circle>'; }
         for (var lj = 1; lj <= 6; lj++) { var lq = P(v, 10.02, 10.6 - lj * 10 / 6, H - 6); rl += (night ? '<circle cx="' + lq[0] + '" cy="' + lq[1] + '" r="6" fill="#FFE7A8" opacity=".35"></circle>' : '') + '<circle class="twinkle" style="animation-delay:-' + (lj * 0.4) + 's" cx="' + lq[0] + '" cy="' + lq[1] + '" r="2.4" fill="' + ['#FF8FC7', '#FFD88F', '#7CF5C8'][lj % 3] + '"></circle>'; }
         s += '<g data-part="34">' + rl + '</g>';
@@ -1187,8 +1204,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var v = houseMode === 'inside' ? HVI : PROGRESS >= 22 ? HV3 : HV, s = '<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD28A" stop-opacity=".85"></stop><stop offset="1" stop-color="#FFB547" stop-opacity="0"></stop></radialGradient></defs>';
     document.getElementById('houseView').classList.toggle('inside', houseMode === 'inside');
     if (houseMode === 'outside') {
-      s += worldBack(v);
-      s += exterior(v) + worldFront(v);
+      readScene(); setWorldLabel();
+      s += worldBack(v) + tintLayer(1);
+      s += exterior(v) + worldFront(v) + tintLayer(0.45);
       document.getElementById('houseSvg').innerHTML = s;
       summary();
       return;
@@ -1465,7 +1483,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function setWorldLabel() { document.getElementById('worldBtn').textContent = WORLDS[worldKey].name; }
   document.getElementById('worldBtn').addEventListener('click', function () {
     worldKey = WORLD_ORDER[(WORLD_ORDER.indexOf(worldKey) + 1) % WORLD_ORDER.length];
-    try { localStorage.setItem('cq-iso-world', worldKey); } catch (e) {}
+    try { localStorage.setItem('cq-iso-world', worldKey); var sc = JSON.parse(localStorage.getItem('cq-scene') || 'null') || { weather: 'clear', time: 'auto' }; sc.world = worldKey; localStorage.setItem('cq-scene', JSON.stringify(sc)); } catch (e) {}
     setWorldLabel(); drawHouse();
   });
   setWorldLabel();

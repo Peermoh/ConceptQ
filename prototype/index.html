@@ -1904,6 +1904,7 @@ button.deck.locked { cursor: default; }
   function show(id) {
     if (id !== 'learn' && typeof stopBoard === 'function') stopBoard();
     screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
+    if (id === 'learn' && typeof sizeCaption === 'function') requestAnimationFrame(sizeCaption);
     if (id === 'home' || id === 'house' || id === 'cards' || id === 'me') renderNav(id);
     if (id === 'courses') { renderNav('home'); renderCourses(); }
     if (id === 'cards') renderCards();
@@ -2504,11 +2505,21 @@ button.deck.locked { cursor: default; }
       function () { var t = shuffled([ri(10, 13), ri(14, 17), ri(18, 21), ri(22, 25)]).slice(0, 3), up = pickOne([true, false]);
         var asc = t.slice().sort(function (a, b) { return a - b; }), desc = asc.slice().reverse();
         return mk('What does this show?', 'temps = [' + t.join(', ') + ']\nprint(sorted(temps, key=lambda t: ' + (up ? 't' : '-t') + '))', [['[' + (up ? asc : desc).join(', ') + ']', up ? 'key t sorts smallest first.' : 'The key -t puts the biggest first.'], ['[' + (up ? desc : asc).join(', ') + ']', up ? 'There is no minus, so it is smallest first.' : 'The minus flips the order: biggest first.'], ['[' + t.join(', ') + ']', 'sorted does change the order.'], ['An error', 'lambda works fine as a key.']]); }
+    ],
+    boss: [
+      function () { var h = pickOne([5, 7, 12, 17, 18, 19, 20, 22]), d = h > 18;
+        return mk('You type ' + h + '. What does this show?', 'hour = int(input("Hour? "))\ndark = hour > 18\nprint(dark)', [[d ? 'True' : 'False', h + ' > 18 is ' + (d ? 'True' : 'False') + (h === 18 ? ': 18 is not bigger than 18.' : '.')], [d ? 'False' : 'True', 'Compare ' + h + ' with 18 again: is it bigger?'], [String(h), 'dark holds the answer to the comparison, not the hour.'], ['"' + h + '"', 'int() turned the text into a number, and dark holds True or False.']]); },
+      function () { var h = pickOne([6, 10, 16, 19, 21, 23]), d = h > 18, a = pickOne(['on', 'bright']), b = pickOne(['off', 'dim']);
+        return mk('What does this show?', 'hour = ' + h + '\nif hour > 18:\n    light = "' + a + '"\nelse:\n    light = "' + b + '"\nprint("Light is " + light)', [['Light is ' + (d ? a : b), h + ' > 18 is ' + (d ? 'True, so the if part runs.' : 'False, so the else part runs.')], ['Light is ' + (d ? b : a), 'Only one branch runs: check ' + h + ' > 18.'], ['Light is light', 'Without quotes, light is a name, so Python uses what it holds.'], ['An error', 'Gluing two pieces of text is allowed.']]); },
+      function () { var n = ri(2, 5), w = pickOne(['Blink!', 'Flash!', 'Shoo!']);
+        return mk('How many times does this show ' + w + '?', 'for blink in range(' + n + '):\n    print("' + w + '")', [[String(n), 'range(' + n + ') counts 0 to ' + (n - 1) + ': that is ' + n + ' times.'], [String(n - 1), 'range(' + n + ') stops before ' + n + ', but it starts at 0, so it still runs ' + n + ' times.'], [String(n + 1), 'range does not include ' + n + ' itself.'], ['1', 'The print is inside the loop, so it repeats.']]); },
+      function () { var nm = pickOne(['Mia', 'Ali', 'Sam', 'Zoe']);
+        return mk('You type ' + nm + '. What does this show?', 'name = input("Name? ")\nprint(f"Goodnight, {name}!")', [['Goodnight, ' + nm + '!', 'The f-string puts what name holds inside the braces.'], ['Goodnight, {name}!', 'The f before the quotes fills in the braces.'], ['Goodnight, name!', 'Inside braces, name is the variable, not the word.'], ['An error', 'input gives text, and the f-string uses it fine.']]); }
     ]
   };
   // the lesson step each question tests (0-based): hand-written questions in order, then each generator
   var Q_STEPS = {"hello": [0, 1, 4, 2, 3, 5], "vars": [0, 1, 3, 3, 5, 5, 6, 7], "nums": [0, 2, 7, 3, 4, 5, 1, 6], "strings": [1, 2, 0, 3, 5, 8, 4, 4, 7, 6], "input": [1, 1, 2, 3, 1, 5], "bool": [2, 1, 5, 2, 5, 4, 3], "if": [0, 1, 2, 3, 4, 2, 5, 6], "loop": [0, 1, 5, 2, 3, 6, 4, 7, 8], "boss": [0, 1, 2, 3], "lists1": [1, 1, 2, 4, 3, 5, 6, 1], "lists2": [0, 2, 3, 5, 5, 6, 7, 3], "tuples": [1, 2, 4, 3, 5, 1, 6], "sets": [1, 2, 3, 5, 6, 7, 4], "dicts": [1, 2, 2, 3, 6, 7, 8], "strtools": [1, 2, 2, 3, 4, 6, 0, 7], "func1": [0, 0, 2, 3, 4, 1, 1], "func2": [0, 1, 3, 4, 6, 2, 8], "errors": [0, 0, 2, 2, 4, 1, 6], "files": [3, 2, 1, 5, 6, 4, 7], "modules": [1, 7, 5, 0, 3, 6, 4], "boss2": [1, 2, 4, 3, 0], "pkgs": [2, 2, 4, 5, 7, 3, 8, 6], "exc2": [0, 3, 1, 7, 4, 5, 6, 8], "unicode": [0, 1, 5, 7, 8, 4, 6, 4], "cls1": [3, 6, 5, 7, 3, 8, 5, 0], "cls2": [2, 3, 7, 5, 6, 1, 4], "names": [2, 4, 6, 6, 1, 5, 7], "inherit": [1, 2, 3, 5, 7, 8, 4], "comp": [0, 1, 3, 4, 6, 8, 5, 2], "lambda": [0, 1, 3, 4, 7, 5, 8], "filespro": [1, 2, 5, 5, 3, 6, 8], "testing": [0, 0, 2, 3, 5, 6, 8], "git": [3, 2, 4, 5, 6, 7, 8], "ai": [1, 2, 3, 4, 6, 5, 7], "challenge": [0, 1, 3, 4, 5, 6]};
-  var GEN_STEPS = {"hello": [2, 3, 1], "vars": [1, 6, 3], "nums": [3, 2, 5, 4, 1], "strings": [3, 4, 2, 4, 6], "input": [2, 1], "bool": [2, 4], "if": [2, 1], "loop": [2, 4, 6], "lists1": [1, 1, 4, 5, 6, 2], "lists2": [2, 2, 3, 6, 4, 5], "tuples": [1, 4, 1, 5], "sets": [1, 5, 3, 4], "dicts": [1, 2, 3, 8, 6], "strtools": [1, 2, 4, 6, 6, 7], "func1": [2, 4, 0, 1], "func2": [0, 4, 6, 3, 8], "errors": [2, 4, 0], "files": [5, 5, 4], "modules": [1, 2, 3], "boss2": [1, 2], "pkgs": [2, 3, 4], "exc2": [3, 5, 7], "unicode": [0, 1, 7, 5], "cls1": [3, 5, 7], "cls2": [2, 3, 7], "names": [4, 5, 2], "inherit": [2, 5, 7, 8], "comp": [0, 1, 6, 8], "lambda": [0, 1, 3, 4, 7], "filespro": [5, 5], "testing": [0, 1], "git": [4, 6], "ai": [3, 4], "challenge": [6, 3, 4]};
+  var GEN_STEPS = {"hello": [2, 3, 1], "vars": [1, 6, 3], "nums": [3, 2, 5, 4, 1], "strings": [3, 4, 2, 4, 6], "input": [2, 1], "bool": [2, 4], "if": [2, 1], "loop": [2, 4, 6], "lists1": [1, 1, 4, 5, 6, 2], "lists2": [2, 2, 3, 6, 4, 5], "tuples": [1, 4, 1, 5], "sets": [1, 5, 3, 4], "dicts": [1, 2, 3, 8, 6], "strtools": [1, 2, 4, 6, 6, 7], "func1": [2, 4, 0, 1], "func2": [0, 4, 6, 3, 8], "errors": [2, 4, 0], "files": [5, 5, 4], "modules": [1, 2, 3], "boss2": [1, 2], "pkgs": [2, 3, 4], "exc2": [3, 5, 7], "unicode": [0, 1, 7, 5], "cls1": [3, 5, 7], "cls2": [2, 3, 7], "names": [4, 5, 2], "inherit": [2, 5, 7, 8], "comp": [0, 1, 6, 8], "lambda": [0, 1, 3, 4, 7], "filespro": [5, 5], "testing": [0, 1], "git": [4, 6], "ai": [3, 4], "challenge": [6, 3, 4], "boss": [0, 1, 2, 3]};
   function makeQuiz(ld) {
     var n = ld.quiz.length, gens = shuffled(GEN[ld.key] || []), made = [];
     // one question per idea: two pop() questions, or two len() questions, in one quiz feels repetitive
@@ -5435,6 +5446,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('caption').textContent = 'Tap play. Nibb will explain ' + LD.topic + ' on the board, out loud.';
     buildReadPane();
     renderSteps(); renderPlay();
+    requestAnimationFrame(sizeCaption);
   }
   // One reusable player. Phones only allow audio that starts from a tap, so the first tap
   // unlocks this element and every later step reuses it (a new Audio() per step gets blocked).
@@ -5584,6 +5596,17 @@ button.deck.locked { cursor: default; }
   // ---- karaoke caption: each word lights up as Will says it ----
   // Exact word times (step.wt) come from the recording; without them the time is estimated from where the
   // word sits in the sentence, the same way the board cues are estimated.
+  // the caption keeps room for this lesson's longest sentence, measured at its real width, so the text never
+  // runs into the buttons below it and the layout does not jump between steps
+  function sizeCaption() {
+    var cap = document.getElementById('caption'); if (!cap || !cap.offsetWidth) return;
+    var probe = cap.cloneNode(false); probe.removeAttribute('id'); probe.removeAttribute('aria-live');
+    probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;min-height:0;height:auto;width:' + cap.offsetWidth + 'px';
+    cap.parentNode.appendChild(probe); var hi = 0;
+    BOARD.forEach(function (st) { probe.textContent = st.say; hi = Math.max(hi, probe.offsetHeight); });
+    probe.remove(); cap.style.minHeight = hi + 'px';
+  }
+  window.addEventListener('resize', function () { clearTimeout(sizeCaption._t); sizeCaption._t = setTimeout(sizeCaption, 150); });
   function renderCaption(step) {
     var cap = document.getElementById('caption'); cap.textContent = '';
     var re = /\S+/g, m, k = 0; step._w = [];
