@@ -104,6 +104,15 @@ Boss (porch light). After the boss, Home shows "ground floor complete"; finished
 Each lesson is data: board lines with spoken cues and recorded timings, narration (ElevenLabs, voice Will,
 recorded with word timestamps), a Read-it pane, 3 questions with a reason for every option, and done-screen text.
 
+### Cards and Me tabs (2026-11-16)
+- **Cards:** each finished lesson adds 3 flashcards (27 for the ground floor). Leitner boxes 1-5 with gaps of
+  0, 1, 3, 7 and 16 days; "Got it" moves a card up a box, "Again" sends it to box 1 and back into the current
+  session. Stored in `cq-cards` and re-checked on load. Home's cards tile shows the real number due.
+- **Me:** name, age (5-18+, sets "for age X" and hides courses above the learner's age), avatar colour,
+  lesson voice/caption defaults, Nibb's idle antics on/off, real stats, and a two-tap "Start over".
+  Stored in `cq-profile`.
+- **Day streak** is real: opening the app on the next day adds one; missing a day starts again at 1.
+
 ### Data
 - Progress on the device only (localStorage/IndexedDB) with export/import backup, because iOS can clear site data after ~7 days unless the app is added to the home screen.
 - Lesson content in data files, not code, using one level format that AI-generated quests will reuse later. Each file carries a format version.
