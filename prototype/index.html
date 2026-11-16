@@ -483,6 +483,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   #quiz .scroll { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; row-gap: 12px; align-content: start; }
   #quiz .scroll > * { grid-column: 1; }
   #quiz .options { grid-column: 2; grid-row: 1 / span 4; align-self: start; }
+  /* Home on a computer: the topics stack downwards in rows, and the list scrolls up and down */
+  .topics { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); overflow-x: hidden; overflow-y: auto;
+    max-height: min(350px, 50vh); padding: 2px 4px 4px 2px; scrollbar-width: thin; scrollbar-color: rgba(255,181,71,0.6) transparent; }
+  .topics::-webkit-scrollbar { display: block; width: 8px; }
+  .topics::-webkit-scrollbar-thumb { background: rgba(255,181,71,0.6); border-radius: 8px; }
+  .tscroll { display: none !important; }
 }
 /* phones held sideways are short: tighten the vertical spacing */
 @media (max-height: 520px) and (min-aspect-ratio: 5/4) {
@@ -1718,6 +1724,7 @@ button.deck.locked { cursor: default; }
     drawNodes();
     renderTopics();
     var nowTile = document.querySelector('#topics .topic.now'), trow = document.getElementById('topics'); if (nowTile) trow.scrollLeft += nowTile.getBoundingClientRect().left - trow.getBoundingClientRect().left - 16;
+    if (nowTile) { var vr = trow.getBoundingClientRect(), tr = nowTile.getBoundingClientRect(); if (tr.bottom > vr.bottom || tr.top < vr.top) trow.scrollTop += tr.top - vr.top - 6; }
     if (window.topicArrows) setTimeout(window.topicArrows, 0);
     renderHouseCard(); renderHomeTiles(); applyProfile();
     setTimeout(watchSlots, 0); scheduleIdle();
