@@ -257,7 +257,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 21) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Boss'];
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge'];
   var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
@@ -267,7 +267,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
   var UPSTAIRS = PROGRESS >= 13; // Sets builds the floor-2 walls and lowers the roof
   var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
-  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the boss, a garden party on the balcony.', 21: 'Floor 2 is complete: you finished Intermediate!' };
+  var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete: you finished Intermediate!' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
   var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'stairs'];
@@ -833,7 +833,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       up += '<path d="M' + pts([P(v, 0, 10, G1), P(v, 10, 10, G1), P(v, 10, 0, G1)]).replace(/ /g, ' L') + '" fill="none" stroke="#C9A27C" stroke-width="4"></path>';
       [[1.2, 1.0], [5.0, 1.1], [7.6, 1.1]].forEach(function (w) { up += '<g transform="translate(0 -56)"><g transform="' + frontPlane(v, w[0], 10, true) + '">' + windowArt(w[1] * L, upLit()) + '</g></g>'; });
       (PROGRESS >= 21 ? [[1.2, 1.1], [8.1, 1.1]] : [[1.2, 1.1], [3.1, 1.1], [6.2, 1.1], [8.1, 1.1]]).forEach(function (w) { up += '<g transform="translate(0 -56)"><g transform="' + frontPlane(v, 10, w[0], false) + '">' + windowArt(w[1] * L, upLit()) + '</g></g>'; });
-      if (PROGRESS >= 21) { // the floor-2 boss builds a balcony, with flower boxes and party lights
+      if (PROGRESS >= 21) { // the floor-2 Master Builder challenge builds a balcony, with flower boxes and party lights
         var bc = '', z0 = G1 + 2;
         // the balcony door: glass panes in a wooden frame, opening from the upstairs landing side
         bc += '<g transform="translate(0 -' + (z0 - 0) + ')"><g transform="' + frontPlane(v, 10, 4.5, false) + '"><rect x="-3" y="-50" width="' + (1.4 * L + 6) + '" height="50" rx="3" fill="#8A5A35"></rect>' +

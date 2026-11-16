@@ -302,8 +302,8 @@ lesson('modules', [
 ])
 lesson('boss2', [
  ('Guests', [['title','Party on the balcony!'],['code','names = []'],['code','with open("guests.txt") as f:'],['code','    for line in f:'],['code','        names.append(line.strip())']],
-  "Boss time! Plan a garden party on your new balcony. names equals an empty list. with open guests dot t x t as f: for line in f: names dot append line dot strip. Now every guest is in the list.",
-  ['Boss time!','names equals an empty list','with open guests','for line in f','names dot append']),
+  "Challenge time! Plan a garden party on your new balcony. names equals an empty list. with open guests dot t x t as f: for line in f: names dot append line dot strip. Now every guest is in the list.",
+  ['Challenge time!','names equals an empty list','with open guests','for line in f','names dot append']),
  ('No repeats', [['title','No one invited twice'],['code','guests = set(names)'],['code','print(len(guests))'],['chalk','repeats are gone']],
   "Some names were written twice. guests equals set of names removes the repeats. print len of guests says how many people are really coming.",
   ['Some names were written twice','guests equals set of names','print len of guests','how many people are really coming']),

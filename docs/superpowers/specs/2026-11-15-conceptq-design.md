@@ -207,3 +207,12 @@ quiz built fresh every time (hand-written questions + generators checked against
 - New items are carried in by Nibb at the build moment (moveIn), into a room that suits them.
 - Tools: `tools/addlesson.py` adds a lesson from a `spec_*.py`; `tools/check_quizzes.js` + `tools/verify_generators.py`
   check every quiz and every generator against Python.
+
+### Review round (2026-11-16)
+- **Quiz:** one answer per question; Back shows earlier answers with their explanation. A lesson finishes only when
+  every answer is right; otherwise a results screen lists the steps to look at again (each question is tagged with
+  the step it tests: `Q_STEPS` / `GEN_STEPS`), each with "Watch it again", plus "Try a new quiz" (fresh questions).
+- **"Boss" is now the Master Builder challenge** everywhere (path label "Challenge"; narration re-recorded).
+- **Desktop:** the topic row stays horizontal and scrolls with arrow buttons, the mouse wheel, or click-and-drag.
+- **House:** new things are placed against a wall and away from other furniture; upstairs outer walls have windows,
+  not doors; the kitchen door is off the counter wall; the balcony has a glass door; items arrive faster.

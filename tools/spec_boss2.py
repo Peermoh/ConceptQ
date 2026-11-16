@@ -1,7 +1,7 @@
 KEY, IDX = 'boss2', 20
-META = dict(tag='Boss · Second floor', title='Boss: the garden party', topic='the floor-2 boss',
+META = dict(tag='Master Builder · Second floor', title='Master Builder: The garden party', topic='the Master Builder challenge',
             lastBtn='Throw the party', doneTitle='Party on the balcony!',
-            doneText='You beat the floor-2 boss: files, sets, dictionaries, functions, modules and try / except, all working together. The balcony is built and the party lights are on. You finished the second floor!')
+            doneText='You beat the Master Builder challenge: files, sets, dictionaries, functions, modules and try / except, all working together. The balcony is built and the party lights are on. You finished the second floor!')
 QUIZ = [
  ('What does this show?', 'names = ["Mia", "Ali", "Mia"]\nprint(len(set(names)))', ['2', '3', '1', 'An error'], 0,
   ['set removes the repeated Mia: 2 guests.', 'That counts Mia twice. A set keeps her once.', 'Ali and Mia are different names.', 'set() works on any list.']),

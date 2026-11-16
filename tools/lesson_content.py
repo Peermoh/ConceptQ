@@ -136,8 +136,8 @@ L['loop'] = dict(labels=['1. for','2. range','3. Steps','4. Letters','5. while',
 ])
 L['boss'] = dict(labels=['1. Ask','2. Decide','3. Blink','4. Goodnight'], steps=[
  ([['title','Light the porch!'],['code','hour = int(input("Hour? "))'],['chalk','you type: 20'],['code','dark = hour > 18'],['out','→ dark is True']],
-  "Boss time! The porch-light moth is waiting. hour equals int, of input, Hour? If you type twenty, dark equals hour greater than eighteen, so dark is True.",
-  ['Boss time!','hour equals int','If you type twenty','dark equals hour','so dark is True']),
+  "Challenge time! The porch-light moth is waiting. hour equals int, of input, Hour? If you type twenty, dark equals hour greater than eighteen, so dark is True.",
+  ['Challenge time!','hour equals int','If you type twenty','dark equals hour','so dark is True']),
  ([['title','Decide'],['code','if dark:'],['code','    light = "on"'],['code','else:'],['code','    light = "off"']],
   "Now decide. if dark: light equals on. else: light equals off.",
   ['Now decide','if dark','light equals on','else:','light equals off']),
