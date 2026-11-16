@@ -561,6 +561,49 @@ button.deck { width: 100%; text-align: left; font: inherit; color: inherit; curs
 button.deck.locked { cursor: default; }
 .deck[aria-pressed="true"] { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(255,181,71,0.35); }
 .deck-ic svg { display: block; }
+
+/* ================= Home dashboard ================= */
+.dash { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.dash > .house-card { grid-column: 1 / -1; }
+.dash > #streakTile { grid-column: 1 / -1; min-height: 0; }
+.dash-tile { text-align: left; gap: 6px; min-height: 128px; justify-content: space-between; color: var(--cream); font: inherit; cursor: pointer; }
+.tile-t { font-family: var(--font-display); font-weight: 400; font-size: 17px; }
+.dash-tile .row.big { justify-content: flex-start; align-items: baseline; gap: 6px; }
+.dash-tile .more { color: var(--amber); font-weight: 800; font-size: 12px; }
+.c-stack { display: flex; }
+.c-stack .c-ic { width: 24px; height: 24px; border-radius: 8px; font-size: 10px; font-style: normal; margin-left: -6px; border: 2px solid var(--night); }
+.c-ic.games { background: #7CF5C8; }
+#home .dash-tile, #home .house-card { background: rgba(22, 9, 28, 0.84); border-color: rgba(255, 241, 226, 0.14); }
+.buddy-next { position: absolute; right: 92%; top: 22%; white-space: nowrap; min-height: 34px; padding: 0 12px; border-radius: 999px; background: var(--amber); color: #2A1A05; font-weight: 900; font-size: 13px; border: 0; box-shadow: 0 6px 16px rgba(0,0,0,0.35); opacity: 0; transform: scale(0.8); transition: opacity 0.25s ease, transform 0.25s ease; pointer-events: none; }
+.buddy.parked .buddy-next { opacity: 1; transform: none; pointer-events: auto; }
+.buddy.parked.flying .buddy-next { opacity: 0; }
+/* ================= Courses screen ================= */
+#courses { background: var(--night); }
+#coursesBody { display: flex; flex-direction: column; gap: 16px; }
+.course-big { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.cb-head { display: flex; gap: 14px; align-items: center; }
+.cb-head .c-ic { width: 56px; height: 56px; border-radius: 18px; font-size: 18px; }
+.cb-t { display: flex; flex-direction: column; gap: 3px; }
+.cb-t b { font-family: var(--font-display); font-weight: 400; font-size: 24px; }
+.cb-t span { color: var(--muted); }
+.levels-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lvl { background: rgba(0,0,0,0.2); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; border: 1.5px solid transparent; }
+.lvl.on { border-color: var(--amber); }
+.lvl.locked { opacity: 0.6; }
+.lvl-t { display: flex; flex-direction: column; gap: 2px; }
+.lvl-t span, .lvl-n { color: var(--muted); font-size: 13px; }
+.course-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.course-grid .course.soon { opacity: 1; }
+.course-grid .c-ic { color: #2A1330; }
+.later-note { margin: 0; color: var(--muted); font-size: 14px; }
+@media (min-width: 640px) and (min-aspect-ratio: 5/4) {
+  .dash { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dash > #streakTile { grid-column: auto; min-height: 128px; }
+  .dash .c-stack { display: none; }
+  #coursesBody { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; column-gap: 24px; }
+  #coursesBody > .course-big { grid-row: 1 / span 4; }
+}
+@media (min-width: 900px) { .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
 <div class="stage">
@@ -625,34 +668,28 @@ button.deck.locked { cursor: default; }
         <div class="topics" id="topics"></div>
       </section>
 
-      <button class="house-card" id="houseCard" data-nav="house">
+      <div class="dash" aria-label="Your dashboard">
+        <button class="house-card" id="houseCard" data-nav="house">
         <svg class="house-mini" id="houseMini" viewBox="0 0 120 90" aria-hidden="true"></svg>
         <span class="hc-text"><b>My House</b><span id="houseStatus">3 items waiting to be placed</span></span>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </button>
-
-      <section class="courses" aria-label="Courses">
-        <div class="path-row-head"><b>Courses</b><span id="ageLabel">for age 12</span></div>
-        <div class="course on">
-          <span class="c-ic py" aria-hidden="true">Py</span>
-          <span class="c-body"><b>Python</b><span id="pyLevel">Beginner · ground floor</span>
-            <span class="levels" aria-label="Levels"><i class="lv on">Beginner</i><i class="lv">Intermediate</i><i class="lv">Advanced</i><i class="lv">Expert</i></span>
-            <span class="bar"><i id="pyBar" style="width: 33%"></i></span></span>
-        </div>
-        <div class="course soon" id="courseWeb"><span class="c-ic web" aria-hidden="true">&lt;/&gt;</span><span class="c-body"><b>Web pages</b><span>HTML and CSS · builds a shop next door</span></span><span class="soon-tag">Soon</span></div>
-        <div class="course soon"><span class="c-ic math" aria-hidden="true">÷</span><span class="c-body"><b>Maths with code</b><span>Builds a garden and a greenhouse</span></span><span class="soon-tag">Soon</span></div>
-      </section>
-
-      <div class="tiles">
-        <button class="tile" id="cardsTile" data-nav="cards">
-          <span class="row"><span class="num" id="cardsDue">0</span>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F2C6E0" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2.5"/><path d="M8 3h9a3 3 0 0 1 3 3v11"/></svg></span>
-          <span class="lbl" id="cardsDueLbl">cards are fading. Review them to keep them bright.</span>
+        <button class="tile dash-tile" id="coursesTile" data-nav="courses" aria-label="Courses. See all courses.">
+          <span class="row"><b class="tile-t">Courses</b><span class="c-stack" aria-hidden="true"><i class="c-ic py">Py</i><i class="c-ic web">&lt;/&gt;</i><i class="c-ic math">÷</i></span></span>
+          <span class="lbl" id="pyLevel">Python · beginner</span>
+          <span class="bar"><i id="pyBar" style="width: 0%"></i></span>
+          <span class="lbl more" id="coursesMore">See all courses</span>
         </button>
-        <div class="tile">
-          <span class="row"><span class="num" id="streakNum">1</span><span class="dots" id="streakDots" aria-label="1 of 7 days"></span></span>
-          <span class="lbl" id="streakLbl">days in a row.</span>
-        </div>
+        <button class="tile dash-tile" id="cardsTile" data-nav="cards" aria-label="Flashcards">
+          <span class="row"><b class="tile-t">Flashcards</b><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F2C6E0" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2.5"/><path d="M8 3h9a3 3 0 0 1 3 3v11"/></svg></span>
+          <span class="row big"><span class="num" id="cardsDue">0</span><span class="lbl" id="cardsDueLbl">due</span></span>
+          <span class="lbl more" id="cardsCats">6 categories</span>
+        </button>
+        <button class="tile dash-tile" id="streakTile" data-nav="me" aria-label="Streak and progress">
+          <span class="row"><b class="tile-t">Streak</b><span class="dots" id="streakDots" aria-label="1 of 7 days"></span></span>
+          <span class="row big"><span class="num" id="streakNum">1</span><span class="lbl" id="streakLbl">day in a row</span></span>
+          <span class="lbl more" id="streakKey">6 more for a golden door key</span>
+        </button>
       </div>
       </div>
     </div>
@@ -675,6 +712,7 @@ button.deck.locked { cursor: default; }
           <text class="z1" x="78" y="40" font-size="14">z</text><text class="z2" x="88" y="26" font-size="18">z</text><text class="z3" x="98" y="10" font-size="22">Z</text>
         </g>
       </svg>
+      <button class="buddy-next" id="buddyNext" tabindex="-1">↑ Next</button>
       <svg class="buddy-point" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 36 L6 18 H15 V4 H25 V18 H34 Z" fill="#FFB547" stroke="#2A1330" stroke-width="2.5" stroke-linejoin="round"/></svg>
     </div>
     <nav class="nav" aria-label="Main" data-navbar></nav>
@@ -693,6 +731,16 @@ button.deck.locked { cursor: default; }
   <!-- ================= HOUSE (its own page, shown in a frame so its styles stay separate) ================= -->
   <section class="screen" id="house" aria-label="My House" hidden>
     <iframe id="houseFrame" title="My House"></iframe>
+    <nav class="nav" aria-label="Main" data-navbar></nav>
+  </section>
+
+  <!-- ================= COURSES (opened from Home) ================= -->
+  <section class="screen" id="courses" aria-label="Courses" hidden>
+    <div class="qhead pad"><button class="iconbtn" data-go="home" aria-label="Back to Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button></div>
+    <div class="scroll pad tab-wrap">
+      <header class="tab-head"><h1 class="title-xl">Courses</h1><p id="coursesAge">Picked for age 12. Change your age in Me.</p></header>
+      <div id="coursesBody"></div>
+    </div>
     <nav class="nav" aria-label="Main" data-navbar></nav>
   </section>
 
@@ -1453,12 +1501,62 @@ button.deck.locked { cursor: default; }
   } catch (e) {}
   function saveProfile() { try { localStorage.setItem('cq-profile', JSON.stringify(profile)); } catch (e) {} }
   // courses suggested for the learner's age
-  var COURSE_MIN_AGE = { courseWeb: 10 };
+  var COURSES = [
+    { id: 'py',    name: 'Python',          ic: 'Py',     bg: '#FFB547', minAge: 8,  live: true, blurb: 'Write real code and build your own house, lesson by lesson.' },
+    { id: 'math',  name: 'Maths with code', ic: '÷',      bg: '#C3A6FF', minAge: 7,  blurb: 'Patterns, shapes and number puzzles. Builds a garden and a greenhouse.' },
+    { id: 'games', name: 'Games with code', ic: '▶',      bg: '#7CF5C8', minAge: 9,  blurb: 'Make small games of your own. Builds a playground next door.' },
+    { id: 'web',   name: 'Web pages',       ic: '</>',    bg: '#8FD3FF', minAge: 10, blurb: 'HTML and CSS for real web pages. Builds a shop on your street.' },
+    { id: 'data',  name: 'Data detectives', ic: '∑',      bg: '#FF8FC7', minAge: 11, blurb: 'Find clues in real data with charts. Builds a lighthouse.' },
+    { id: 'ai',    name: 'AI helpers',      ic: '✦',      bg: '#FFC861', minAge: 12, blurb: 'How AI learns, and how to use it well. Builds a workshop for Nibb.' }
+  ];
+  var PY_LEVELS = [
+    ['Beginner', 'Ground floor', '9 lessons: print, variables, numbers, strings, input, True/False, if, loops, boss'],
+    ['Intermediate', 'Second floor', 'Lists, dictionaries, functions and more'],
+    ['Advanced', 'Roof and smart home', 'Classes, files, errors and modules'],
+    ['Expert', 'Rooftop garden', 'Testing, projects and working with AI']
+  ];
+  function renderCourses() {
+    var age = profile.age, body = document.getElementById('coursesBody'); body.innerHTML = '';
+    document.getElementById('coursesAge').textContent = 'Picked for age ' + (age >= 18 ? '18+' : age) + '. You can change your age in Me.';
+    function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    // the live course, with its four levels (one per floor of the house)
+    var py = COURSES[0], done = Math.min(state.current, 9);
+    var card = el('article', 'course-big');
+    var head = el('div', 'cb-head'), ic = el('span', 'c-ic', py.ic); ic.style.background = py.bg;
+    var ht = el('div', 'cb-t'); ht.appendChild(el('b', null, py.name)); ht.appendChild(el('span', null, py.blurb));
+    head.appendChild(ic); head.appendChild(ht); card.appendChild(head);
+    var lv = el('ol', 'levels-list');
+    PY_LEVELS.forEach(function (L, i) {
+      var li = el('li', 'lvl' + (i === 0 ? ' on' : ' locked'));
+      var t = el('div', 'lvl-t'); t.appendChild(el('b', null, L[0] + ' · ' + L[1])); t.appendChild(el('span', null, L[2]));
+      li.appendChild(t);
+      if (i === 0) { var bar = el('span', 'bar'), fill = el('i'); fill.style.width = Math.round(done / 9 * 100) + '%'; bar.appendChild(fill); li.appendChild(bar); li.appendChild(el('span', 'lvl-n', done + ' of 9 lessons')); }
+      else li.appendChild(el('span', 'lvl-n', i === 1 ? 'Opens after the ground floor' : 'Coming later'));
+      lv.appendChild(li);
+    });
+    card.appendChild(lv);
+    var go = el('button', 'cta', state.current >= 9 ? 'Visit my house' : 'Continue: ' + lessons[Math.min(state.current, 8)].title);
+    go.addEventListener('click', function () { document.getElementById('startBtn').click(); });
+    card.appendChild(go); body.appendChild(card);
+    // more courses for this age, then the ones for older learners
+    var fit = COURSES.filter(function (c) { return !c.live && age >= c.minAge; }), later = COURSES.filter(function (c) { return !c.live && age < c.minAge; });
+    if (fit.length) {
+      body.appendChild(el('h2', 'sub-h', 'More to explore'));
+      var grid = el('div', 'course-grid');
+      fit.forEach(function (c) {
+        var d = el('div', 'course soon'), i2 = el('span', 'c-ic', c.ic); i2.style.background = c.bg;
+        var b2 = el('span', 'c-body'); b2.appendChild(el('b', null, c.name)); b2.appendChild(el('span', null, c.blurb));
+        d.appendChild(i2); d.appendChild(b2); d.appendChild(el('span', 'soon-tag', 'Soon')); grid.appendChild(d);
+      });
+      body.appendChild(grid);
+    }
+    if (later.length) body.appendChild(el('p', 'later-note', later.length + (later.length === 1 ? ' more course opens' : ' more courses open') + ' when you are older: ' + later.map(function (c) { return c.name + ' (' + c.minAge + '+)'; }).join(', ') + '.'));
+  }
   function applyProfile() {
     document.getElementById('topName').textContent = profile.name;
     ['topAvatar', 'meAvatar'].forEach(function (id) { var a = document.getElementById(id); a.textContent = profile.name.charAt(0).toUpperCase(); a.style.background = profile.color; });
-    document.getElementById('ageLabel').textContent = 'for age ' + (profile.age >= 18 ? '18+' : profile.age);
-    Object.keys(COURSE_MIN_AGE).forEach(function (id) { var el = document.getElementById(id); if (el) el.hidden = profile.age < COURSE_MIN_AGE[id]; });
+    var more = COURSES.filter(function (c) { return !c.live && profile.age >= c.minAge; }).length;
+    document.getElementById('coursesMore').textContent = more ? '+' + more + ' more to explore' : 'See all courses';
   }
   function renderMe() {
     document.getElementById('meNameInput').value = profile.name;
@@ -1508,13 +1606,15 @@ button.deck.locked { cursor: default; }
     ensureCards();
     var n = dueCards().length, tot = Object.keys(cardState).length;
     document.getElementById('cardsDue').textContent = n;
-    document.getElementById('cardsDueLbl').textContent = !tot ? 'cards so far. Each lesson adds 3.' : n ? (n === 1 ? 'card is' : 'cards are') + ' fading. Review to keep them bright.' : 'cards to review. All bright!';
+    document.getElementById('cardsDueLbl').textContent = !tot ? 'cards yet' : n ? 'due to review' : 'due. All bright!';
+    document.getElementById('cardsCats').textContent = !tot ? 'Each lesson adds 3' : learnedCount() + ' of ' + tot + ' learned · ' + CATS.length + ' categories';
     var st = state.streak || 1, wk = ((st - 1) % 7) + 1;
     document.getElementById('streakNum').textContent = st;
     document.getElementById('streakChip').textContent = st;
     var dots = document.getElementById('streakDots'); dots.innerHTML = ''; dots.setAttribute('aria-label', wk + ' of 7 days');
     for (var i = 0; i < 7; i++) { var dt = document.createElement('i'); if (i >= wk) dt.className = 'off'; dots.appendChild(dt); }
-    document.getElementById('streakLbl').textContent = (st === 1 ? 'day in a row. ' : 'days in a row. ') + (wk === 7 ? 'A whole week: golden door key!' : (7 - wk) + ' more for a golden door key.');
+    document.getElementById('streakLbl').textContent = st === 1 ? 'day in a row' : 'days in a row';
+    document.getElementById('streakKey').textContent = wk === 7 ? 'A whole week: golden door key!' : (7 - wk) + ' more for a golden door key';
   }
 
   // ================= Nibb follows you and keeps busy =================
@@ -1540,7 +1640,10 @@ button.deck.locked { cursor: default; }
     slots[mode].appendChild(buddy);
     var to = buddy.getBoundingClientRect();
     buddy.classList.toggle('point-down', mode === 'topic');
-    buddy.classList.toggle('point-up', mode === 'park');
+    buddy.classList.toggle('point-up', false);
+    buddy.classList.toggle('parked', mode === 'park');
+    var nb = document.getElementById('buddyNext'); nb.tabIndex = mode === 'park' ? 0 : -1;
+    nb.textContent = state.current >= 9 ? '↑ Back to top' : '↑ Next: ' + TOPICS[state.current].name;
     if (buddy._placed && !still && buddy.animate && from.width && to.width) {
       // if his old spot already scrolled off screen, start the flight from the screen edge so it is all visible
       var hr0 = document.getElementById('home').getBoundingClientRect();
@@ -1574,6 +1677,7 @@ button.deck.locked { cursor: default; }
   }
   function placeBuddy() { watchSlots(); } // kept for older callers
   homeScroll.addEventListener('scroll', function () { wakeBuddy(); scheduleIdle(); }, { passive: true });
+  document.getElementById('buddyNext').addEventListener('click', function () { homeScroll.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' }); });
   document.getElementById('topics').addEventListener('scroll', placeTopicSlot, { passive: true });
   window.addEventListener('resize', watchSlots);
 
@@ -1629,7 +1733,7 @@ button.deck.locked { cursor: default; }
     renderHouseCard(); renderHomeTiles(); applyProfile();
     setTimeout(watchSlots, 0); scheduleIdle();
     document.getElementById('pyBar').style.width = Math.round(Math.min(state.current, 9) / 9 * 100) + '%';
-    document.getElementById('pyLevel').textContent = 'Beginner · ' + Math.min(state.current, 9) + ' of 9 lessons';
+    document.getElementById('pyLevel').textContent = 'Python · ' + Math.min(state.current, 9) + ' of 9 lessons';
   }
   // Same earning rules as the House tab: lesson i is finished when state.current > i.
   var HOUSE_ITEMS = [['poster', 1, 0], ['desk', 1, 1], ['sofa', 1, 2], ['bookshelf', 1, 3], ['plant', 1, 3], ['lamp', 2, 5], ['rug', 1, -1]];
@@ -1658,7 +1762,7 @@ button.deck.locked { cursor: default; }
   }
 
   // ---------- navigation ----------
-  var screens = ['home', 'house', 'cards', 'me', 'learn', 'quiz', 'done'];
+  var screens = ['home', 'house', 'courses', 'cards', 'me', 'learn', 'quiz', 'done'];
   var NAV = [
     ['home', 'Home', '<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>'],
     ['house', 'House', '<path d="M3 10l9-6 9 6"/><rect x="6" y="10" width="12" height="10" rx="1"/><rect x="10" y="14" width="4" height="6"/>'],
@@ -1678,6 +1782,7 @@ button.deck.locked { cursor: default; }
     if (id !== 'learn' && typeof stopBoard === 'function') stopBoard();
     screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
     if (id === 'home' || id === 'house' || id === 'cards' || id === 'me') renderNav(id);
+    if (id === 'courses') { renderNav('home'); renderCourses(); }
     if (id === 'cards') renderCards();
     if (id === 'me') renderMe();
     // move keyboard / screen reader focus into the screen that just opened (bottom-nav presses keep focus on the nav)
