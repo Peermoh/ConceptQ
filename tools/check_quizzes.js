@@ -17,7 +17,7 @@ for (const [key, gens] of Object.entries(api.GEN)) gens.forEach((g, gi) => {
   for (let n = 0; n < 40; n++) { const q = g(); if (q) out.push({ key, gi, text: q.text, code: plain(q.code), right: q.options[q.answer], uniq: new Set(q.options).size }); }
 });
 fs.writeFileSync(process.argv[3], JSON.stringify(out));
-const TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
+const TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /, /sqrt\(/, /ceil\(|floor\(/, /\.get\(/, /\.split\(/, /\.join\(/, /\.replace\(/, /\.count\(/, /\.sort\(|sorted\(/, /\[::/];
 let problems = 0;
 for (const N of names) {
   const k = keyOf[N]; if (!k) continue;

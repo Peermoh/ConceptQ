@@ -42,7 +42,7 @@ body = '\n'.join(lines).rstrip(',')
 body += ',\n' + ',\n'.join("    { id: '%s', c: '%s', l: %d, f: %s, b: %s }" % (i, c, l, J(f), J(bk)) for i, c, l, f, bk in spec.CARDS)
 s = s[:a] + body + s[b:]
 # quiz generators: replace or add GEN[key]
-gstart = s.index('  var GEN = {'); gend = s.index('\n  };\n  function makeQuiz', gstart)
+gstart = s.index('  var GEN = {'); gend = s.index('\n  };\n', gstart)
 gen = s[gstart:gend]
 key_re = re.compile(r"\n    %s: \[\n.*?\n    \](?=,\n    \w+: \[|\n?$)" % re.escape(K if re.match(r'^\w+$', K) else "'%s'" % K), re.S)
 new_g = '\n    %s: [\n%s\n    ]' % (K, spec.GEN_JS.strip('\n'))

@@ -633,6 +633,22 @@ button.deck.locked { cursor: default; }
 .ti-pop { transform-box: fill-box; transform-origin: 50% 100%; animation: tiPop 2.4s ease-in-out infinite; }
 @keyframes tiPop { 0%, 55%, 100% { transform: none; } 70% { transform: translateY(-5px); } }
 @media (prefers-reduced-motion: reduce) { .ti-pop { animation: none; } }
+
+#qProgress span.miss { background: var(--coral); box-shadow: 0 0 8px rgba(255,122,107,0.5); }
+#qProgress span.now { background: rgba(255,181,71,0.45); }
+.sheet .fix { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(42,19,48,0.15); }
+#qresult .rbox { display: flex; flex-direction: column; gap: 14px; align-items: stretch; max-width: 620px; margin: 0 auto; padding-block: 24px 32px; }
+#qresult .mini { width: 92px; height: 84px; align-self: center; }
+#qresult .title-xl { text-align: center; }
+#qresult .rtext { margin: 0; color: var(--muted); font-weight: 700; line-height: 1.45; text-align: center; }
+.areas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.areas .area { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,122,107,0.45); border-radius: 16px; padding: 12px 14px; }
+.areas .area > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.areas .area b { color: var(--cream); font-size: 16px; }
+.areas .area span { color: var(--muted); font-size: 14px; line-height: 1.4; }
+.areas .area code { font-family: var(--font-code); }
+.chip-btn { flex: none; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 0; background: var(--amber); color: #2A1330; font: inherit; font-weight: 900; cursor: pointer; }
+.chip-btn:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
 </style>
 
 <div class="stage">
@@ -863,6 +879,7 @@ button.deck.locked { cursor: default; }
   <section class="screen" id="quiz" aria-label="Question" hidden>
     <div class="qhead pad">
       <button class="iconbtn" data-go="home" aria-label="Leave lesson"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="iconbtn" id="qBack" aria-label="Previous question" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="lanterns" id="qProgress" aria-hidden="true"></div>
       <span class="chip"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3 4 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-6 0 2 1 3 2.5 3C10 8 11 5 12 2z" fill="#FFB547"/></svg><span id="qEmbers">+0</span></span>
     </div>
@@ -873,6 +890,18 @@ button.deck.locked { cursor: default; }
       <div class="options" id="qOptions" role="group" aria-label="Answers"></div>
     </div>
     <div id="sheetSlot" aria-live="polite"></div>
+  </section>
+
+  <!-- ================= QUIZ RESULTS (not every answer right yet) ================= -->
+  <section class="screen pad" id="qresult" aria-label="Quiz results" hidden>
+    <div class="scroll rbox">
+      <svg class="mini" data-nibb data-mood="happy" viewBox="0 0 120 110" aria-hidden="true" id="rNibb"></svg>
+      <h1 class="title-xl" id="rTitle">Almost there!</h1>
+      <p id="rText" class="rtext"></p>
+      <ol class="areas" id="rAreas"></ol>
+      <button class="cta mint" style="width:100%" id="rRetry">Try a new quiz</button>
+      <button class="cta" style="width:100%" id="rLesson">Back to the lesson</button>
+    </div>
   </section>
 
   <!-- ================= DONE ================= -->
@@ -1228,12 +1257,12 @@ button.deck.locked { cursor: default; }
     { id: 'fi2', c: 'talk', l: 18, f: "Why `with open(...) as f:`?", b: "It closes the file for you, even if something goes wrong." },
     { id: 'fi3', c: 'talk', l: 18, f: "How do you read a file line by line?", b: "`for line in f:` and `line.strip()` to drop the new line." },
     { id: 'fi4', c: 'bugs', l: 18, f: "What error comes from opening a file that is not there?", b: "FileNotFoundError. Catch it with try / except." },
+    { id: 'b5', c: 'coll', l: 20, f: "How do you count the different names in a list?", b: "`len(set(names))`" },
+    { id: 'b6', c: 'bugs', l: 20, f: "How do you ask for a number safely?", b: "Wrap `int(input())` in try, with `except ValueError:`" },
     { id: 'm1', c: 'talk', l: 19, f: "What is a module?", b: "A box of ready-made tools. Open one with `import math`." },
     { id: 'm2', c: 'maths', l: 19, f: "What do `math.ceil(2.1)` and `math.floor(2.9)` give?", b: "3 and 2: ceil rounds up, floor rounds down." },
     { id: 'm3', c: 'talk', l: 19, f: "Can `random.randint(1, 6)` give 6?", b: "Yes: randint includes both ends." },
-    { id: 'm4', c: 'talk', l: 19, f: "What does `import random as r` do?", b: "Gives random a nickname, so you write `r.randint(1, 6)`." },
-    { id: 'b5', c: 'coll', l: 20, f: "How do you count the different names in a list?", b: "`len(set(names))`" },
-    { id: 'b6', c: 'bugs', l: 20, f: "How do you ask for a number safely?", b: "Wrap `int(input())` in try, with `except ValueError:`" }
+    { id: 'm4', c: 'talk', l: 19, f: "What does `import random as r` do?", b: "Gives random a nickname, so you write `r.randint(1, 6)`." }
   ];
   // Cards are grouped by the kind of thinking they practise (not by lesson), so revision can target
   // what a learner keeps mixing up: e.g. all the "Maths & comparing" cards together.
@@ -1675,7 +1704,7 @@ button.deck.locked { cursor: default; }
   }
 
   // ---------- navigation ----------
-  var screens = ['home', 'house', 'courses', 'cards', 'me', 'learn', 'quiz', 'done'];
+  var screens = ['home', 'house', 'courses', 'cards', 'me', 'learn', 'quiz', 'qresult', 'done'];
   var NAV = [
     ['home', 'Home', '<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>'],
     ['house', 'House', '<path d="M3 10l9-6 9 6"/><rect x="6" y="10" width="12" height="10" rx="1"/><rect x="10" y="14" width="4" height="6"/>'],
@@ -2040,10 +2069,13 @@ button.deck.locked { cursor: default; }
         return mk('What does this show?', 'food = {"' + who + '": "pizza", "' + other + '": "cake"}\nprint(food.get("' + ask + '", "' + d + '"))', [[ask === who ? 'pizza' : d, ask === who ? who + ' is a key, so get gives pizza.' : 'Sam is not a key, so get gives the default: ' + d + '.'], [ask === who ? d : 'pizza', ask === who ? 'The default is only used when the key is missing.' : 'pizza belongs to ' + who + '.'], ['cake', 'cake belongs to ' + other + '.'], ['A KeyError', 'get never gives a KeyError.']]); }
     ]
   };
+  // the lesson step each question tests (0-based): hand-written questions in order, then each generator
+  var Q_STEPS = {"hello": [0, 1, 4, 2, 3, 5], "vars": [0, 1, 3, 3, 5, 5, 6, 7], "nums": [0, 2, 7, 3, 4, 5, 1, 6], "strings": [1, 2, 0, 3, 5, 8, 4, 4, 7, 6], "input": [1, 1, 2, 3, 1, 5], "bool": [2, 1, 5, 2, 5, 4, 3], "if": [0, 1, 2, 3, 4, 2, 5, 6], "loop": [0, 1, 5, 2, 3, 6, 4, 7, 8], "boss": [0, 1, 2, 3], "lists1": [1, 1, 2, 4, 3, 5, 6, 1], "lists2": [0, 2, 3, 5, 5, 6, 7, 3], "tuples": [1, 2, 4, 3, 5, 1, 6], "sets": [1, 2, 3, 5, 6, 7, 4], "dicts": [1, 2, 2, 3, 6, 7, 8], "strtools": [1, 2, 2, 3, 4, 6, 0, 7], "func1": [0, 0, 2, 3, 4, 1, 1], "func2": [0, 1, 3, 4, 6, 2, 8], "errors": [0, 0, 2, 2, 4, 1, 6], "files": [3, 2, 1, 5, 6, 4, 7], "modules": [1, 7, 5, 0, 3, 6, 4], "boss2": [1, 2, 4, 3, 0]};
+  var GEN_STEPS = {"hello": [2, 3, 1], "vars": [1, 6, 3], "nums": [3, 2, 5, 4, 1], "strings": [3, 4, 2, 4, 6], "input": [2, 1], "bool": [2, 4], "if": [2, 1], "loop": [2, 4, 6], "lists1": [1, 1, 4, 5, 6, 2], "lists2": [2, 2, 3, 6, 4, 5], "tuples": [1, 4, 1, 5], "sets": [1, 5, 3, 4], "dicts": [1, 2, 3, 8, 6], "strtools": [1, 2, 4, 6, 6, 7], "func1": [2, 4, 0, 1], "func2": [0, 4, 6, 3, 8], "errors": [2, 4, 0], "files": [5, 5, 4], "modules": [1, 2, 3], "boss2": [1, 2]};
   function makeQuiz(ld) {
     var n = ld.quiz.length, gens = shuffled(GEN[ld.key] || []), made = [];
     // one question per idea: two pop() questions, or two len() questions, in one quiz feels repetitive
-    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
+    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /, /sqrt\(/, /ceil\(|floor\(/, /\.get\(/, /\.split\(/, /\.join\(/, /\.replace\(/, /\.count\(/, /\.sort\(|sorted\(/, /\[::/];
     function topicOf(code) { var plain = code.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'); for (var i = 0; i < TOPIC.length; i++) if (TOPIC[i].test(plain)) return i; return -1; }
     var taken = [];
     // about half the quiz is made fresh (never more than the generators available), the rest is hand-written
@@ -2052,7 +2084,7 @@ button.deck.locked { cursor: default; }
       for (var t = 0; t < 8; t++) {
         var q = gens[g](); if (!q) continue;
         var tp = topicOf(q.code); if (tp >= 0 && taken.indexOf(tp) >= 0) break; // this idea is already in the quiz
-        made.push(q); if (tp >= 0) taken.push(tp); break;
+        q.step = (GEN_STEPS[ld.key] || [])[GEN[ld.key].indexOf(gens[g])]; made.push(q); if (tp >= 0) taken.push(tp); break;
       }
     }
     var pool = shuffled(ld.quiz), fresh = [];
@@ -2060,20 +2092,23 @@ button.deck.locked { cursor: default; }
     var fixed = fresh.concat(pool.filter(function (q) { return fresh.indexOf(q) < 0; })).slice(0, n - made.length); // repeats only if nothing else is left
     return shuffled(fixed.concat(made)).map(function (q) {
       var order = shuffled(q.options.map(function (o, i) { return i; }));
-      return { text: q.text, code: q.code, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer) };
+      var st = typeof q.step === 'number' ? q.step : (Q_STEPS[ld.key] || [])[ld.quiz.indexOf(q)];
+      return { text: q.text, code: q.code, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
     });
   }
-  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; show('quiz'); renderQ(); }
-
+  // ---- the quiz: one answer per question, Back to look at earlier ones, and a pass only when every answer is right ----
+  var answers = []; // answers[i] = the option picked for question i (undefined = not answered yet)
+  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; show('quiz'); renderQ(); }
+  function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderQ() {
-    var q = Q[qi];
-    wrongThisQ = false;
-    document.getElementById('qTag').textContent = 'Question ' + (qi + 1) + ' of ' + Q.length;
+    var q = Q[qi], done = answers[qi] !== undefined;
+    document.getElementById('qTag').textContent = 'Question ' + (qi + 1) + ' of ' + Q.length + (done ? ' · your answer' : '');
     document.getElementById('qText').textContent = q.text;
     document.getElementById('qCode').innerHTML = q.code;
     document.getElementById('qEmbers').textContent = '+' + earned;
+    document.getElementById('qBack').hidden = qi === 0;
     var prog = '';
-    for (var i = 0; i < Q.length; i++) prog += '<span class="' + (i < qi ? 'on' : '') + '"></span>';
+    for (var i = 0; i < Q.length; i++) prog += '<span class="' + (answers[i] === undefined ? (i === qi ? 'now' : '') : answers[i] === Q[i].answer ? 'on' : 'miss') + '"></span>';
     document.getElementById('qProgress').innerHTML = prog;
     var box = document.getElementById('qOptions');
     box.innerHTML = '';
@@ -2083,30 +2118,36 @@ button.deck.locked { cursor: default; }
       b.id = 'opt-' + qi + '-' + i;
       b.innerHTML = '<span class="key">' + 'ABCD'[i] + '</span><span class="val"></span>';
       b.querySelector('.val').textContent = o;
-      b.addEventListener('click', function () { pick(i, b); });
+      if (done) { // looking back: show what was picked and which one is right
+        b.disabled = true;
+        if (i === q.answer) b.classList.add('right'); else if (i === answers[qi]) b.classList.add('wrong'); else b.classList.add('dim');
+      } else b.addEventListener('click', function () { pick(i, b); });
       box.appendChild(b);
     });
     document.getElementById('sheetSlot').innerHTML = '';
+    if (done) explain(qi);
   }
-
   function pick(i, btn) {
     var q = Q[qi];
-    var all = document.querySelectorAll('#qOptions .opt');
-    if (i === q.answer) {
-      btn.classList.add('right');
-      all.forEach(function (b) { b.disabled = true; if (b !== btn) b.classList.add('dim'); });
-      if (!wrongThisQ) { firstTry++; earned += 10; }
-      document.getElementById('qEmbers').textContent = '+' + earned;
-      burst(btn);
-      sheet(true, wrongThisQ ? 'Got it now!' : 'Yes, that\'s it!', q.why[i], qi < Q.length - 1 ? 'Next question' : LD.lastBtn);
-    } else {
-      wrongThisQ = true;
-      btn.classList.remove('wrong'); void btn.offsetWidth; btn.classList.add('wrong');
-      btn.disabled = true;
-      sheet(false, 'Not quite', q.why[i], 'Try again');
-    }
+    answers[qi] = i;
+    var right = i === q.answer;
+    if (right) { firstTry++; earned += 10; burst(btn); }
+    document.querySelectorAll('#qOptions .opt').forEach(function (b, k) {
+      b.disabled = true;
+      if (k === q.answer) b.classList.add('right'); else if (k === i) { b.classList.add('wrong'); } else b.classList.add('dim');
+    });
+    document.getElementById('qEmbers').textContent = '+' + earned;
+    var prog = document.querySelectorAll('#qProgress span'); if (prog[qi]) prog[qi].className = right ? 'on' : 'miss';
+    explain(qi);
   }
-
+  // the explanation sheet for question k: why the picked answer is right or wrong, and the right answer if it was missed
+  function explain(k) {
+    var q = Q[k], i = answers[k], right = i === q.answer, last = k === Q.length - 1;
+    var text = q.why[i] + (right ? '' : '<span class="fix">The answer is <b>' + esc2(q.options[q.answer]) + '</b>: ' + q.why[q.answer] + '</span>');
+    var label = !last ? 'Next question' : allAnswered() ? (Q.every(function (qq, j) { return answers[j] === qq.answer; }) ? LD.lastBtn : 'See my results') : 'Next question';
+    sheet(right, right ? 'Yes, that\'s it!' : 'Not quite', text, label);
+  }
+  function allAnswered() { for (var j = 0; j < Q.length; j++) if (answers[j] === undefined) return false; return true; }
   function sheet(ok, title, text, label) {
     var slot = document.getElementById('sheetSlot');
     slot.innerHTML =
@@ -2116,12 +2157,53 @@ button.deck.locked { cursor: default; }
         '<button class="cta ' + (ok ? 'mint' : 'coral') + '" id="sheetBtn">' + label + '</button>' +
       '</div>';
     document.getElementById('sheetBtn').addEventListener('click', function () {
-      if (!ok) { slot.innerHTML = ''; return; }
-      qi++;
-      if (qi < Q.length) renderQ(); else finish();
+      if (qi < Q.length - 1) { qi++; renderQ(); return; }
+      if (!allAnswered()) { for (var j = 0; j < Q.length; j++) if (answers[j] === undefined) { qi = j; break; } renderQ(); return; }
+      if (Q.every(function (qq, j) { return answers[j] === qq.answer; })) finish(); else showResults();
     });
     document.getElementById('sheetBtn').focus({ preventScroll: true });
   }
+  document.getElementById('qBack').addEventListener('click', function () { if (qi > 0) { qi--; renderQ(); } });
+  // which lesson step teaches what a question asks: the step whose code shares the most (rare) words with it
+  // words, plus kinds of brackets: [2] and [0] are both an index, [1:3] a slice, [::-1] a step slice
+  function tokens(t) {
+    t = t.replace(/<[^>]+>/g, ' ').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').replace(/&quot;/g, '"');
+    var out = t.match(/[A-Za-z_]{2,}|\*\*|\/\/|[%+\-*\/<>!=]=?/g) || [];
+    (t.match(/\[[^\[\]"']*\]/g) || []).forEach(function (b) { out.push(/::/.test(b) ? '[::]' : /:/.test(b) ? '[:]' : /^\[-\d+\]$/.test(b) ? '[-n]' : /^\[\d+\]$/.test(b) ? '[n]' : '[]'); });
+    return out;
+  }
+  function stepFor(q) {
+    if (typeof q.step === 'number' && q.step < BOARD.length) return q.step; // tagged by hand
+    var stepToks = BOARD.map(function (st) { var t = {}; st.lines.forEach(function (l) { if (l[0] !== 'out') tokens(l[1]).forEach(function (w) { t[w] = 1; }); }); return t; });
+    var df = {}; stepToks.forEach(function (t) { Object.keys(t).forEach(function (w) { df[w] = (df[w] || 0) + 1; }); });
+    // match on the question's code (print is everywhere, so it says nothing about the idea); wording only if there is no code
+    var STOP = { print: 1, pick: 1, one: 1 }, src = tokens(q.code).filter(function (w) { return !STOP[w]; });
+    var qt = {}; (src.length ? src : tokens(q.text)).forEach(function (w) { qt[w] = 1; });
+    var best = 0, bestScore = -1;
+    // shared rare words count most; a step with lots of code does not win just by being long
+    stepToks.forEach(function (t, si) { var sc = 0; Object.keys(qt).forEach(function (w) { if (t[w]) sc += 1 / df[w]; }); sc = sc / Math.sqrt(Object.keys(t).length + 1); if (sc > bestScore) { bestScore = sc; best = si; } });
+    return best;
+  }
+  function showResults() {
+    var wrong = [], seen = {};
+    Q.forEach(function (q, j) { if (answers[j] !== q.answer) { var si = stepFor(q); if (!seen[si]) { seen[si] = 1; wrong.push({ step: si, q: q }); } } });
+    var right = Q.filter(function (q, j) { return answers[j] === q.answer; }).length;
+    document.getElementById('rTitle').textContent = right + ' of ' + Q.length + ' right. Almost there!';
+    document.getElementById('rText').textContent = 'To finish ' + LD.title.split(':')[0] + ', every answer has to be right. Here is what to look at again:';
+    var list = document.getElementById('rAreas'); list.innerHTML = '';
+    wrong.forEach(function (w) {
+      var st = BOARD[w.step], title = (st.lines.filter(function (l) { return l[0] === 'title'; })[0] || ['', LD.labels[w.step]])[1];
+      var li = document.createElement('li'); li.className = 'area';
+      var h = document.createElement('div'); h.innerHTML = '<b></b><span></span>'; h.querySelector('b').textContent = 'Step ' + (w.step + 1) + ': ' + title; h.querySelector('span').innerHTML = w.q.why[w.q.answer];
+      var go = document.createElement('button'); go.className = 'chip-btn'; go.textContent = 'Watch it again';
+      go.addEventListener('click', function () { show('learn'); unlockAudio(); lesson.paused = null; lesson.playing = true; renderPlay(); playStep(w.step); });
+      li.appendChild(h); li.appendChild(go); list.appendChild(li);
+    });
+    document.getElementById('rNibb').innerHTML = lumiSVG('happy');
+    show('qresult');
+  }
+  document.getElementById('rRetry').addEventListener('click', function () { startQuiz(); });
+  document.getElementById('rLesson').addEventListener('click', function () { show('learn'); });
 
   function burst(el) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -3781,18 +3863,18 @@ button.deck.locked { cursor: default; }
       code: "<span class=\"o\">import</span> math\n<span class=\"f\">print</span>(math.sqrt(9))",
       options: ["3.0", "81", "4.5", "9"], answer: 0,
       why: ["sqrt gives the square root: 3 * 3 = 9, so 3.0.", "That is 9 * 9. sqrt goes the other way.", "That is 9 / 2. A square root is different.", "sqrt changes the number."] },
-    { text: "What does this show?",
-      code: "<span class=\"o\">import</span> math\n<span class=\"f\">print</span>(math.ceil(4.2))",
-      options: ["5", "4", "4.2", "4.0"], answer: 0,
-      why: ["ceil always rounds up: 5.", "That is floor. ceil goes up.", "ceil gives a whole number.", "ceil rounds up, not down."] },
+    { text: "What does dir(math) give you?",
+      code: "<span class=\"o\">import</span> math\n<span class=\"f\">print</span>(dir(math))",
+      options: ["A list of the tools inside math", "The square root of math", "The folder math is saved in", "An error"], answer: 0,
+      why: ["dir lists every name inside a module, like sqrt, pi and ceil.", "dir looks inside the module. It does not do maths.", "dir lists what is inside, not where it is.", "dir works on any module."] },
     { text: "Which number can random.randint(1, 6) NOT give?",
       code: "<span class=\"o\">import</span> random\nrandom.randint(1, 6)",
       options: ["0", "1", "6", "3"], answer: 0,
       why: ["randint(1, 6) gives 1 to 6, so 0 is impossible.", "1 is the lowest it can give.", "randint includes the top number, 6.", "3 is between 1 and 6."] },
     { text: "What is wrong here?",
-      code: "<span class=\"f\">print</span>(math.sqrt(16))",
-      options: ["math was never imported", "sqrt needs two numbers", "Nothing", "16 has no square root"], answer: 0,
-      why: ["Without import math, Python does not know math: NameError.", "sqrt takes one number.", "It needs import math first.", "The square root of 16 is 4."] },
+      code: "<span class=\"f\">print</span>(math.pi)",
+      options: ["math was never imported", "pi needs brackets", "Nothing", "pi is not in math"], answer: 0,
+      why: ["Without import math, Python does not know math: NameError.", "math.pi is a value, not a function, so no brackets.", "It needs import math first.", "math.pi is right there in math."] },
     { text: "What does this show?",
       code: "<span class=\"o\">from</span> math <span class=\"o\">import</span> floor\n<span class=\"f\">print</span>(floor(7.9))",
       options: ["7", "8", "7.9", "An error"], answer: 0,

@@ -122,7 +122,7 @@
   function makeQuiz(ld) {
     var n = ld.quiz.length, gens = shuffled(GEN[ld.key] || []), made = [];
     // one question per idea: two pop() questions, or two len() questions, in one quiz feels repetitive
-    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
+    var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /, /sqrt\(/, /ceil\(|floor\(/, /\.get\(/, /\.split\(/, /\.join\(/, /\.replace\(/, /\.count\(/, /\.sort\(|sorted\(/, /\[::/];
     function topicOf(code) { var plain = code.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'); for (var i = 0; i < TOPIC.length; i++) if (TOPIC[i].test(plain)) return i; return -1; }
     var taken = [];
     // about half the quiz is made fresh (never more than the generators available), the rest is hand-written
