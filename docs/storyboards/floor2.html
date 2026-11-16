@@ -1,0 +1,213 @@
+<title>Floor 2 Storyboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; each room is a frame (the house so far) beside its lesson plan. Dark, like the app. */
+:root {
+  --deep: #1A0B1F;
+  --night: #2A1330;
+  --sheet: #33193A;
+  --line: rgba(255, 236, 214, 0.14);
+  --cream: #FFF1E2;
+  --muted: #D9BFD2;
+  --amber: #FFB547;
+  --amber-soft: rgba(255, 181, 71, 0.16);
+  --mint: #6EE7B7;
+  --coral: #FF7A6B;
+  --chalk: #2E4A3C;
+  --font-display: 'Paytone One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html { background: var(--deep); }
+body { background: var(--deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.05; }
+h2 { font-size: 26px; }
+h3 { font-size: 22px; line-height: 1.15; }
+p { margin: 0; max-width: 68ch; }
+code, .code { font-family: var(--font-code); font-size: 13.5px; }
+.eyebrow { font-weight: 900; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 12px; }
+header p { font-size: 17px; color: var(--muted); }
+
+.decide { background: var(--sheet); border: 1.5px solid var(--amber); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.decide ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.decide li { max-width: 72ch; }
+.decide b { color: var(--amber); }
+
+.strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.strip a { flex: 0 0 auto; width: 104px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 800; display: flex; flex-direction: column; gap: 4px; border-radius: 12px; padding: 6px; }
+.strip a:hover, .strip a:focus-visible { background: var(--night); color: var(--cream); outline: none; }
+.strip svg { width: 92px; height: 77px; display: block; }
+
+.room { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; padding-top: 28px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.frame { display: flex; flex-direction: column; gap: 10px; }
+.frame svg { width: 100%; max-width: 280px; aspect-ratio: 6 / 5; height: auto; border-radius: 16px; background: var(--night); }
+.frame .cap { font-size: 13px; color: var(--muted); }
+.frame .cap b { color: var(--amber); }
+.plan { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--night); color: var(--muted); }
+.tag b { color: var(--cream); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.steps li { counter-increment: s; background: var(--chalk); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps li::before { content: counter(s) ". " attr(data-t); font-weight: 900; font-size: 14px; color: #F4F7EE; }
+.steps code { color: #DDEBD8; white-space: pre-wrap; word-break: break-word; }
+.living { background: var(--amber-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.living b { color: var(--amber); }
+
+section.more { display: flex; flex-direction: column; gap: 14px; padding-top: 28px; border-top: 1px solid var(--line); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); font-weight: 900; }
+td code { color: var(--mint); }
+
+@media (max-width: 700px) {
+  .room { grid-template-columns: 1fr; }
+  .frame svg { max-width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .new { animation: glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">ConceptQ · Python · Intermediate</span>
+    <h1>Floor 2 storyboard</h1>
+    <p>The stairs from the Loops lesson lead up to bare ground. Each lesson builds the next real piece of the second floor, in the order a builder would, and earns one living item you can tap to see the idea at work. Covers PCEP sections 3–5 in full.</p>
+  </header>
+
+  <div class="decide">
+    <span class="eyebrow">Three choices to confirm before I write lessons</span>
+    <ol>
+      <li><b>Split Lists and Functions into two lessons each (recommended).</b> Each is too big for one 8–9 step lesson without rushing. That makes 11 lessons plus a boss, instead of the 9 in the curriculum doc.</li>
+      <li><b>The roof comes off first.</b> A crane lifts the ground-floor roof in lesson 1 and puts it back on top of floor 2 at Sets, when the walls are up. Nothing appears before what holds it up.</li>
+      <li><b>Garage project after the boss:</b> a to-do list that saves to a file, built over a few short sessions, using every floor-2 idea.</li>
+    </ol>
+  </div>
+
+  <nav class="strip" id="strip" aria-label="Build order"></nav>
+  <div id="rooms"></div>
+
+  <section class="more">
+    <span class="eyebrow">Wires between rooms</span>
+    <h2>Where floor 2 connects to what you already built</h2>
+    <p class="muted">A glowing wire appears once both ends exist. Tapping it shows one Python fact.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Link</th><th>Python fact it shows</th></tr></thead>
+      <tbody>
+        <tr><td>Stairs ↔ Wardrobe</td><td>A <code>for</code> loop walks through a list one item at a time</td></tr>
+        <tr><td>Crates ↔ Glass cabinet</td><td><code>a, b = b, a</code> from Variables was a tuple all along</td></tr>
+        <tr><td>Toy box ↔ Wardrobe</td><td><code>set(clothes)</code> removes the duplicates from a list</td></tr>
+        <tr><td>Key rack ↔ Wardrobe</td><td>A dictionary value can be a whole list</td></tr>
+        <tr><td>Bookshelf ↔ Notice board</td><td>String methods never change the string, they give you a new one</td></tr>
+        <tr><td>Mailbox ↔ Smoke alarm</td><td><code>int(input())</code> can fail, so wrap it in <code>try</code></td></tr>
+        <tr><td>Attic ↔ Smoke alarm</td><td>Opening a file can fail: <code>FileNotFoundError</code></td></tr>
+        <tr><td>Kitchen ↔ Toolbox</td><td>A module is a box full of ready-made functions</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Flashcards</span>
+    <h2>Two new categories</h2>
+    <p>The six ground-floor categories stay. Floor 2 adds <b>Collections</b> (lists, tuples, sets, dictionaries) and <b>Recipes</b> (functions). Errors go into the existing Bug spotting, and files and modules into Talking to Python. About 4 cards per lesson, roughly 48 in total.</p>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Coverage check</span>
+    <h2>PCEP sections 3–5</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Exam section</th><th>Topics</th><th>Lessons</th></tr></thead>
+      <tbody>
+        <tr><td>3 · Data collections</td><td>Lists (index, slice, methods, copy vs same list, nested, stacks/queues), tuples, dictionaries, strings as sequences and their methods</td><td>1–6</td></tr>
+        <tr><td>4 · Functions and exceptions</td><td>def, parameters, return and None, positional/keyword/default arguments, scope and global, recursion, try/except, the common exception names</td><td>7–9</td></tr>
+        <tr><td>5 · Files and modules (curriculum doc)</td><td>Reading and writing text files, <code>with</code>, CSV, <code>import</code>, <code>math</code>, <code>random</code></td><td>10–11</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">Sets, *args/**kwargs and files go slightly past PCEP. They are in the curriculum doc, and they make the boss and the garage project possible.</p>
+  </section>
+</div>
+
+<script>
+// Each room: what it builds (in building order), the item it earns, and its lesson steps [title, example].
+var ROOMS = [
+  { n: 'Lists I', t: 'A row of things', build: 'Floor beams', why: 'The crane lifts the roof off, then beams go across in a row: beams[0], beams[1]…', item: 'Wardrobe', tap: 'Tap a hanger: <code>clothes[2]</code> lights up and Nibb says “shirt”. Drag one out and the list shrinks.',
+    steps: [['Make a list', 'beams = ["oak", "pine", "ash"]'], ['First and last', 'beams[0]   beams[-1]'], ['How many? Is it there?', 'len(beams)   "oak" in beams'], ['Change one', 'beams[1] = "elm"'], ['Add', 'beams.append("fir")\nbeams.insert(0, "yew")'], ['Remove', 'beams.remove("ash")\nbeams.pop()   del beams[0]'], ['Slices', 'beams[1:3]'], ['Any kind, or empty', 'mix = [3, "hi", True]\nempty = []']] },
+  { n: 'Lists II', t: 'Working with lists', build: 'Floorboards', why: 'Boards laid in rows and columns: a list of lists, floor[row][col].', item: 'Shoe rack', tap: 'Shoes sit in rows. Tap one: <code>rack[1][0]</code>. Nibb points at the row, then the shoe.',
+    steps: [['Loop over a list', 'for b in beams:\n    print(b)'], ['Loop with positions', 'for i in range(len(beams)):'], ['Sum, min, max', 'sum(scores)   max(scores)'], ['Sort', 'scores.sort()\nsorted(scores, reverse=True)'], ['Search and count', 'beams.index("ash")\nbeams.count("oak")'], ['Same list or a copy?', 'b = a      # same list!\nb = a[:]   # a copy'], ['Grids', 'floor = [[0, 1], [1, 0]]\nfloor[1][0]'], ['Stacks and queues', 'stack.pop()   queue.pop(0)'], ['Build with a loop', 'squares = []\nfor n in range(4):\n    squares.append(n * n)']] },
+  { n: 'Tuples', t: 'Values locked together', build: 'Corner posts', why: 'Posts set in concrete at fixed spots, like post = (0, 4). They never move.', item: 'Glass cabinet', tap: 'Look at the trophies, then try to move one: the glass says <code>TypeError</code>. Tuples can be read but not changed.',
+    steps: [['Make a tuple', 'post = (0, 4)'], ['Read like a list', 'post[0]   len(post)'], ['Can’t change it', 'post[0] = 9   # TypeError'], ['One item needs a comma', 'one = (5,)'], ['Unpack', 'x, y = post'], ['The swap was a tuple', 'a, b = b, a'], ['List or tuple?', 'changes → list\nfixed → tuple'], ['Tuples in a list', 'posts = [(0, 0), (0, 4), (4, 0)]']] },
+  { n: 'Sets', t: 'No repeats allowed', build: 'Walls, then the roof goes back on', why: 'One wall per side: {"north", "south", "east", "west"}. You can’t build the north wall twice. Then the crane lowers the roof.', item: 'Toy box', tap: 'Drop a second teddy in and it bounces back out. <code>toys.add("teddy")</code> does nothing if it is already there.',
+    steps: [['Make a set', 'walls = {"north", "south"}'], ['No duplicates', '{1, 1, 2}   # {1, 2}'], ['No order, no index', 'walls[0]   # TypeError'], ['Add and remove', 'walls.add("east")\nwalls.discard("west")'], ['Is it in?', '"north" in walls'], ['Join and overlap', 'a | b   a & b'], ['What’s missing', 'a - b'], ['Remove repeats from a list', 'set([1, 1, 2])\nempty = set()   # not {}']] },
+  { n: 'Dictionaries', t: 'Look things up by name', build: 'Room doors with name plates', why: 'Each door has a name, and behind it is something: rooms["bath"] → "tub".', item: 'Key rack', tap: 'Each hook has a name. Tap “kitchen” and its door glows: <code>keys["kitchen"]</code>.',
+    steps: [['key: value', 'rooms = {"bed": "bunk", "bath": "tub"}'], ['Look up', 'rooms["bath"]'], ['Missing key', 'rooms["attic"]   # KeyError\nrooms.get("attic", "none")'], ['Add or change', 'rooms["study"] = "desk"'], ['Remove', 'del rooms["bed"]\nrooms.pop("bath")'], ['Loop through', 'for room, thing in rooms.items():'], ['Checks look at keys', '"bed" in rooms'], ['Lists inside', 'rooms = {"bed": ["bunk", "lamp"]}'], ['Count them', 'len(rooms)   rooms.keys()']] },
+  { n: 'String tools', t: 'Shaping text', build: 'Wallpaper and door signs', why: 'Patterns repeat ("◆" * 8) and signs are made with f-strings: f"Room {n}".', item: 'Notice board', tap: 'Pinned notes: tap one to run <code>.upper()</code>, <code>.split()</code> or <code>[::-1]</code> on it. The original note never changes.',
+    steps: [['Strings never change', 's[0] = "J"   # TypeError'], ['replace', '"cat".replace("c", "b")'], ['split and join', '"a b c".split()\n"-".join(["a", "b"])'], ['strip', '"  hi  ".strip()'], ['Find and count', 's.find("o")   s.count("o")\ns.startswith("He")'], ['What kind of text?', '"42".isdigit()   "hi".isalpha()'], ['Step slices', 's[::2]   s[::-1]'], ['Neat numbers', 'f"{price:.2f}"   f"{name:>8}"'], ['format()', '"Hi {}".format(name)']] },
+  { n: 'Functions I', t: 'Recipes you can reuse', build: 'Kitchen: sink and stove', why: 'A recipe is written once and cooked many times, like def make_tea().', item: 'Kettle', tap: 'Tap it to call <code>make_tea()</code>: the kettle whistles each time. Change the argument and you get a different cup.',
+    steps: [['def and call', 'def hello():\n    print("Hi")\nhello()'], ['Parameters', 'def hello(name):'], ['return', 'def double(n):\n    return n * 2'], ['print is not return', 'x = hello("Mia")   # None'], ['Several parameters', 'def area(w, h):\n    return w * h'], ['Functions use functions', 'def floor(n):\n    return area(n, n)'], ['Docstrings', 'def area(w, h):\n    """Width times height."""'], ['Why bother?', 'write once, use anywhere']] },
+  { n: 'Functions II', t: 'Settings and scope', build: 'Kitchen: oven with dials', why: 'The dials have default settings you can change: bake(time, heat=180).', item: 'Toaster', tap: 'Turn the dial: <code>toast(2, level=5)</code>. Leave it and it uses the default level.',
+    steps: [['Default values', 'def toast(n, level=3):'], ['Keyword arguments', 'toast(level=5, n=2)'], ['Order rules', 'toast(2, level=5)  ✓\ntoast(level=5, 2)  ✗'], ['Return two things', 'def size():\n    return 3, 4'], ['Any number: *args', 'def total(*nums):'], ['Named extras: **kwargs', 'def order(**items):'], ['Local and global', 'x inside a function is its own box'], ['global, and why to avoid it', 'global score'], ['A function calling itself', 'def countdown(n):\n    if n == 0: return\n    countdown(n - 1)']] },
+  { n: 'Errors', t: 'Catch problems safely', build: 'Smoke alarm', why: 'It spots trouble early and keeps the house standing, like try / except.', item: 'Smoke alarm', tap: 'Press test: Nibb burns toast, the alarm catches the <code>ValueError</code> and the house carries on.',
+    steps: [['Errors have names', 'ValueError  TypeError\nZeroDivisionError  IndexError'], ['Read the message', 'last line = what went wrong'], ['try and except', 'try:\n    n = int(s)\nexcept:\n    print("Not a number")'], ['Catch one kind', 'except ValueError:'], ['Several excepts', 'except ValueError: …\nexcept ZeroDivisionError: …'], ['Ask until it works', 'while True:\n    try: …; break\n    except ValueError: …'], ['Don’t hide every error', 'a bare except can hide bugs']] },
+  { n: 'Files', t: 'Saving for tomorrow', build: 'Attic and filing cabinet', why: 'The attic keeps things after you go to sleep, the way a file keeps data after the program ends.', item: 'Filing cabinet', tap: 'Open a drawer: it is <code>notes.txt</code>. Nibb reads it line by line. Add a note and it is still there next time.',
+    steps: [['Open and read', 'f = open("notes.txt")\nf.read()'], ['with closes for you', 'with open("notes.txt") as f:'], ['Write wipes the file', 'open("notes.txt", "w")'], ['Append adds to the end', 'open("notes.txt", "a")'], ['Line by line', 'for line in f:\n    print(line.strip())'], ['CSV', 'line.split(",")\nimport csv'], ['Missing file', 'except FileNotFoundError:'], ['Where is it?', 'same folder, or a path']] },
+  { n: 'Modules', t: 'Ready-made tools', build: 'Toolbox in the workshop corner', why: 'Nobody builds their own hammer. import math hands you tools someone already made.', item: 'Toolbox', tap: 'Tap the tape measure for <code>math.sqrt</code>, the dice for <code>random.randint(1, 6)</code>.',
+    steps: [['import', 'import math'], ['Use what’s inside', 'math.sqrt(16)   math.pi'], ['Round up, round down', 'math.ceil(2.1)   math.floor(2.9)'], ['from … import', 'from math import sqrt'], ['A shorter name', 'import random as r'], ['Random picks', 'random.randint(1, 6)\nrandom.choice(list)'], ['Shuffle and seed', 'random.shuffle(cards)\nrandom.seed(1)'], ['What’s in the box?', 'dir(math)   help(math.sqrt)']] },
+  { n: 'Boss', t: 'Garden party', build: 'Balcony', why: 'Plan a party on the new balcony using everything on floor 2.', item: 'Balcony with flower boxes', tap: 'Guests arrive from <code>guests.txt</code>, sit at random, and the food list is a dictionary.',
+    steps: [['Read the guest list', 'with open("guests.txt") as f:'], ['No one invited twice', 'guests = set(names)'], ['Food per guest', 'food = {"Mia": "pizza"}'], ['A helper', 'def seat(guests):\n    random.shuffle(guests)'], ['Ask safely', 'try:\n    chairs = int(input())\nexcept ValueError: …']] }
+];
+var NS = 'http://www.w3.org/2000/svg';
+// The house in cross-section; stage k draws everything up to room k (0 = only the ground floor and stairs).
+function house(k) {
+  var C = { wall: '#5E2A5C', edge: '#8A4A85', roof: '#D9503F', amber: '#FFB547', mint: '#6EE7B7', cream: '#FFF1E2', wood: '#B7793C', dim: 'rgba(255,241,226,0.18)' };
+  var s = [];
+  function part(i, svg) { if (k >= i) s.push(k === i ? '<g class="new">' + svg + '</g>' : svg); }
+  s.push('<rect x="0" y="182" width="240" height="18" fill="#3A5A2E"/>');
+  s.push('<rect x="40" y="122" width="160" height="60" fill="' + C.wall + '" stroke="' + C.edge + '" stroke-width="2"/>');
+  s.push('<rect x="60" y="146" width="20" height="36" fill="' + C.wood + '"/><rect x="150" y="138" width="26" height="20" fill="' + C.amber + '" opacity="0.8"/>');
+  s.push('<path d="M106 182 l0 -8 h10 v-8 h10 v-8 h10 v-8 h10 v-8" fill="none" stroke="' + C.cream + '" stroke-width="2" opacity="0.6"/>');
+  var roofUp = k >= 1 && k < 4, roofY = roofUp ? 24 : (k >= 4 ? 62 : 122);
+  if (roofUp) s.push('<line x1="200" y1="0" x2="200" y2="' + (roofY - 6) + '" stroke="' + C.cream + '" stroke-width="1.5" opacity="0.6"/><line x1="120" y1="' + (roofY - 6) + '" x2="200" y2="' + (roofY - 6) + '" stroke="' + C.cream + '" stroke-width="1.5" opacity="0.6"/>');
+  var roof = '<path d="M30 ' + roofY + ' L120 ' + (roofY - 36) + ' L210 ' + roofY + ' Z" fill="' + C.roof + '" stroke="#A33A2C" stroke-width="2"' + (roofUp ? ' opacity="0.55"' : '') + '/>';
+  if (k === 4) roof = '<g class="new">' + roof + '</g>';
+  part(1, '<rect x="40" y="116" width="160" height="6" fill="' + C.wood + '"/>' + [56, 88, 120, 152, 184].map(function (x) { return '<rect x="' + x + '" y="114" width="4" height="10" fill="' + C.amber + '"/>'; }).join(''));
+  part(2, '<rect x="40" y="112" width="160" height="4" fill="' + C.amber + '"/>' + [60, 80, 100, 120, 140, 160, 180].map(function (x) { return '<line x1="' + x + '" y1="112" x2="' + x + '" y2="116" stroke="#7A4A1E"/>'; }).join(''));
+  part(3, [40, 118, 194].map(function (x) { return '<rect x="' + x + '" y="62" width="6" height="50" fill="' + C.cream + '"/>'; }).join(''));
+  part(4, '<rect x="46" y="62" width="148" height="50" fill="' + C.wall + '" stroke="' + C.edge + '" stroke-width="2"/>');
+  if (k >= 1) s.push(roof);
+  part(5, '<rect x="70" y="80" width="16" height="32" fill="' + C.wood + '"/><rect x="146" y="80" width="16" height="32" fill="' + C.wood + '"/><rect x="72" y="74" width="12" height="4" fill="' + C.mint + '"/><rect x="148" y="74" width="12" height="4" fill="' + C.mint + '"/>');
+  part(6, '<g opacity="0.55">' + [56, 100, 126, 176].map(function (x) { return '<path d="M' + x + ' 70 l4 4 l-4 4 l-4 -4 z" fill="' + C.amber + '"/>'; }).join('') + '</g>');
+  part(7, '<rect x="94" y="98" width="20" height="14" fill="' + C.cream + '"/><rect x="98" y="94" width="8" height="4" fill="' + C.mint + '"/>');
+  part(8, '<rect x="116" y="96" width="16" height="16" fill="#3A3A44"/><circle cx="124" cy="104" r="3" fill="' + C.amber + '"/>');
+  part(9, '<circle cx="120" cy="66" r="4" fill="' + C.cream + '"/><circle cx="120" cy="66" r="1.5" fill="' + C.coral + '"/>');
+  part(10, '<rect x="108" y="44" width="24" height="14" fill="' + C.wood + '"/><line x1="108" y1="51" x2="132" y2="51" stroke="#7A4A1E"/>');
+  part(11, '<rect x="170" y="102" width="18" height="10" fill="' + C.coral + '"/><rect x="176" y="98" width="6" height="4" fill="none" stroke="' + C.cream + '" stroke-width="1.5"/>');
+  part(12, '<rect x="200" y="106" width="30" height="5" fill="' + C.wood + '"/><path d="M204 106 v-12 M212 106 v-12 M220 106 v-12 M228 106 v-12 M200 94 h30" stroke="' + C.cream + '" stroke-width="1.5"/><circle cx="210" cy="91" r="2.5" fill="' + C.coral + '"/><circle cx="222" cy="91" r="2.5" fill="' + C.amber + '"/>');
+  return '<svg viewBox="0 0 240 200" xmlns="' + NS + '" role="img" aria-label="Floor 2 after ' + (k ? ROOMS[k - 1].n : 'the ground floor') + '">' + s.join('') + '</svg>';
+}
+function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+var strip = document.getElementById('strip'), rooms = document.getElementById('rooms');
+strip.innerHTML = '<a href="#start">' + house(0) + 'Start: stairs</a>' + ROOMS.map(function (r, i) {
+  return '<a href="#room-' + (i + 1) + '">' + house(i + 1) + (i + 1 === ROOMS.length ? 'Boss' : (i + 1) + '. ' + r.n) + '</a>';
+}).join('');
+rooms.innerHTML = '<span id="start"></span>' + ROOMS.map(function (r, i) {
+  var last = i + 1 === ROOMS.length;
+  return '<article class="room" id="room-' + (i + 1) + '">' +
+    '<div class="frame">' + house(i + 1) + '<span class="cap">Builds: <b>' + r.build + '</b>. ' + r.why + '</span></div>' +
+    '<div class="plan"><span class="eyebrow">' + (last ? 'Boss · balcony' : 'Room ' + (i + 1) + ' of 11') + '</span>' +
+    '<h3>' + r.n + ': ' + r.t + '</h3>' +
+    '<div class="tags"><span class="tag">Item <b>' + r.item + '</b></span><span class="tag"><b>' + r.steps.length + '</b> steps</span><span class="tag"><b>' + (last ? 5 : Math.max(6, r.steps.length)) + '</b> questions</span></div>' +
+    '<ol class="steps">' + r.steps.map(function (st) { return '<li data-t="' + st[0].replace(/"/g, '&quot;') + '"><code>' + esc(st[1]) + '</code></li>'; }).join('') + '</ol>' +
+    '<div class="living"><b>Living item.</b> ' + r.tap + '</div></div></article>';
+}).join('');
+</script>
