@@ -231,6 +231,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     plant:     { name: 'Plant', from: 'Bonus: Strings', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     poster:    { name: 'Poster', from: 'Hello, Python', kind: 'wall', size: 1, count: 1, rooms: null },
     wardrobe:  { name: 'Wardrobe', from: 'Lists I', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
+    shoerack:  { name: 'Shoe rack', from: 'Lists II', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
     stairs:    { name: 'Stairs', locked: 'Loops' }
   };
   // ---------- what the lessons have earned ----------
@@ -238,17 +239,18 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 21) PROGRESS = Math.floor(pr.current); } catch (e) {}
-  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss', 'Lists I'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9 }; // rug: a welcome gift, always earned
+  var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss', 'Lists I', 'Lists II'];
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
   var WALLS_UP = PROGRESS >= 4;
   // Floor 2: Lists I lifts the roof on a crane and lays the floor beams; it comes back down when Sets builds the walls
   var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
+  var F2_NEXT = ['Next: Lists II lays the floorboards.', 'The floorboards are down. Next: Tuples sets the corner posts.', 'The corner posts are set. Next: Sets builds the walls and the roof comes back down.'];
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -294,7 +296,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var ARRIVED = [];
   var PREFER = { poster: ['entrance', 'living', 'study', 'stairs'], desk: ['study', 'living', 'entrance', 'stairs'], sofa: ['living', 'entrance', 'study', 'stairs'],
     bookshelf: ['study', 'living', 'entrance', 'stairs'], plant: ['living', 'entrance', 'study', 'stairs'], lamp: ['living', 'study', 'entrance', 'stairs'],
-    wardrobe: ['stairs', 'study', 'entrance', 'living'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    wardrobe: ['stairs', 'study', 'entrance', 'living'], shoerack: ['entrance', 'stairs', 'living', 'study'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -413,6 +415,18 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       [0.42, 0.58].forEach(function (f) { var k = P(v, x0 + ww * f, y0 + wd, wh * 0.5); s += '<circle cx="' + k[0] + '" cy="' + k[1] + '" r="' + Math.max(1.2, 2.6 * zs) + '" fill="#FFC861"></circle>'; });
       var tp = P(v, x0 + ww / 2, y0 + wd / 2, wh);
       s += '<rect x="' + (tp[0] - 9 * zs) + '" y="' + (tp[1] - 4 * zs) + '" width="' + 18 * zs + '" height="' + 7 * zs + '" rx="' + 2 * zs + '" fill="#FF8FC7" opacity=".9"></rect>';
+    } else if (id === 'shoerack') {
+      // two shelves of shoes: rack[0] is the top row, rack[1] the bottom
+      var tr = d > w, LL = tr ? d : w, SS = tr ? w : d;
+      function rk(a, b, la, lb) { return tr ? [gx + b, gy + a, lb, la] : [gx + a, gy + b, la, lb]; }
+      var fr = rk(0.08, 0.25 * SS, LL - 0.16, SS * 0.5);
+      s += box(v, fr[0], fr[1], fr[2], fr[3], 6 * zs, '#B9824F', '#8A5A35', '#9C6A40');
+      s += box(v, fr[0], fr[1], fr[2], fr[3], 4 * zs, '#C98A4B', '#8A5A35', '#9C6A40', 24 * zs);
+      var SH = ['#FF7A6B', '#8FD3FF', '#FFC861', '#7CF5C8'];
+      [0, 1].forEach(function (lv) { [0, 1, 2].forEach(function (k) {
+        var sp = rk(0.2 + k * (LL - 0.4) / 3, 0.3 * SS, (LL - 0.4) / 3 - 0.08, SS * 0.4);
+        s += box(v, sp[0], sp[1], sp[2], sp[3], 8 * zs, SH[(k + lv * 2) % 4], '#2A1330', SH[(k + lv) % 4], (lv ? 6 : 28) * zs);
+      }); });
     } else if (id === 'plant') {
       s += box(v, gx + 0.3, gy + 0.3, 0.4, 0.4, 20 * zs, '#C76B4A', '#A85636', '#8E4630');
       var c = P(v, gx + 0.5, gy + 0.5, 20 * zs);
@@ -675,6 +689,15 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
               poly([P(v, gx, 10, H), P(v, gx + 0.35, 10, H), P(v, gx + 0.35, 10, H + 5), P(v, gx, 10, H + 5)], '#C98A4B');
       });
       s += '<g data-part="9">' + bm + '</g>';
+      if (PROGRESS >= 11) { // floorboards in rows, like floor[row][col]
+        var fb = '';
+        for (var row = 0; row < 10; row++) {
+          fb += poly([P(v, 0, row, H + 6), P(v, 10, row, H + 6), P(v, 10, row + 1, H + 6), P(v, 0, row + 1, H + 6)], row % 2 ? '#E9B87C' : '#DDA766', ' stroke="#B5793F" stroke-width="0.6"');
+          var off = row % 2 ? 2.5 : 5; for (var jx = off; jx < 10; jx += 5) { var j1 = P(v, jx, row, H + 6), j2 = P(v, jx, row + 1, H + 6); fb += '<line x1="' + j1[0] + '" y1="' + j1[1] + '" x2="' + j2[0] + '" y2="' + j2[1] + '" stroke="#B5793F" stroke-width="0.8"></line>'; }
+        }
+        fb += poly([P(v, 0, 10, H), P(v, 10, 10, H), P(v, 10, 10, H + 6), P(v, 0, 10, H + 6)], '#C98A4B') + poly([P(v, 10, 0, H), P(v, 10, 10, H), P(v, 10, 10, H + 6), P(v, 10, 0, H + 6)], '#B5793F');
+        s += '<g data-part="10">' + fb + '</g>';
+      }
       // a crane holds the roof up while floor 2 is built
       var base = P(v, 12.4, 1.2, 0), ridge = P(v, 5, 5, H + RH), topY = ridge[1] - LIFT - 26;
       var cr = '<g data-part="9" stroke="#E0A11B" stroke-width="3" fill="none" stroke-linecap="round">' +
@@ -759,7 +782,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     // front door gap marker
     s += poly([P(v, 1.4, 10, 0), P(v, 2.6, 10, 0), P(v, 2.6, 10.4, 0), P(v, 1.4, 10.4, 0)], '#8A5A35');
     ORDER.forEach(function (r) {
-      var R = ROOMS[r], c = P(v, R.rx + R.rw / 2, R.ry + R.rh / 2);
+      // labels sit off the floor so they never cover furniture: back rooms above their back wall, front rooms in front of the floor
+      var R = ROOMS[r], c = R.ry === 0 ? P(v, R.rx + R.rw / 2, 0, H + 20) : P(v, R.rx + R.rw / 2, R.ry + R.rh, 0);
+      if (R.ry !== 0) c = [c[0], c[1] + 22];
       var n = state.placed[r].length;
       s += '<g pointer-events="none"><rect x="' + (c[0] - 44) + '" y="' + (c[1] - 11) + '" width="88" height="22" rx="11" fill="#2A1330" opacity=".82"></rect><text x="' + c[0] + '" y="' + (c[1] + 4) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11" fill="#FFF1E2">' + R.name + (n ? ' · ' + n : '') + '</text></g>';
       s += '<polygon class="room-hit" tabindex="0" role="button" aria-label="Open the ' + R.name + '" data-room="' + r + '" points="' + pts([P(v, R.rx, R.ry), P(v, R.rx + R.rw, R.ry), P(v, R.rx + R.rw, R.ry + R.rh), P(v, R.rx, R.ry + R.rh)]) + '" fill="#7CF5C8"></polygon>';
@@ -770,7 +795,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function summary() {
     var total = 0, kinds = 0; TRAY.forEach(function (id) { if (!ITEMS[id].locked) { kinds += ITEMS[id].count; total += usedCount(id); } });
     var next = TRAY.filter(function (id) { return id in NEED && ITEMS[id].locked; }).sort(function (a, b) { return NEED[a] - NEED[b]; })[0];
-    if (ROOF_LIFTED) { document.getElementById('houseSummary').textContent = 'Floor 2 is under construction: the roof is up on the crane and the floor beams are in. ' + (PROGRESS < 11 ? 'Next: Lists II lays the floorboards.' : 'Next: the floor-2 walls.'); }
+    if (ROOF_LIFTED) { document.getElementById('houseSummary').textContent = 'Floor 2 is under construction: the roof is up on the crane. ' + F2_NEXT[PROGRESS - 10]; }
     else document.getElementById('houseSummary').textContent = !WALLS_UP
       ? 'Your house is being built. ' + ['Finish Hello, Python to put up your welcome sign.', 'Finish Variables to bring the building supplies.', 'Finish Numbers to lay the foundation.', 'Finish Strings to raise the walls and roof.'][PROGRESS]
       : kinds + ' items earned from lessons. Placed: ' + total + '.' + (next ? ' Next: finish ' + ITEMS[next].locked + ' to earn the ' + ITEMS[next].name.toLowerCase() + '.' : '');
@@ -1004,12 +1029,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // ---------- living items: tap one to see the Python it stands for ----------
   function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function pyStr(t) { return '<span class="st">"' + esc(t) + '"</span>'; }
+  var RACK = [['boot', 'sneaker', 'sandal'], ['slipper', 'flipflop', 'wellie']];
   var CLOTHES = [['shirt', '#8FD3FF'], ['scarf', '#FF7A6B'], ['jacket', '#FFC861'], ['hoodie', '#C3A6FF']];
   var BOOKS = [['Space Cats', '#FF7A6B'], ['Python', '#7CF5C8'], ['Nibb', '#FFC861'], ['Hello World', '#8FD3FF'], ['Tea Time', '#C3A6FF']];
   var IDEAS = {
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
+    shoerack: ['Lists II', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1065,6 +1092,19 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         tryB.hidden = cardState.step >= 3;
         tryB.textContent = cardState.step === 1 ? 'Count the letters' : 'Glue on a word';
       }
+    } else if (p.id === 'shoerack') {
+      // a list of lists: pick a shoe to see rack[row][col]; Try it loops through every shoe
+      idea.innerHTML = 'Two shelves of shoes: a <b>list of lists</b>. Pick the row first, then the shoe.';
+      RACK.forEach(function (row, r) { row.forEach(function (name, c) {
+        var b = document.createElement('button'); b.className = 'book'; b.textContent = '[' + r + '][' + c + '] ' + name; b.style.background = ['#FF7A6B', '#8FD3FF', '#FFC861'][c];
+        b.setAttribute('aria-pressed', cardState.book === r * 3 + c ? 'true' : 'false');
+        b.addEventListener('click', function () { cardState.book = r * 3 + c; cardState.step = 0; renderCard(); var nb = document.querySelectorAll('#icPlay .book')[r * 3 + c]; if (nb) nb.focus(); });
+        play.appendChild(b);
+      }); });
+      var rk2 = ['rack = [[' + RACK[0].map(pyStr).join(', ') + '],', '        [' + RACK[1].map(pyStr).join(', ') + ']]'];
+      if (cardState.book >= 0) { var rr = Math.floor(cardState.book / 3), cc = cardState.book % 3; rk2.push('<span class="new">rack[' + rr + '][' + cc + ']  <span class="c"># → ' + RACK[rr][cc] + '</span></span>'); }
+      if (cardState.step) rk2.push('<span class="new"><span class="o">for</span> row <span class="o">in</span> rack:\n    <span class="o">for</span> shoe <span class="o">in</span> row:\n        print(shoe)  <span class="c"># → ' + RACK[0].concat(RACK[1]).join(', ') + '</span></span>');
+      code.innerHTML = rk2.join('\n'); tryB.hidden = !!cardState.step; tryB.textContent = 'Loop through every shoe';
     } else if (p.id === 'wardrobe') {
       // the clothes are a list: tap one to see its position; Try it takes one out, then hangs it back
       var cl = cardState.list || (cardState.list = CLOTHES.map(function (c) { return c[0]; }));
@@ -1097,6 +1137,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       cardState.step = 1; save(); drawRoom(); renderCard();
       say(document.getElementById('roomBubble'), p.off ? 'lamp_on is False. Lights out!' : 'lamp_on is True. Let there be light!', !p.off, document.getElementById('roomNibb'));
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
+    else if (p.id === 'shoerack') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'A loop inside a loop: each row, then each shoe in the row.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'wardrobe') {
       var cl = cardState.list || (cardState.list = CLOTHES.map(function (c) { return c[0]; }));
       if (cl.length === CLOTHES.length) { var gone = cl.pop(); cardState.out = gone; cardState.last = 'clothes.pop()  <span class="c"># → takes out ' + esc(gone) + '</span>'; }
@@ -1267,13 +1308,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     6: 'A garden gate! It only opens if the condition is True.',
     7: 'Your staircase is built! A loop climbs it one step at a time. Floor 2 opens with the next level.',
     8: 'The porch light is on and the moth is happy! You finished the whole ground floor!',
-    9: 'Up goes the roof! The new floor beams lie in a row, like a list: beams[0], beams[1], beams[2]…'
+    9: 'Up goes the roof! The new floor beams lie in a row, like a list: beams[0], beams[1], beams[2]…',
+    10: 'The floorboards are down, in rows and columns. A list of lists: floor[row][col]!'
   };
 
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
-    if (n === 9 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
+    if (n >= 9 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }
     var parts = document.querySelectorAll('#houseSvg [data-part="' + n + '"]'), part = parts[0];
     if (part && !still) {

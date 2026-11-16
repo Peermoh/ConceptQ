@@ -130,7 +130,8 @@
     var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /];
     function topicOf(code) { var plain = code.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'); for (var i = 0; i < TOPIC.length; i++) if (TOPIC[i].test(plain)) return i; return -1; }
     var taken = made.map(function (q) { return topicOf(q.code); });
-    var pool = shuffled(ld.quiz), fresh = pool.filter(function (q) { var t = topicOf(q.code); return t < 0 || taken.indexOf(t) < 0; });
+    var pool = shuffled(ld.quiz), fresh = [];
+    pool.forEach(function (q) { var t = topicOf(q.code); if (t < 0 || taken.indexOf(t) < 0) { fresh.push(q); if (t >= 0) taken.push(t); } }); // one question per idea
     var fixed = fresh.concat(pool.filter(function (q) { return fresh.indexOf(q) < 0; })).slice(0, n - made.length); // repeats only if nothing else is left
     return shuffled(fixed.concat(made)).map(function (q) {
       var order = shuffled(q.options.map(function (o, i) { return i; }));
