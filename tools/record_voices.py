@@ -1,19 +1,11 @@
 import asyncio, os, re, json, sys, certifi
-# behind a TLS-intercepting proxy, point certifi at its CA bundle here
+certifi.where = lambda: '/root/.ccr/ca-bundle.crt'   # this environment's proxy CA
 import edge_tts
 sys.path.insert(0, '.')
-from lesson_content import L
+from lesson_content_full import L
 PROXY = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
 VOICES = {'ryan': 'en-GB-RyanNeural', 'prabhat': 'en-IN-PrabhatNeural'}
-OUT = 'prototype/audio'
-# Variables (the pilot) comes from the page itself
-html = open('prototype/index.html').read()
-a = html.index('  var BOARD_VARS = ['); b = html.index('\n  ];\n', a); blk = html[a:b]
-vsteps = []
-for m in re.finditer(r'\{ lines: (\[.*?\]\]),\s*say: ("(?:\\.|[^"\\])*"),\s*cue: (\[[^\]]*\])', blk, re.S):
-    vsteps.append((json.loads(m.group(1)), json.loads(m.group(2)), json.loads(m.group(3))))
-assert len(vsteps) == 6, len(vsteps)
-L = dict(L); L['vars'] = dict(labels=['1. Box', '2. Change', '3. Maths', '4. Two', '5. Kinds', '6. Names'], steps=vsteps)
+OUT = '/tmp/claude-0/-home-user/04fb4c8a-c3c6-5b70-a037-a38267535510/scratchpad/lantern/audio'
 norm = lambda w: re.sub(r'[^a-z0-9]', '', w.lower())
 def align(text, bounds):
     toks = [(m.start(), m.group()) for m in re.finditer(r'\S+', text)]
