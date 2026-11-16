@@ -15,14 +15,20 @@
 #home .scene { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0 !important; box-shadow: none !important; z-index: 0; pointer-events: none; }
 .home-hero { position: relative; z-index: 2; height: 196px; flex: none; }
 .lumi-spot { position: absolute; left: 2px; top: 30px; width: 124px; height: 114px; }
-/* Nibb follows you down the page: big in the hero, small beside the topic to learn when scrolled */
-.buddy { position: absolute; left: 0; top: 0; width: 124px; height: 114px; z-index: 4; transform-origin: 0 0; pointer-events: none; will-change: transform;
-  transition: transform 0.38s cubic-bezier(.2,.8,.2,1); }
-.buddy.instant { transition: none; }
+/* Nibb follows you down the page. He always sits INSIDE a slot: the hero spot and the topic spot are part of
+   the scrolling page, so the phone moves him together with the content (no lag, no jitter); the park spot
+   is fixed above the menu. Code only decides which slot he is in, when one scrolls out of view. */
+.buddy-slot { position: absolute; z-index: 5; pointer-events: none; }
+.topic-slot { width: 70px; height: 64px; left: 0; top: -70px; }
+.path-row { position: relative; }
+.park-slot { width: 70px; height: 64px; right: 10px; bottom: calc(var(--navh, 76px) + 6px); }
+.buddy { position: absolute; inset: 0; width: 100%; height: 100%; }
+.buddy.arrive { animation: buddyArrive 0.38s cubic-bezier(.2,.8,.2,1); }
+@keyframes buddyArrive { from { transform: scale(0.3) translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
 .buddy .lumi { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: auto; }
-.buddy-point { position: absolute; left: 42px; top: 104px; width: 40px; height: 40px; opacity: 0; transition: opacity 0.2s ease; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
+.buddy-point { position: absolute; left: 34%; top: 92%; width: 32%; height: 35%; opacity: 0; transition: opacity 0.2s ease; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
 .buddy.point-down .buddy-point { opacity: 1; animation: pointDown 0.8s ease-in-out infinite; }
-.buddy.point-up .buddy-point { opacity: 1; top: -40px; transform: rotate(180deg); animation: pointUp 0.8s ease-in-out infinite; }
+.buddy.point-up .buddy-point { opacity: 1; top: -38%; transform: rotate(180deg); animation: pointUp 0.8s ease-in-out infinite; }
 @keyframes pointDown { 0%,100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
 @keyframes pointUp { 0%,100% { transform: rotate(180deg) translateY(0); } 50% { transform: rotate(180deg) translateY(10px); } }
 /* naps are seen from the side: Nibb lies on a pillow (head towards the headboard), blanket over him.
@@ -34,14 +40,14 @@
 .buddy.side-left .zzz text { transform: scaleX(-1); transform-box: fill-box; transform-origin: center; }
 .buddy.sleeping .lumi { animation: napRight 4s ease-in-out infinite; transform-origin: 50% 55%; }
 .buddy.sleeping.side-left .lumi { animation-name: napLeft; }
-@keyframes napRight { 0%,100% { transform: translate(20px, 10px) rotate(80deg) scale(0.68); } 50% { transform: translate(20px, 9px) rotate(80deg) scale(0.71); } }
-@keyframes napLeft  { 0%,100% { transform: translate(-20px, 10px) rotate(-80deg) scale(0.68); } 50% { transform: translate(-20px, 9px) rotate(-80deg) scale(0.71); } }
+@keyframes napRight { 0%,100% { transform: translate(16%, 9%) rotate(80deg) scale(0.68); } 50% { transform: translate(16%, 8%) rotate(80deg) scale(0.71); } }
+@keyframes napLeft  { 0%,100% { transform: translate(-16%, 9%) rotate(-80deg) scale(0.68); } 50% { transform: translate(-16%, 8%) rotate(-80deg) scale(0.71); } }
 .buddy.sleeping .buddy-point { opacity: 0; animation: none; }
 .zzz text { opacity: 0; }
 .buddy.sleeping .zzz text { animation: zFloat 2.4s ease-in-out infinite; }
 .buddy.sleeping .zzz .z2 { animation-delay: 0.8s; } .buddy.sleeping .zzz .z3 { animation-delay: 1.6s; }
 @keyframes zFloat { 0% { opacity: 0; transform: translate(0, 8px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -10px); } }
-@media (prefers-reduced-motion: reduce) { .buddy { transition: none; } .buddy.sleeping .lumi { animation: none; transform: translate(20px, 10px) rotate(80deg) scale(0.68); } .buddy.sleeping.side-left .lumi { transform: translate(-20px, 10px) rotate(-80deg) scale(0.68); } .buddy-point, .zzz text { animation: none !important; } .buddy.sleeping .zzz text { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .buddy.arrive { animation: none; } .buddy.sleeping .lumi { animation: none; transform: translate(16%, 9%) rotate(80deg) scale(0.68); } .buddy.sleeping.side-left .lumi { transform: translate(-16%, 9%) rotate(-80deg) scale(0.68); } .buddy-point, .zzz text { animation: none !important; } .buddy.sleeping .zzz text { opacity: 1; } }
 .home-hero .bubble { left: 122px; top: 4px; }
 #home .lesson-card, #home .house-card, #home .course, #home .tile, #home .topic, #home .topbar .chip, #home .brand {
   background: rgba(22, 9, 28, 0.84); border-color: rgba(255, 241, 226, 0.14); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -476,7 +482,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     </div>
 
     <div class="home-hero" id="homeHero">
-      <div class="lumi-spot" id="lumiSpot" aria-hidden="true"></div>
+      <div class="lumi-spot buddy-slot" id="lumiSpot"></div>
       <div class="bubble" id="homeBubble"><span id="bubbleWhen">Tonight</span> we build the <b id="bubbleTopic">Strings</b>. Ready?<span class="hint">Psst, tap me!</span></div>
     </div>
 
@@ -499,6 +505,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
       </article>
 
       <section class="path-row" aria-label="Python path">
+        <div class="buddy-slot topic-slot" id="topicSlot"></div>
         <div class="path-row-head"><b>Ground floor</b><span id="pathCount">3 of 9 built</span></div>
         <div class="topics" id="topics"></div>
       </section>
@@ -535,6 +542,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     </div>
 
     </div>
+    <div class="buddy-slot park-slot" id="parkSlot"></div>
     <div class="buddy" id="buddy">
       <svg class="buddy-bed" viewBox="0 0 120 110" aria-hidden="true">
         <rect x="2" y="96" width="116" height="10" rx="5" fill="#C98F62" stroke="#2A1330" stroke-width="2"/>
@@ -1102,40 +1110,44 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 
   // ================= Nibb follows you and keeps busy =================
   var buddy = document.getElementById('buddy'), lumiSpot = document.getElementById('lumiSpot'), homeScroll = document.getElementById('homeScroll');
-  var buddyRaf = 0, buddyMode = 'hero', sleeping = false;
-  function placeBuddy() {
-    buddyRaf = 0;
-    var home = document.getElementById('home'); if (home.hidden) return;
-    var hr = home.getBoundingClientRect(), nav = home.querySelector('.nav'), navH = nav ? nav.offsetHeight : 70;
-    var S = 0.56, w = 124 * S, h = 114 * S, x, y, sc = 1, point = '', mode, target;
-    if (homeScroll.scrollTop < 70) { // at the top: sit in his usual spot and move with the page
-      var r = lumiSpot.getBoundingClientRect(); x = r.left - hr.left; y = r.top - hr.top; mode = 'hero'; target = 'hero';
-    } else {
-      sc = S; mode = 'follow';
-      var vis = function (el) { if (!el) return null; var q = el.getBoundingClientRect(); return (q.top - hr.top > 70 && q.bottom - hr.top < hr.height - navH - 8 && q.right > hr.left + 20 && q.left < hr.right - 20) ? q : null; };
-      var tile = vis(document.querySelector('#topics .topic.now')), cta = vis(document.getElementById('startBtn'));
-      if (tile) { // hover over the next topic and point down at it; if there is no room above, sit below it and point up
-        x = tile.left - hr.left + tile.width / 2 - w / 2; y = tile.top - hr.top - h - 22; point = 'down'; target = 'tile-above';
-        if (y < 64) { y = tile.bottom - hr.top + 24; point = 'up'; target = 'tile-below'; }
-      }
-      else if (cta) { x = hr.width - w - 22; y = cta.top - hr.top - h - 20; point = 'down'; target = 'cta'; }                         // or at the Start button
-      else { x = hr.width - w - 10; y = hr.height - navH - h * 0.88; point = 'up'; target = 'park'; }                                  // or perch on the menu bar, pointing back up
-      x = Math.max(4, Math.min(x, hr.width - w - 4)); y = Math.max(64, Math.min(y, hr.height - navH - h * 0.88));
-    }
-    // Glide (briefly) only when Nibb switches to a new target; while the target just scrolls with
-    // the page, follow it exactly with no transition, otherwise he lags and wobbles behind it.
-    var now = performance.now();
-    if (target !== buddy._target) { buddy._target = target; buddy._glideUntil = now + 400; }
-    buddy.classList.toggle('instant', now > (buddy._glideUntil || 0));
-    buddyMode = mode;
-    buddy.classList.toggle('point-down', point === 'down' && !sleeping);
-    buddy.classList.toggle('point-up', point === 'up' && !sleeping);
-    buddy.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc + ')';
+  var buddyMode = 'hero', sleeping = false, slotSeen = { hero: true, topic: false };
+  var slots = { hero: lumiSpot, topic: document.getElementById('topicSlot'), park: document.getElementById('parkSlot') };
+  // put the topic slot just above the next topic tile (only on layout changes, never on vertical scroll)
+  function placeTopicSlot() {
+    var tile = document.querySelector('#topics .topic.now'), slot = slots.topic, row = slot.parentNode;
+    if (!tile) { slot.hidden = true; return; }
+    slot.hidden = false;
+    var tr = tile.getBoundingClientRect(), rr = row.getBoundingClientRect();
+    var x = tr.left - rr.left + tr.width / 2 - 35;
+    slot.style.left = Math.max(0, Math.min(x, rr.width - 70)).toFixed(0) + 'px';
+    slot.style.top = (tr.top - rr.top - 64 - 18).toFixed(0) + 'px';
   }
-  function queueBuddy() { if (!buddyRaf) buddyRaf = requestAnimationFrame(placeBuddy); }
-  homeScroll.addEventListener('scroll', function () { wakeBuddy(); queueBuddy(); scheduleIdle(); }, { passive: true });
-  document.getElementById('topics').addEventListener('scroll', queueBuddy, { passive: true });
-  window.addEventListener('resize', queueBuddy);
+  function moveBuddy(mode) {
+    if (mode === buddyMode && buddy.parentNode === slots[mode]) return;
+    buddyMode = mode;
+    slots[mode].appendChild(buddy);
+    buddy.classList.toggle('point-down', mode === 'topic');
+    buddy.classList.toggle('point-up', mode === 'park');
+    buddy.classList.remove('arrive'); void buddy.offsetWidth; if (!still) buddy.classList.add('arrive');
+  }
+  function chooseSlot() {
+    if (document.getElementById('home').hidden) return;
+    moveBuddy(slotSeen.hero ? 'hero' : (slotSeen.topic && !slots.topic.hidden) ? 'topic' : 'park');
+  }
+  var buddyIO = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { slotSeen[en.target === lumiSpot ? 'hero' : 'topic'] = en.isIntersecting && en.intersectionRatio >= 0.5; });
+    chooseSlot();
+  }, { root: homeScroll, threshold: [0, 0.5, 1] }) : null;
+  function watchSlots() {
+    placeTopicSlot();
+    if (buddyIO) { buddyIO.disconnect(); buddyIO.observe(lumiSpot); buddyIO.observe(slots.topic); }
+    var nav = document.querySelector('#home .nav'); if (nav) document.getElementById('home').style.setProperty('--navh', nav.offsetHeight + 'px');
+    chooseSlot();
+  }
+  function placeBuddy() { watchSlots(); } // kept for older callers
+  homeScroll.addEventListener('scroll', function () { wakeBuddy(); scheduleIdle(); }, { passive: true });
+  document.getElementById('topics').addEventListener('scroll', placeTopicSlot, { passive: true });
+  window.addEventListener('resize', watchSlots);
 
   // every 4 to 15 quiet seconds Nibb does something: naps under a blanket, or one of his tricks
   var idleTimer = 0;
@@ -1149,7 +1161,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   }
   function napBuddy() {
     var lumi = document.getElementById('homeLumi'), eyes = lumi.querySelector('.nb-eyes');
-    sleeping = true; buddy.classList.toggle('side-left', Math.random() < 0.5); buddy.classList.add('sleeping'); queueBuddy();
+    sleeping = true; buddy.classList.toggle('side-left', Math.random() < 0.5); buddy.classList.add('sleeping');
     buddy._eyes = eyes.innerHTML;
     eyes.innerHTML = '<path d="M42 62 q7 5 14 0" fill="none" stroke="#8FF7D4" stroke-width="5" stroke-linecap="round"/><path d="M64 62 q7 5 14 0" fill="none" stroke="#8FF7D4" stroke-width="5" stroke-linecap="round"/>';
     homeSay(['Zzz... five more minutes...', 'Zzz... dreaming about loops... and loops... and loops...', 'Zzz... print("snore")'][Math.floor(Math.random() * 3)]);
@@ -1159,7 +1171,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     if (!sleeping) return;
     sleeping = false; clearTimeout(buddy._nap);
     var eyes = document.querySelector('#homeLumi .nb-eyes'); if (buddy._eyes != null) eyes.innerHTML = buddy._eyes;
-    buddy.classList.remove('sleeping'); queueBuddy();
+    buddy.classList.remove('sleeping');
     if (!quiet) homeSay("I'm up! I'm up!");
   }
   // tapping a napping Nibb wakes him first
@@ -1187,7 +1199,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     document.getElementById('pathCount').textContent = Math.min(state.current, 9) + ' of 9 built';
     var nowTile = document.querySelector('#topics .topic.now'), trow = document.getElementById('topics'); if (nowTile) trow.scrollLeft += nowTile.getBoundingClientRect().left - trow.getBoundingClientRect().left - 16;
     renderHouseCard();
-    setTimeout(placeBuddy, 0); scheduleIdle();
+    setTimeout(watchSlots, 0); scheduleIdle();
     document.getElementById('pyBar').style.width = Math.round(Math.min(state.current, 9) / 9 * 100) + '%';
     document.getElementById('pyLevel').textContent = 'Beginner · ' + Math.min(state.current, 9) + ' of 9 lessons';
   }
