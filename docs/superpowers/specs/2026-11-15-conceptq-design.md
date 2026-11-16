@@ -170,3 +170,14 @@ recorded with word timestamps), a Read-it pane, 3 questions with a reason for ev
 - Home shows the floor you are building, with a switch to look at the other floor. Rooms not written yet say
   "opens in the next build". Progress saves now accept 0–21 lessons.
 - Ground-floor lessons were widened to cover every beginner concept (67 steps in total, 7–9 per lesson).
+
+### Fresh quizzes and items moving in (2026-11-16)
+- **A quiz is built new every time it starts** (`makeQuiz`): about half the questions come from generators with
+  new values (lists, words, numbers, ranges), the rest from the hand-written pool; question order and answer order
+  are shuffled. A hand-written question is skipped when a fresh one already tests the same thing (pop, slices, %…).
+  Every generator's right answer was checked against real Python (1,192 samples, 0 wrong):
+  `tools/check_generators.js` + Python, and `tools/check_quizzes.js` builds 300 quizzes per lesson.
+- **New furniture is carried inside** at the build moment: Nibb places it on a free spot in a room that suits it,
+  it drops in, and the learner can still move it. When Strings raises the walls, everything that was waiting moves in.
+- **Wardrobe** (Lists I) is a living item: its clothes are a list with positions; Try it does `pop()` then `append()`.
+  It sits on the ground floor until floor 2 has walls.
