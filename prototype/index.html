@@ -13,7 +13,8 @@
 /* Home: the live world fills the screen behind everything; the page scrolls over it.
    Cards are solid (not blurred): blurring a moving background every frame is too slow on phones. */
 #home .scene { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0 !important; box-shadow: none !important; z-index: 0; pointer-events: none; }
-.home-hero { position: relative; z-index: 2; height: 196px; flex: none; }
+.home-hero { position: relative; z-index: 2; height: 182px; flex: none; margin-inline: -18px; }
+.home-left, .home-right { display: contents; }  /* phones: one column, in reading order */
 .lumi-spot { position: absolute; left: 2px; top: 30px; width: 124px; height: 114px; }
 /* Nibb follows you down the page. He always sits INSIDE a slot: the hero spot and the topic spot are part of
    the scrolling page, so the phone moves him together with the content (no lag, no jitter); the park spot
@@ -449,6 +450,49 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ================= bigger screens =================
+   Tall tablets: the phone layout, wider and centred.
+   Wide screens (landscape tablets, computers, phones held sideways): two columns. */
+@media (min-width: 640px) {
+  .app { max-width: none; max-height: none; }
+  #home .topbar, #home .home-body, .qhead, #learn .scroll, #learn > .pad:last-child, #quiz .scroll, #sheetSlot { box-sizing: border-box; }
+  .nav { grid-template-columns: repeat(4, minmax(0, 120px)); justify-content: center; }
+  #home .topbar, #home .home-body { width: 100%; max-width: 680px; margin-inline: auto; }
+  .qhead, #learn .scroll, #learn > .pad:last-child, #quiz .scroll, #sheetSlot { width: 100%; max-width: 760px; margin-inline: auto; }
+  .done > * { max-width: 520px; }
+}
+@media (min-width: 640px) and (min-aspect-ratio: 5/4) {
+  /* Home: Nibb + lesson card | path, house, courses, streak */
+  #home .topbar, #home .home-body { max-width: 1180px; }
+  #home .home-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .home-left, .home-right { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .home-right { padding-top: 18px; }
+  /* Lesson: big board on the left, everything else on the right */
+  .qhead, #learn .scroll, #learn > .pad:last-child, #quiz .scroll, #sheetSlot { max-width: 1180px; }
+  #learn .scroll { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr); column-gap: 28px; row-gap: 12px; align-content: start; }
+  #learn .scroll > * { grid-column: 2; }
+  #watchPane:not([hidden]) { display: contents !important; }
+  #learn .board-wrap { grid-column: 1; grid-row: 1 / span 8; align-self: start; }
+  #learn .board { min-height: min(62vh, 520px); }
+  #readPane:not([hidden]) { grid-column: 1 / -1; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  #readPane .learn-intro { grid-column: 1 / -1; }
+  #learn > .pad:last-child { display: flex; justify-content: flex-end; }
+  #learn > .pad:last-child .cta { width: auto !important; min-width: 320px; }
+  /* Quiz: question and code on the left, answers on the right */
+  #quiz .scroll { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; row-gap: 12px; align-content: start; }
+  #quiz .scroll > * { grid-column: 1; }
+  #quiz .options { grid-column: 2; grid-row: 1 / span 4; align-self: start; }
+}
+/* phones held sideways are short: tighten the vertical spacing */
+@media (max-height: 520px) and (min-aspect-ratio: 5/4) {
+  .qhead { padding-block: 8px 4px; }
+  #learn .title-xl, #learn h1 { font-size: 22px; }
+  #learn .board { min-height: calc(100vh - 150px); }
+  .home-hero { height: 150px; }
+  .nav button { min-height: 40px; }
+  .nav { padding-block: 2px calc(4px + env(safe-area-inset-bottom, 0px)); }
+}
 </style>
 
 <div class="stage">
@@ -482,12 +526,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 
     </div>
 
-    <div class="home-hero" id="homeHero">
-      <div class="lumi-spot buddy-slot" id="lumiSpot"></div>
-      <div class="bubble" id="homeBubble"><span id="bubbleWhen">Tonight</span> we build the <b id="bubbleTopic">Strings</b>. Ready?<span class="hint">Psst, tap me!</span></div>
-    </div>
-
     <div class="home-body pad">
+      <div class="home-left">
+        <div class="home-hero" id="homeHero">
+        <div class="lumi-spot buddy-slot" id="lumiSpot"></div>
+        <div class="bubble" id="homeBubble"><span id="bubbleWhen">Tonight</span> we build the <b id="bubbleTopic">Strings</b>. Ready?<span class="hint">Psst, tap me!</span></div>
+      </div>
       <article class="lesson-card">
         <div class="card-top"><div>
           <span class="eyebrow" id="cardEyebrow">Ground floor · Room 4 of 8</span>
@@ -505,6 +549,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         </button>
       </article>
 
+      </div>
+      <div class="home-right">
       <section class="path-row" aria-label="Python path">
         <div class="buddy-slot topic-slot" id="topicSlot"></div>
         <div class="path-row-head"><b>Ground floor</b><span id="pathCount">3 of 9 built</span></div>
@@ -539,6 +585,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
           <span class="row"><span class="num">4</span><span class="dots" aria-label="4 of 7 nights"><i></i><i></i><i></i><i></i><i class="off"></i><i class="off"></i><i class="off"></i></span></span>
           <span class="lbl">days in a row. 3 more for a golden door key.</span>
         </div>
+      </div>
       </div>
     </div>
 

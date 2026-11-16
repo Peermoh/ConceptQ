@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0;height:100%;background:#1A0B1F}[hidden]{display:none!important}</style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0;height:100%;background:#1A0B1F}[hidden]{display:none!important}
+</style>
 <title>ConceptQ House 2.5D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -136,6 +137,28 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
 .item.selected .tile { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(124, 245, 200, 0.35); transform: translateY(-4px); }
 .item .tile { transition: transform 0.15s ease, box-shadow 0.15s ease; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (min-width: 640px) {
+  .app { max-width: none; max-height: none; }
+}
+@media (min-width: 640px) and (min-aspect-ratio: 5/4) {
+  #roomView { display: grid; grid-template-columns: minmax(0, 1fr) clamp(260px, 26vw, 340px); grid-template-rows: auto minmax(0, 1fr); }
+  #roomView > header { grid-column: 1 / -1; }
+  #roomView > .scene { grid-column: 1; grid-row: 2; min-height: 0; }
+  #roomView > .tray { grid-column: 2; grid-row: 2; border-radius: 24px 0 0 0; padding: 14px 0; overflow-y: auto; }
+  #roomView .tray-head { flex-wrap: wrap; gap: 8px; }
+  #roomView .items { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); grid-auto-columns: auto; overflow: visible; row-gap: 14px; }
+  #roomView .item { touch-action: pan-y; }
+  #houseView .card { max-width: 640px; margin-inline: auto; width: calc(100% - 32px); }
+}
+@media (max-height: 520px) and (min-aspect-ratio: 5/4) {
+  #roomView > header, #houseView > header { padding-block: 6px; }
+  .bubble { font-size: 13px; padding: 7px 10px; }
+}
+
+
+/* ================= wide screens: room on the left, items in a side panel ================= */
+
 </style>
 
 <div class="stage"><div class="app" id="app">
@@ -989,7 +1012,9 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     }
     return inside;
   }
-  function overTray(evt) { var r = document.querySelector('.tray').getBoundingClientRect(); return evt.clientY >= r.top; }
+  // wide screens keep the tray in a side panel on the right; phones keep it along the bottom
+  var SIDE_TRAY = window.matchMedia('(min-width: 640px) and (min-aspect-ratio: 5/4)');
+  function overTray(evt) { var r = document.querySelector('.tray').getBoundingClientRect(); return SIDE_TRAY.matches ? evt.clientX >= r.left : evt.clientY >= r.top; }
   // only a spot your finger is actually on counts (no snapping to the nearest one)
   // forgiving: a fingertip that lands just outside a spot's edge (within a few px) still counts as a tap
   // on it, but only when it is clearly the nearest spot. Drags stay exact so nothing snaps by accident.
@@ -1066,7 +1091,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   window.addEventListener('pointermove', function (e) {
     if (pending && !drag) {
       var dy = pending.y - e.clientY, dx = Math.abs(e.clientX - pending.x);
-      if (dy > 10 && dy > dx || (pending.mouse && Math.hypot(dx, dy) > 6)) { var id = pending.id; pending = null; startDrag(e, id); }
+      var left = pending.x - e.clientX; // side tray: pulling an item left, into the room, picks it up
+      if ((!SIDE_TRAY.matches && dy > 10 && dy > dx) || (SIDE_TRAY.matches && left > 10 && left > Math.abs(e.clientY - pending.y)) || (pending.mouse && Math.hypot(dx, dy) > 6)) { var id = pending.id; pending = null; startDrag(e, id); }
       else if (dx > 14) pending = null;
     }
     if (!drag || drag.mode !== 'drag') return;
