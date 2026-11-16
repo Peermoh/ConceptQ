@@ -69,7 +69,9 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 @keyframes buildRise { from { transform: scaleY(0.03); opacity: .4; } to { transform: none; opacity: 1; } }
 .puff { transform-box: fill-box; transform-origin: center; animation: puff 1s ease-out both; }
 @keyframes puff { from { transform: scale(.3); opacity: .9; } to { transform: translate(var(--dx), -14px) scale(1.7); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .build-drop, .build-rise, .puff { animation: none; } }
+.roof-lift { animation: roofLift 1.6s cubic-bezier(.45,0,.3,1) 0.2s both; }
+@keyframes roofLift { from { transform: translateY(60px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .build-drop, .build-rise, .puff, .roof-lift { animation: none; } }
 .bubble.pop { animation: pop 0.3s ease-out; }
 @keyframes pop { from { transform: scale(0.85); } to { transform: scale(1); } }
 .nibb { position: absolute; width: 74px; height: 68px; animation: bob 3s ease-in-out infinite; }
@@ -232,13 +234,15 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   // The main app saves how many lessons are finished in 'cq-progress' (same site, so we can read it here).
   // Lesson i is finished when PROGRESS > i. Each lesson earns one kind of item.
   var PROGRESS = 0; // nothing saved yet = empty land
-  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 9) PROGRESS = Math.floor(pr.current); } catch (e) {}
+  try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 21) PROGRESS = Math.floor(pr.current); } catch (e) {}
   var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Boss'];
   var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
   var WALLS_UP = PROGRESS >= 4;
+  // Floor 2: Lists I lifts the roof on a crane and lays the floor beams; it comes back down when Sets builds the walls
+  var ROOF_LIFTED = PROGRESS >= 10 && PROGRESS < 13, LIFT = 60;
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
   var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'stairs'];
@@ -562,9 +566,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var L = Math.sqrt(v.w * v.w / 4 + v.h * v.h / 4);
     var snowy = worldKey === 'snow';
     // back roof plane (mostly hidden behind the ridge)
-    s += poly([P(v, -0.4, 5, H + RH), P(v, 10.4, 5, H + RH), P(v, 10.4, -0.6, H - 6), P(v, -0.4, -0.6, H - 6)], '#8E3D2F');
-    // right wall with its gable
-    s += poly([P(v, 10, 0, 0), P(v, 10, 10, 0), P(v, 10, 10, H), P(v, 10, 5, H + RH), P(v, 10, 0, H)], '#E6CDB6', ' stroke="#4A2C3E" stroke-width="1"');
+    var R = '', backRoof = poly([P(v, -0.4, 5, H + RH), P(v, 10.4, 5, H + RH), P(v, 10.4, -0.6, H - 6), P(v, -0.4, -0.6, H - 6)], '#8E3D2F');
+    if (ROOF_LIFTED) R += backRoof; else s += backRoof;
+    // right wall with its gable (the gable goes up with the roof)
+    if (ROOF_LIFTED) {
+      s += poly([P(v, 10, 0, 0), P(v, 10, 10, 0), P(v, 10, 10, H), P(v, 10, 0, H)], '#E6CDB6', ' stroke="#4A2C3E" stroke-width="1"');
+      R += poly([P(v, 10, 10, H), P(v, 10, 5, H + RH), P(v, 10, 0, H)], '#E6CDB6', ' stroke="#4A2C3E" stroke-width="1"');
+    } else s += poly([P(v, 10, 0, 0), P(v, 10, 10, 0), P(v, 10, 10, H), P(v, 10, 5, H + RH), P(v, 10, 0, H)], '#E6CDB6', ' stroke="#4A2C3E" stroke-width="1"');
     // front wall
     s += poly([P(v, 0, 10, 0), P(v, 10, 10, 0), P(v, 10, 10, H), P(v, 0, 10, H)], '#F6E3CC', ' stroke="#4A2C3E" stroke-width="1"');
     // stone base along both walls
@@ -578,7 +586,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       s += '<g transform="' + frontPlane(v, 10, w[0], false) + '">' + windowArt(w[1] * L, hasLamp(w[2])) + '</g>';
     });
     // gable window (attic, dark until Intermediate)
-    s += '<g transform="' + frontPlane(v, 10, 4.5, false) + '"><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="11" fill="#8A5A35"></circle><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="8" fill="#5E4A6E"></circle></g>';
+    var attic = '<g transform="' + frontPlane(v, 10, 4.5, false) + '"><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="11" fill="#8A5A35"></circle><circle cx="' + (0.5 * L) + '" cy="-' + (H + 18) + '" r="8" fill="#5E4A6E"></circle></g>';
+    if (ROOF_LIFTED) R += attic; else s += attic;
     // front door, step and porch light
     // front door: an open doorway until the Input lesson hangs the door (things come in from outside)
     s += '<g transform="' + frontPlane(v, 1.4, 10, true) + '"><rect x="-3" y="-50" width="' + (1.2 * L + 6) + '" height="50" rx="3" fill="#8A5A35"></rect><rect x="0" y="-47" width="' + (1.2 * L) + '" height="47" rx="2" fill="#3A2530"></rect></g>';
@@ -597,6 +606,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
          '</g></g>';
     s += poly([P(v, 1.2, 10, 0), P(v, 2.8, 10, 0), P(v, 2.8, 10.7, 0), P(v, 1.2, 10.7, 0)], '#B8ADB6', ' stroke="#8A8390" stroke-width="1"');
     // front roof plane with shingle lines
+    var roofFrom = s.length;
     s += poly([P(v, -0.4, 10.6, H - 6), P(v, 10.4, 10.6, H - 6), P(v, 10.4, 5, H + RH), P(v, -0.4, 5, H + RH)], '#B5533F', ' stroke="#4A2C3E" stroke-width="1.2"');
     for (var k = 1; k < 5; k++) {
       var gy = 10.6 - k * 1.12, z = H - 6 + k * (RH + 6) / 5;
@@ -616,6 +626,27 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     s += bz(7, 6.6, 0.9, 0.9, zc - 10, 40, '#6E4E46', '#9C5A48', '#8A4E3E');
     var ct = P(v, 7.45, 7.05, zc + 32);
     if (!still) [0, 1, 2].forEach(function (i) { s += '<circle class="smoke" style="animation-delay:-' + (i * 1.1) + 's" cx="' + ct[0] + '" cy="' + ct[1] + '" r="6" fill="#F2EEF6"></circle>'; });
+    if (ROOF_LIFTED) {
+      R += s.slice(roofFrom); s = s.slice(0, roofFrom);
+      // the ceiling deck of the ground floor, with the new floor beams across it
+      s += poly([P(v, 0, 0, H), P(v, 10, 0, H), P(v, 10, 10, H), P(v, 0, 10, H)], '#6E4E46', ' stroke="#4A2C3E" stroke-width="1"');
+      var bm = '';
+      [0.6, 2.75, 4.9, 7.05, 9.2].forEach(function (gx) {
+        bm += poly([P(v, gx, 0, H + 5), P(v, gx + 0.35, 0, H + 5), P(v, gx + 0.35, 10, H + 5), P(v, gx, 10, H + 5)], '#E2A867') +
+              poly([P(v, gx + 0.35, 0, H), P(v, gx + 0.35, 10, H), P(v, gx + 0.35, 10, H + 5), P(v, gx + 0.35, 0, H + 5)], '#B5793F') +
+              poly([P(v, gx, 10, H), P(v, gx + 0.35, 10, H), P(v, gx + 0.35, 10, H + 5), P(v, gx, 10, H + 5)], '#C98A4B');
+      });
+      s += '<g data-part="9">' + bm + '</g>';
+      // a crane holds the roof up while floor 2 is built
+      var base = P(v, 12.4, 1.2, 0), ridge = P(v, 5, 5, H + RH), topY = ridge[1] - LIFT - 26;
+      var cr = '<g data-part="9" stroke="#E0A11B" stroke-width="3" fill="none" stroke-linecap="round">' +
+        '<path d="M' + (base[0] - 5) + ' ' + base[1] + ' V' + topY + ' M' + (base[0] + 5) + ' ' + base[1] + ' V' + topY + '"></path>';
+      for (var y = base[1] - 12; y > topY + 6; y -= 14) cr += '<path d="M' + (base[0] - 5) + ' ' + y + ' L' + (base[0] + 5) + ' ' + (y - 7) + '" stroke-width="1.6"></path>';
+      cr += '<path d="M' + (ridge[0] - 18) + ' ' + topY + ' H' + (base[0] + 22) + '"></path>' +
+        '<rect x="' + (base[0] + 12) + '" y="' + (topY + 2) + '" width="14" height="10" fill="#7A6A80" stroke="none"></rect>' +
+        '<path d="M' + ridge[0] + ' ' + topY + ' V' + (ridge[1] - LIFT) + '" stroke="#4A2C3E" stroke-width="1.6"></path></g>';
+      s += '<g class="roof-g"><g transform="translate(0 ' + (-LIFT) + ')">' + R + '</g></g>' + cr;
+    }
     s = '<g data-part="3">' + s + '</g>'; // the whole house: the Strings lesson raises it
     // mailbox by the path
     var mb = P(v, 3.6, 11.3);
@@ -701,10 +732,11 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   function summary() {
     var total = 0, kinds = 0; TRAY.forEach(function (id) { if (!ITEMS[id].locked) { kinds += ITEMS[id].count; total += usedCount(id); } });
     var next = TRAY.filter(function (id) { return id in NEED && ITEMS[id].locked; }).sort(function (a, b) { return NEED[a] - NEED[b]; })[0];
-    document.getElementById('houseSummary').textContent = !WALLS_UP
+    if (ROOF_LIFTED) { document.getElementById('houseSummary').textContent = 'Floor 2 is under construction: the roof is up on the crane and the floor beams are in. ' + (PROGRESS < 11 ? 'Next: Lists II lays the floorboards.' : 'Next: the floor-2 walls.'); }
+    else document.getElementById('houseSummary').textContent = !WALLS_UP
       ? 'Your house is being built. ' + ['Finish Hello, Python to put up your welcome sign.', 'Finish Variables to bring the building supplies.', 'Finish Numbers to lay the foundation.', 'Finish Strings to raise the walls and roof.'][PROGRESS]
       : kinds + ' items earned from lessons. Placed: ' + total + '.' + (next ? ' Next: finish ' + ITEMS[next].locked + ' to earn the ' + ITEMS[next].name.toLowerCase() + '.' : '');
-    document.getElementById('houseSub').textContent = houseMode === 'outside' ? 'Ground floor · outside' : 'Inside · tap a room';
+    document.getElementById('houseSub').textContent = houseMode === 'outside' ? (ROOF_LIFTED ? 'Floor 2 · being built' : 'Ground floor · outside') : 'Inside · tap a room';
     document.getElementById('outBtn').hidden = houseMode === 'outside';
     document.getElementById('worldBtn').hidden = houseMode !== 'outside';
     document.getElementById('resetBtn').hidden = houseMode !== 'outside';
@@ -1169,12 +1201,15 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     5: 'Two lamps! Place them, then tap one to switch it on and off.',
     6: 'A garden gate! It only opens if the condition is True.',
     7: 'Your staircase is built! A loop climbs it one step at a time. Floor 2 opens with the next level.',
-    8: 'The porch light is on and the moth is happy! You finished the whole ground floor!'
+    8: 'The porch light is on and the moth is happy! You finished the whole ground floor!',
+    9: 'Up goes the roof! The new floor beams lie in a row, like a list: beams[0], beams[1], beams[2]… Your wardrobe waits for the floor-2 walls.'
   };
 
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
+    if (n === 9 && houseMode !== 'outside') { houseMode = 'outside'; drawHouse(); }
+    if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }
     var parts = document.querySelectorAll('#houseSvg [data-part="' + n + '"]'), part = parts[0];
     if (part && !still) {
       for (var pi = 0; pi < parts.length; pi++) parts[pi].classList.add(n === 3 ? 'build-rise' : 'build-drop');
@@ -1198,7 +1233,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       say(bubble, 'New in your tray: ' + got.join(' and ') + '.' + (WALLS_UP ? ' Go inside to place ' + (got.length > 1 ? 'them' : 'it') + '!' : ' It waits until the walls are up.'), true, nb);
     }, still ? 2500 : 5200);
   }
-  var buildArg = /[?&]build=(\d)\b/.exec(location.search);
+  var buildArg = /[?&]build=(\d+)\b/.exec(location.search);
   var BUILD_NOW = buildArg ? +buildArg[1] : -1;
   if (BUILD_NOW >= 0 && BUILD_NOW === PROGRESS - 1) playBuild(BUILD_NOW);
   else if (!WALLS_UP) say(document.getElementById('houseBubble'), 'Empty land, for now! Every lesson you finish builds part of your house.', false, document.getElementById('houseNibb'));

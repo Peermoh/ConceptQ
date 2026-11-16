@@ -161,3 +161,12 @@ recorded with word timestamps), a Read-it pane, 3 questions with a reason for ev
 - **Saved settings:** treat anything read from storage as untrusted; accept only known values.
 - **Wires:** every wire is tappable and states its Python fact (prototype: Mailbox ↔ Bookshelf,
   Switches ↔ Doors, Foundation ↔ Walls).
+
+### Floor 2 (Intermediate) — started 2026-11-16
+- Storyboard: `docs/storyboards/floor2.html`. 11 lessons + boss (Lists and Functions are split in two); the roof is lifted
+  on a crane in Lists I and lowered back onto floor 2 at Sets, once the walls are up.
+- **Lists I is playable** (lesson 10 of 21): 8 steps, 8 questions, 5 cards in the new Collections category.
+  Build moment: the crane lifts the roof and five floor beams are laid. Its item (wardrobe) waits for the floor-2 walls.
+- Home shows the floor you are building, with a switch to look at the other floor. Rooms not written yet say
+  "opens in the next build". Progress saves now accept 0–21 lessons.
+- Ground-floor lessons were widened to cover every beginner concept (67 steps in total, 7–9 per lesson).
