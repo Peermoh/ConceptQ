@@ -10,6 +10,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>
 [hidden] { display: none !important; }
+/* Home: the live world fills the screen behind everything; the page scrolls over it */
+#home .scene { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0 !important; box-shadow: none !important; z-index: 0; }
+.home-scroll > :not(.scene), #home .scene .lumi, #home .scene .bubble { pointer-events: auto; }
+#home .home-body { margin-top: 196px; }
+#home .scene .lumi, #home .scene .bubble { transition: opacity 0.25s ease, transform 0.25s ease; }
+#home.scrolled .scene .lumi, #home.scrolled .scene .bubble { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+#home .lesson-card, #home .house-card, #home .course, #home .tile, #home .topic, #home .topbar .chip, #home .brand {
+  background: rgba(26, 11, 31, 0.58); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  border-color: rgba(255, 241, 226, 0.16); }
+#home .course.soon { opacity: 1; } #home .course.soon .c-body, #home .course.soon .c-ic { opacity: 0.6; }
+#home .path-row-head { background: rgba(26, 11, 31, 0.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-radius: 14px; padding: 6px 12px; }
+#home .nav { background: rgba(26, 11, 31, 0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .screen:focus { outline: none; }
 /* Layout: one phone-sized app, a live world scene on top, translucent cards below that adapt to the world. */
 :root {
@@ -381,7 +393,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .minibtn[aria-pressed="true"] { color: var(--cream); border-color: var(--mint); }
 
 /* ---------- home scrolls as one page ---------- */
-.home-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; overscroll-behavior: contain; }
+.home-scroll { pointer-events: none; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; overscroll-behavior: contain; }
 .home-scroll .home-body { flex: none; overflow: visible; min-height: auto; padding-block: 14px 18px; }
 .scene { overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
@@ -958,8 +970,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     var bubble = document.getElementById('homeBubble');
     var sceneEl = document.querySelector('.scene');
     var w = sceneEl.clientWidth, h = sceneEl.clientHeight;
-    var scale = Math.max(w / 400, h / 340);
-    var offX = (w - 400 * scale) / 2, offY = (h - 340 * scale) / 2;
+    var scale = w / 400, offX = 0, offY = 0;
     lumi.style.left = Math.max(2, offX + 0 * scale) + 'px';
     lumi.style.top = (offY + 112 * scale) + 'px';
     bubble.style.left = Math.min(w - 196, offX + 118 * scale) + 'px';
@@ -1260,7 +1271,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     return '<g opacity="' + dim + '"><circle cx="' + sun[0] + '" cy="' + sun[1] + '" r="' + sun[3] * 2.6 + '" fill="url(#sunGlow)"/><circle cx="' + sun[0] + '" cy="' + sun[1] + '" r="' + sun[3] + '" fill="' + sun[2] + '"/>' + stripes + '</g>';
   }
 
-  function terrain(world, w) {
+  function terrain(world, w, extra) { // extra: how far the ground continues below the usual 340-high scene
     var g = GROUND[world];
     if (w === 'snow' && world !== 'ocean' && world !== 'snow') g = [mix(g[0], '#F5F8FF', 0.75), mix(g[1], '#E1E8F6', 0.75), mix(g[2], '#CBD5EA', 0.7)];
     var s = '';
@@ -1306,6 +1317,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
              '<ellipse cx="0" cy="0" rx="12" ry="7" fill="' + f[1] + '"/><path d="M-10 0 l-9 -7 l0 14 z" fill="' + f[1] + '"/><circle cx="6" cy="-2" r="1.8" fill="#1B1022"/></g></g>';
       });
     }
+    if (extra > 0) s += '<rect x="0" y="339" width="400" height="' + (extra + 2) + '" fill="' + (world === 'snow' ? g[0] : g[2]) + '"/>';
     return s;
   }
 
@@ -1372,6 +1384,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
     var rays = world === 'ocean' && t !== 'night'
       ? '<g fill="#FFFFFF"><path class="ray" d="M60 0 L110 0 L60 340 L20 340 Z"/><path class="ray" style="animation-delay:-2s" d="M200 0 L240 0 L230 340 L170 340 Z"/><path class="ray" style="animation-delay:-3.5s" d="M320 0 L350 0 L380 340 L320 340 Z"/></g>'
       : '';
+    // The world is the background of the whole Home page. It is drawn 400 wide and as tall as the
+    // screen needs (H); the ground sits lower down (dy) and carries on to the bottom behind the cards.
+    var el = document.getElementById('world'), ew = el.clientWidth || 390, eh = el.clientHeight || 340;
+    var H = Math.max(340, Math.round(400 * eh / ew)), dy = Math.max(0, Math.round(H * 0.5 - 210));
+    el.setAttribute('viewBox', '0 0 400 ' + H);
     var svg =
       '<defs>' +
         '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[0] + '"/><stop offset="0.55" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[2] + '"/></linearGradient>' +
@@ -1379,13 +1396,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
         '<radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF4E0" stop-opacity="0.35"/><stop offset="1" stop-color="#FFF4E0" stop-opacity="0"/></radialGradient>' +
         '<radialGradient id="halo" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFD28A" stop-opacity="0.9"/><stop offset="1" stop-color="#FFB547" stop-opacity="0"/></radialGradient>' +
       '</defs>' +
-      '<rect width="400" height="340" fill="url(#sky)"/>' +
+      '<rect width="400" height="' + H + '" fill="url(#sky)"/>' +
       celestial(t, w) + rays +
       (world === 'ocean' ? '' : clouds(t, w)) +
       ambient(t, w, world, 'sky') +
-      terrain(world, w) +
-      ambient(t, w, world, 'front') +
-      (tint[1] ? '<rect width="400" height="340" fill="' + tint[0] + '" opacity="' + tint[1] + '"/>' : '') +
+      '<g transform="translate(0 ' + dy + ')">' + terrain(world, w, H - 340 - dy) + ambient(t, w, world, 'front') + '</g>' +
+      (tint[1] ? '<rect width="400" height="' + H + '" fill="' + tint[0] + '" opacity="' + tint[1] + '"/>' : '') +
       '<g id="nodes"></g>';
     document.getElementById('world').innerHTML = svg;
     var app = document.getElementById('app');
@@ -2094,7 +2110,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
   }
   document.addEventListener('click', function (e) { var w = e.target.closest && e.target.closest('.wire-hit'); if (w) sayFact(w); });
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.wire-hit')) { e.preventDefault(); sayFact(e.target.closest('.wire-hit')); } });
-  window.addEventListener('resize', drawNodes);
+  window.addEventListener('resize', function () { buildScene(); drawNodes(); });
+  // Nibb and his bubble live in the background world: fade them out once the cards scroll over them
+  document.getElementById('homeScroll').addEventListener('scroll', function (e) { document.getElementById('home').classList.toggle('scrolled', e.currentTarget.scrollTop > 60); }, { passive: true });
   show('home');
 })();
 </script>
