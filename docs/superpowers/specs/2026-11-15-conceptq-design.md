@@ -255,3 +255,19 @@ quiz built fresh every time (hand-written questions + generators checked against
 - Ground-floor challenge now has 4 question generators.
 - Floor 4 (Expert) storyboard: `docs/storyboards/floor4.html` — rooftop garden: 11 lessons + smart-garden challenge,
   4 choices awaiting confirmation.
+
+### Rooftop garden (Expert) complete (2026-11-17)
+- 11 rooms (index 35–45): Iterators, Generators, Decorators, Context managers, Type hints and dataclasses, Logging
+  and timing, Concurrency, JSON and APIs, Everyday tools (standard library), Regular expressions, and the Master
+  Builder: smart garden. The whole Python course is 46 lessons; the home card says "You finished Python!" at the end.
+- The garden is a fourth inside view (Garden): Garden shed, Vegetable beds, Patio, Roof terrace. Hedge plots have no
+  wall slots, so every garden item stands on the ground: water tap, rain barrel, light switch box, self-closing gate,
+  label printer, smart meter, sprinkler hub, antenna, tool wall, seed sieve. Each has a "Try it" card.
+- Outside, in build order: shed with a tap, rain barrel, string lights, a fence with a self-closing gate, the garage
+  roof turned into a terrace with labelled raised beds, a smart meter, sprinklers, an antenna, a tool board, a potting
+  bench with a seed sieve, then the smart garden in bloom. The view zooms out a little from lesson 36 so it all fits.
+- New flashcard kinds: Machinery and Outside world. Every generated quiz question is checked in real Python
+  (tools/verify_generators.py), except the git ones in Team coding, which are not Python.
+- Fixes in this round: stairs climb to an opening (not into the window) and the tile at their foot stays clear; room
+  walls extend on wide screens; on phones the topic arrows sit in their own gutters and Nibb perches between the
+  floor title and the tiles.

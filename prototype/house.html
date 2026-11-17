@@ -279,6 +279,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     hub:       { name: 'Sprinkler hub', from: 'Concurrency', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     antenna:   { name: 'Antenna', from: 'JSON and APIs', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     toolwall:  { name: 'Tool wall', from: 'Everyday tools', kind: 'floor', w: 2, d: 1, count: 1, rooms: null },
+    sieve:     { name: 'Seed sieve', from: 'Regular expressions', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     printer:   { name: 'Blueprint printer', from: 'Classes I', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
     badges:    { name: 'Room badges', from: 'Classes II', kind: 'wall', size: 1, count: 1, rooms: null },
     xray:      { name: 'X-ray scanner', from: 'Namespaces', kind: 'floor', w: 1, d: 1, count: 1, rooms: null },
@@ -302,7 +303,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var PROGRESS = 0; // nothing saved yet = empty land
   try { var pr = JSON.parse(localStorage.getItem('cq-progress') || 'null'); if (pr && pr.v === 2 && typeof pr.current === 'number' && pr.current >= 0 && pr.current <= 46) PROGRESS = Math.floor(pr.current); } catch (e) {}
   var LESSON_NAMES = ['Hello, Python', 'Variables', 'Numbers', 'Strings', 'Input', 'True / False', 'Decisions', 'Loops', 'the Master Builder challenge', 'Lists I', 'Lists II', 'Tuples', 'Sets', 'Dictionaries', 'String tools', 'Functions I', 'Functions II', 'Errors', 'Files', 'Modules', 'the floor-2 Master Builder challenge', 'Packages', 'Exceptions in depth', 'Text and Unicode', 'Classes I', 'Classes II', 'Namespaces', 'Inheritance', 'Comprehensions', 'Lambda and closures', 'Files pro', 'Testing', 'Team coding', 'Coding with AI', 'the floor-3 Master Builder challenge', 'Iterators', 'Generators', 'Decorators', 'Context managers', 'Type hints and dataclasses', 'Logging and timing', 'Concurrency', 'JSON and APIs', 'Everyday tools', 'Regular expressions', 'the garden challenge'];
-  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31, blueprints: 32, ctrlpanel: 33, tap: 35, barrel: 36, lightbox: 37, gate: 38, labeler: 39, meter: 40, hub: 41, antenna: 42, toolwall: 43 }; // rug: a welcome gift, always earned
+  var NEED = { poster: 0, desk: 1, sofa: 2, bookshelf: 3, plant: 3, lamp: 5, wardrobe: 9, shoerack: 10, glasscab: 11, toybox: 12, keyrack: 13, noticeboard: 14, kettle: 15, toaster: 16, alarm: 17, filecab: 18, toolbox: 19, workbench: 21, harness: 22, sorter: 23, printer: 24, badges: 25, xray: 26, bunkbed: 27, portraits: 27, conveyor: 28, vacuum: 29, archcab: 30, clipboard: 31, blueprints: 32, ctrlpanel: 33, tap: 35, barrel: 36, lightbox: 37, gate: 38, labeler: 39, meter: 40, hub: 41, antenna: 42, toolwall: 43, sieve: 44 }; // rug: a welcome gift, always earned
   Object.keys(NEED).forEach(function (id) { if (PROGRESS <= NEED[id]) ITEMS[id].locked = LESSON_NAMES[NEED[id]]; });
   // Build order follows a real building site: sign (Hello) -> supplies (Variables) -> foundation (Numbers)
   // -> walls and roof (Strings) -> front door and mailbox (Input) -> lights, gate, stairs, porch light.
@@ -318,7 +319,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
   var F2_DONE = { 13: 'Next: Dictionaries hangs the upstairs doors.', 14: 'Next: String tools puts up the wallpaper.', 15: 'Next: Functions I fits the kitchen.', 16: 'Next: Functions II adds the oven.', 17: 'Next: Errors fits the smoke alarm.', 18: 'Next: Files opens the attic.', 19: 'Next: Modules brings the toolbox.', 20: 'Next: the Master Builder challenge, a garden party on the balcony.', 21: 'Floor 2 is complete. Next: Packages builds a workshop for the loft.', 22: 'Next: Exceptions in depth puts up safety scaffolding.', 23: 'Next: Text and Unicode brings the parcels.', 24: 'Next: Classes I opens the roof with dormer windows.', 25: 'Next: Classes II builds the loft floor and rooms.', 26: 'The loft is open: tap Loft inside. Next: Namespaces wires it.', 27: 'Next: Inheritance furnishes the loft.', 28: 'Next: Comprehensions builds a lift between the floors.', 29: 'Next: Lambda and closures fits smart switches.', 30: 'Next: Files pro fills the archive room.', 31: 'Next: Testing brings the inspector.', 32: 'Inspection passed! Next: Team coding fits the solar panels.', 33: 'Solar panels on! Next: Coding with AI switches on the control room.', 34: 'Next: the Master Builder challenge makes the roof smart.', 35: 'Your house is finished! Next: Iterators starts the garden with a shed and a tap.', 36: 'The garden has begun: tap Garden inside to see the plots. Next: Generators fits a rain barrel.', 37: 'Next: Decorators strings lights across the garden.', 38: 'Next: Context managers fits a self-closing gate.', 39: 'Next: Type hints and dataclasses labels the plant beds.', 40: 'Next: Logging and timing puts a smart meter on the shed.', 41: 'Next: Concurrency fits the sprinklers.', 42: 'Next: JSON and APIs puts an antenna on the roof terrace.', 43: 'Next: Everyday tools fills the tool wall.', 44: 'Next: Regular expressions brings the seed sieve.', 45: 'Next: the Master Builder challenge makes the garden water itself.', 46: 'Everything is built: the house, the smart roof and a garden that waters itself!' };
   var OWNER = 'Nova';
   try { var pf0 = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pf0 && typeof pf0.name === 'string') { var nm0 = pf0.name.replace(/[\u0000-\u001f<>&"']/g, '').trim().slice(0, 16); if (nm0) OWNER = nm0; } } catch (e) {}
-  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'blueprints', 'ctrlpanel', 'tap', 'barrel', 'lightbox', 'gate', 'labeler', 'meter', 'hub', 'antenna', 'toolwall', 'stairs'];
+  var TRAY = ['bookshelf', 'desk', 'lamp', 'sofa', 'rug', 'plant', 'poster', 'wardrobe', 'shoerack', 'glasscab', 'toybox', 'keyrack', 'noticeboard', 'kettle', 'toaster', 'alarm', 'filecab', 'toolbox', 'workbench', 'harness', 'sorter', 'printer', 'badges', 'xray', 'bunkbed', 'portraits', 'conveyor', 'vacuum', 'archcab', 'clipboard', 'blueprints', 'ctrlpanel', 'tap', 'barrel', 'lightbox', 'gate', 'labeler', 'meter', 'hub', 'antenna', 'toolwall', 'sieve', 'stairs'];
   var STAIRS_BUILT = PROGRESS >= 8; // the Loops lesson builds them
   if (STAIRS_BUILT) TRAY = TRAY.filter(function (id) { return id !== 'stairs'; });
   var GRID = 4;
@@ -385,7 +386,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     workbench: ['study', 'playroom', 'stairs', 'living'], harness: ['entrance', 'landing', 'stairs', 'study'], sorter: ['entrance', 'stairs', 'landing', 'living'],
     printer: ['study', 'playroom', 'bedroom', 'landing'], badges: ['loftland', 'loftbed', 'control', 'archive'], xray: ['loftland', 'control', 'loftbed', 'archive'],
     bunkbed: ['loftbed', 'control', 'loftland', 'archive'], portraits: ['loftbed', 'loftland', 'control', 'archive'],
-    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], blueprints: ['control', 'loftland', 'study', 'landing'], tap: ['shed', 'beds', 'patio', 'terrace'], barrel: ['beds', 'patio', 'terrace', 'shed'], lightbox: ['patio', 'terrace', 'beds', 'shed'], gate: ['patio', 'terrace', 'beds', 'shed'], labeler: ['shed', 'terrace', 'beds', 'patio'], meter: ['shed', 'beds', 'patio', 'terrace'], hub: ['beds', 'terrace', 'patio', 'shed'], antenna: ['terrace', 'patio', 'beds', 'shed'], toolwall: ['shed', 'patio', 'terrace', 'beds'], ctrlpanel: ['control', 'loftland', 'study', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
+    conveyor: ['loftland', 'control', 'landing', 'stairs'], vacuum: ['living', 'playroom', 'loftbed', 'study'], archcab: ['archive', 'control', 'loftland', 'loftbed'], clipboard: ['entrance', 'loftland', 'control', 'landing'], blueprints: ['control', 'loftland', 'study', 'landing'], tap: ['shed', 'beds', 'patio', 'terrace'], barrel: ['beds', 'patio', 'terrace', 'shed'], lightbox: ['patio', 'terrace', 'beds', 'shed'], gate: ['patio', 'terrace', 'beds', 'shed'], labeler: ['shed', 'terrace', 'beds', 'patio'], meter: ['shed', 'beds', 'patio', 'terrace'], hub: ['beds', 'terrace', 'patio', 'shed'], antenna: ['terrace', 'patio', 'beds', 'shed'], toolwall: ['shed', 'patio', 'terrace', 'beds'], sieve: ['beds', 'patio', 'shed', 'terrace'], ctrlpanel: ['control', 'loftland', 'study', 'landing'], toolbox: ['landing', 'playroom', 'bedroom', 'kitchen'], rug: ['living', 'entrance', 'study', 'stairs'] };
   // put every earned copy of these items that is not placed yet into a free spot; returns [{id, room}]
   function moveIn(ids) {
     var done = [];
@@ -590,6 +591,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       var tp = P(v, tx + 0.08, ty + 0.16, ph2 - 8 * zs); s += '<rect x="' + (tp[0] - 2 * zs) + '" y="' + (tp[1] - 2 * zs) + '" width="' + 9 * zs + '" height="' + 4 * zs + '" rx="' + 1.5 * zs + '" fill="#E0A11B"></rect><circle cx="' + tp[0] + '" cy="' + (tp[1] - 5 * zs) + '" r="' + 3.5 * zs + '" fill="#E0A11B" stroke="#8A5A35" stroke-width="' + Math.max(0.5, zs) + '"></circle>';
       s += box(v, gx + 0.3, gy + 0.62, 0.36, 0.3, 16 * zs, '#4F7FD1', '#3B66B5', '#4573C4');
       var wt2 = P(v, gx + 0.48, gy + 0.77, 16 * zs); s += '<ellipse cx="' + wt2[0] + '" cy="' + wt2[1] + '" rx="' + 7 * zs + '" ry="' + 3 * zs + '" fill="#8FD3FF"></ellipse>';
+    } else if (id === 'sieve') {
+      // a round wooden sieve on a potting stand, with a little pile of seeds under it
+      s += box(v, gx + 0.25, gy + 0.25, 0.5, 0.5, 26 * zs, '#B5793F', '#8A5A35', '#9C6A40', 0);
+      var sc5 = P(v, gx + 0.5, gy + 0.5, 34 * zs);
+      s += '<ellipse cx="' + sc5[0] + '" cy="' + sc5[1] + '" rx="' + 20 * zs + '" ry="' + 10 * zs + '" fill="#C98A4B" stroke="#8A5A35" stroke-width="' + Math.max(0.8, 2 * zs) + '"></ellipse><ellipse cx="' + sc5[0] + '" cy="' + sc5[1] + '" rx="' + 15 * zs + '" ry="' + 7 * zs + '" fill="#E9D9B8"></ellipse>';
+      for (var sx2 = -2; sx2 <= 2; sx2++) s += '<line x1="' + (sc5[0] + sx2 * 5 * zs) + '" y1="' + (sc5[1] - 6 * zs) + '" x2="' + (sc5[0] + sx2 * 5 * zs) + '" y2="' + (sc5[1] + 6 * zs) + '" stroke="#B5A99A" stroke-width="' + Math.max(0.4, 0.8 * zs) + '"></line>';
+      ['#5E3B20', '#8A5A35', '#3E2A1A'].forEach(function (c9, k) { s += '<circle cx="' + (sc5[0] - 5 * zs + k * 5 * zs) + '" cy="' + (sc5[1] - 2 * zs) + '" r="' + Math.max(0.8, 2 * zs) + '" fill="' + c9 + '"></circle>'; });
     } else if (id === 'hub') {
       // a control box on short legs, with four coloured pipes going out to the beds
       s += box(v, gx + 0.25, gy + 0.3, 0.5, 0.4, 36 * zs, '#4F7FD1', '#3B66B5', '#4573C4', 8 * zs);
@@ -1133,6 +1141,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       ['#FF7A6B', '#FFC861', '#7CF5C8', '#8FD3FF'].forEach(function (c8, k) { var tq = P(v, sx1, sy0 + 0.5 + k * 0.28, 18); tbd += '<rect x="' + (tq[0] - 1.5) + '" y="' + (tq[1] - 6) + '" width="3" height="9" rx="1" fill="' + c8 + '"></rect>'; });
       g += '<g data-part="43">' + tbd + '</g>';
     }
+    if (PROGRESS >= 45) { // 44 Regular expressions: a potting bench with a seed sieve, in front of the shed
+      var pb2 = '', bx4 = sx0 - 0.2, by4 = sy1 + 0.6;
+      pb2 += box(v, bx4, by4, 1.2, 0.5, 16, '#C98A4B', '#8A5A35', '#9C6A40', 12);
+      [[0.05, 0.05], [1.05, 0.05], [0.05, 0.35], [1.05, 0.35]].forEach(function (l) { pb2 += box(v, bx4 + l[0], by4 + l[1], 0.1, 0.1, 12, '#6E4428', '#5A3820', '#6E4428'); });
+      var sv = P(v, bx4 + 0.6, by4 + 0.25, 20); pb2 += '<ellipse cx="' + sv[0] + '" cy="' + sv[1] + '" rx="9" ry="4.5" fill="#E9D9B8" stroke="#8A5A35" stroke-width="1.5"></ellipse>';
+      [[-3, 0], [0, 1], [3, 0]].forEach(function (o, k) { pb2 += '<circle cx="' + (sv[0] + o[0]) + '" cy="' + (sv[1] + o[1]) + '" r="1.2" fill="' + ['#5E3B20', '#8A5A35', '#3E2A1A'][k] + '"></circle>'; });
+      g += '<g data-part="44">' + pb2 + '</g>';
+    }
     if (PROGRESS >= 41) { // 40 Logging and timing: a smart meter on the front of the shed
       var mm = P(v, sx0 + 1.45, sy1, 20);
       g += '<g data-part="40"><rect x="' + (mm[0] - 6) + '" y="' + (mm[1] - 8) + '" width="12" height="10" rx="2" fill="#E2E6EC" stroke="#5E5A66" stroke-width="1"></rect><rect x="' + (mm[0] - 4) + '" y="' + (mm[1] - 6) + '" width="8" height="4" fill="#0E2A22"></rect><rect x="' + (mm[0] - 3) + '" y="' + (mm[1] - 5) + '" width="5" height="2" fill="#7CF5C8"></rect></g>';
@@ -1160,6 +1176,12 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
         var spk = '';
         [x0 + 0.57, x0 + 1.52, x0 + 2.47].forEach(function (bx3) { var sh2 = P(v, bx3, y0 + 1.9, H2 + 20); spk += '<line x1="' + sh2[0] + '" y1="' + sh2[1] + '" x2="' + sh2[0] + '" y2="' + (sh2[1] + 8) + '" stroke="#5E5A66" stroke-width="1.4"></line><path class="spray" d="M' + (sh2[0] - 10) + ' ' + (sh2[1] + 2) + ' Q' + sh2[0] + ' ' + (sh2[1] - 10) + ' ' + (sh2[0] + 10) + ' ' + (sh2[1] + 2) + '" fill="none" stroke="#8FD3FF" stroke-width="1.4" stroke-dasharray="2 2"></path>'; });
         g += '<g data-part="41">' + spk + '</g>';
+      }
+      if (PROGRESS >= 46) { // the smart garden: everything in bloom, and the terrace waters itself
+        var bl = '';
+        [x0 + 0.57, x0 + 1.52, x0 + 2.47].forEach(function (bx5, i) { for (var f2 = 0; f2 < 3; f2++) { var fp = P(v, bx5 + (f2 - 1) * 0.18, y0 + 1.1 + f2 * 0.7, H2 + 18); bl += '<circle cx="' + fp[0] + '" cy="' + fp[1] + '" r="3.2" fill="' + ['#FF8FC7', '#FFC861', '#C3A6FF'][(i + f2) % 3] + '"></circle><circle cx="' + fp[0] + '" cy="' + fp[1] + '" r="1.2" fill="#FFF1E2"></circle>'; } });
+        var sg2 = P(v, x0 + 1.5, y1 + 0.2, H2 + 24); bl += '<rect x="' + (sg2[0] - 30) + '" y="' + (sg2[1] - 8) + '" width="60" height="13" rx="4" fill="#6EE7B7" stroke="#08281C" stroke-width="1"></rect><text x="' + sg2[0] + '" y="' + (sg2[1] + 1.5) + '" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="7" fill="#08281C">smart garden ✓</text>';
+        g += '<g data-part="45">' + bl + '</g>';
       }
       if (PROGRESS >= 43) { // JSON and APIs: an antenna mast on the corner of the terrace
         var am = P(v, x1 - 0.1, y0 + 0.1, H2 + 2), amt = P(v, x1 - 0.1, y0 + 0.1, H2 + 60), an = '';
@@ -1785,7 +1807,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     poster: ['Hello, Python', 'Your first program says hello. <code>print()</code> shows text on the screen.', 'print(' + '"hi")\n<span class="c"># → hi</span>'],
     desk: ['Variables', 'A drawer with a label is like a variable: a name that holds a value.', 'pens = 3\n<span class="c"># the drawer called pens holds 3</span>'],
     wardrobe: ['Lists I', '', ''],
-    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], blueprints: ['Team coding', '', ''], ctrlpanel: ['Coding with AI', '', ''], tap: ['Iterators', '', ''], barrel: ['Generators', '', ''], lightbox: ['Decorators', '', ''], gate: ['Context managers', '', ''], labeler: ['Type hints and dataclasses', '', ''], meter: ['Logging and timing', '', ''], hub: ['Concurrency', '', ''], antenna: ['JSON and APIs', '', ''], toolwall: ['Everyday tools', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
+    shoerack: ['Lists II', '', ''], glasscab: ['Tuples', '', ''], toybox: ['Sets', '', ''], keyrack: ['Dictionaries', '', ''], noticeboard: ['String tools', '', ''], kettle: ['Functions I', '', ''], toaster: ['Functions II', '', ''], alarm: ['Errors', '', ''], filecab: ['Files', '', ''], workbench: ['Packages', '', ''], printer: ['Classes I', '', ''], conveyor: ['Comprehensions', '', ''], vacuum: ['Lambda and closures', '', ''], archcab: ['Files pro', '', ''], clipboard: ['Testing', '', ''], blueprints: ['Team coding', '', ''], ctrlpanel: ['Coding with AI', '', ''], tap: ['Iterators', '', ''], barrel: ['Generators', '', ''], lightbox: ['Decorators', '', ''], gate: ['Context managers', '', ''], labeler: ['Type hints and dataclasses', '', ''], meter: ['Logging and timing', '', ''], hub: ['Concurrency', '', ''], antenna: ['JSON and APIs', '', ''], toolwall: ['Everyday tools', '', ''], sieve: ['Regular expressions', '', ''], badges: ['Classes II', '', ''], xray: ['Namespaces', '', ''], bunkbed: ['Inheritance', '', ''], portraits: ['Inheritance', '', ''], harness: ['Exceptions in depth', '', ''], sorter: ['Text and Unicode', '', ''], toolbox: ['Modules', '', ''],
     sofa: ['Numbers', 'Seats add up, just like numbers in Python.', 'seats = 2 + 1\n<span class="c"># → 3</span>'],
     rug: ['Welcome gift', 'A welcome gift for starting your house.', ''],
     plant: ['Bonus', 'A bonus for finishing the Strings lesson.', '']
@@ -1866,6 +1888,13 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       if (cardState.book >= 0) { var f4 = FILES2[cardState.book]; al2.push('<span class="new">(p / ' + pyStr(f4[0].split('/')[0]) + ' / ' + pyStr(f4[0].split('/')[1]) + ').open(' + pyStr(f4[1]) + ').read()  <span class="c"># → ' + esc(f4[2]) + ', ' + f4[3] + '</span></span>'); }
       if (cardState.step) al2.push('<span class="new">[f.name <span class="o">for</span> f <span class="o">in</span> p.glob(' + pyStr('*/*.png') + ')]  <span class="c"># → [\'cat.png\']</span></span>');
       code.innerHTML = al2.join('\n'); tryB.hidden = !!cardState.step; tryB.textContent = 'Find every picture';
+    } else if (p.id === 'sieve') {
+      var PAT = [['\\d+', 'numbers'], ['[A-Z]{2}-\\d{3}', 'plant codes'], ['\\d{2}/\\d{2}', 'dates']], pt = PAT[cardState.step % 3];
+      var txt = 'TM-042 sown 03/05, 12 seeds; KL-7 sown 10/05, 8 seeds';
+      var hits = { 0: ['042', '03', '05', '12', '7', '10', '05', '8'], 1: ['TM-042'], 2: ['03/05', '10/05'] }[cardState.step % 3];
+      idea.innerHTML = 'The sieve keeps only text with the right <b>shape</b>. Pick a pattern, then pour the text through.';
+      code.innerHTML = ['text = ' + pyStr(txt), '<span class="new">re.findall(r' + pyStr(pt[0]) + ', text)  <span class="c"># ' + pt[1] + ' → ' + esc(pyListSafe(hits)) + '</span></span>'].join('\n');
+      tryB.hidden = false; tryB.textContent = 'Try the next pattern';
     } else if (p.id === 'hub') {
       var all2 = cardState.step === 2, one = cardState.step === 1, BEDS = ['peas', 'kale', 'leek', 'bean'];
       idea.innerHTML = 'Each sprinkler mostly <b>waits</b> for water. With <b>async</b>, they all wait at the same time.';
@@ -2128,6 +2157,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     } else if (p.id === 'bookshelf') { cardState.step = Math.min(3, cardState.step + 1); renderCard(); }
     else if (p.id === 'vacuum') { cardState.dirty.forEach(function (x) { x[1] = false; }); renderCard(); say(document.getElementById('roomBubble'), 'Vroom! map(clean, todo) cleaned every dirty room.', true, document.getElementById('roomNibb')); }
     else if (p.id === 'archcab') { cardState.step = 1; renderCard(); say(document.getElementById('roomBubble'), 'glob found every .png in the archive folders.', true, document.getElementById('roomNibb')); }
+    else if (p.id === 'sieve') { cardState.step++; renderCard(); say(document.getElementById('roomBubble'), ['Every run of digits came through.', 'Only TM-042 has the shape of a plant code: KL-7 is too short.', 'Two dates: two digits, a slash, two digits.'][cardState.step % 3], true, document.getElementById('roomNibb')); }
     else if (p.id === 'hub') { cardState.step = (cardState.step + 1) % 3; renderCard(); say(document.getElementById('roomBubble'), ['Ready to water.', 'One after another: 8 seconds of waiting.', 'gather: they all waited together, just 2 seconds!'][cardState.step], cardState.step !== 1, document.getElementById('roomNibb')); }
     else if (p.id === 'antenna') { cardState.step = (cardState.step + 1) % 4; renderCard(); say(document.getElementById('roomBubble'), ['Antenna ready.', '200: the weather service answered with JSON.', 'Rain tomorrow, so the sprinklers can rest.', '404! Always check the status code first.'][cardState.step], cardState.step !== 3, document.getElementById('roomNibb')); }
     else if (p.id === 'toolwall') { cardState.step++; renderCard(); say(document.getElementById('roomBubble'), 'Another tool from the standard library: already in Python.', true, document.getElementById('roomNibb')); }
@@ -2354,6 +2384,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     41: 'Sprinklers over every bed, all running at once! While one waits for water, the others carry on.',
     42: 'An antenna on the roof terrace! It asks the weather service and gets JSON back.',
     43: 'A tool board on the shed! Every tool is a module that comes with Python.',
+    44: 'A potting bench with a seed sieve! A pattern lets through only the text with the right shape.',
+    45: 'The smart garden is on! The forecast decides, the sprinklers run together, and every bed is in bloom. You built it all!',
     24: 'Three dormer windows, all from one blueprint! One class, three objects, each its own colour.',
     25: 'The loft has a floor, stairs and rooms. Every room shares the house name: a class variable. Tap Loft inside to look.',
     26: 'The loft is wired. The cables are hidden in the walls, like the names inside an object: obj.__dict__.',
