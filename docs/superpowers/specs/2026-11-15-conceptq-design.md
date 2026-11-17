@@ -277,3 +277,6 @@ quiz built fresh every time (hand-written questions + generators checked against
   (tools/lesson_examples.py): a toolbox for packages, a cookie cutter for classes, a library book for context
   managers, one cook making breakfast for async. Nibb says it first while the step title goes up; "Read it" shows it
   as an "In real life" note above the explanation (2026-11-17).
+- Phones (portrait, and landscape when the screen is short): the caption sits at the top of the board as a two-line
+  subtitle bar that scrolls with the word being said; the chalk lines start below it. Desktop keeps it under the
+  controls (2026-11-17).
