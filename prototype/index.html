@@ -189,6 +189,14 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .q-pic .qc { display: inline-grid; place-items: center; min-width: 46px; height: 46px; padding: 0 6px; border-radius: 50%; background: #FFC861; color: #2A1330; font-size: 15px; font-weight: 900; border: 3px solid #C98A1E; }
 .q-pic .qc.note { border-radius: 8px; min-width: 64px; height: 36px; background: #9FE3B5; border-color: #3E9A62; }
 .q-pic s { text-decoration-thickness: 3px; }
+.q-buddy { position: fixed; z-index: 30; width: 52px; height: 48px; pointer-events: none; transition: left .45s cubic-bezier(.3,1.3,.5,1), top .45s cubic-bezier(.3,1.3,.5,1), transform .3s; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+.q-buddy svg { width: 100%; height: 100%; display: block; }
+.q-buddy[hidden] { display: none; }
+.q-buddy.bob svg { animation: qbBob 1.2s ease-in-out infinite; }
+@keyframes qbBob { 50% { transform: translateY(-4px); } }
+#qOptions .opt.reading { outline: 3px solid #FFE07A; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(255,224,122,.18); transition: outline-color .2s; }
+#qText.reading { text-shadow: 0 0 12px rgba(255,224,122,.45); }
+@media (prefers-reduced-motion: reduce) { .q-buddy { transition: none; } .q-buddy.bob svg { animation: none; } }
 .q-hear { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 9px 14px; border-radius: 999px; border: 2px solid var(--line, rgba(255,255,255,.25)); background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
 .course-tabs { display: flex; gap: 8px; margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
 .course-tabs::-webkit-scrollbar { display: none; }
@@ -1094,6 +1102,7 @@ button.deck.locked { cursor: default; }
           <label class="toggle"><input type="checkbox" id="setCaptions"><span>Show captions in lessons</span></label>
           <label class="toggle"><input type="checkbox" id="setAntics"><span>Nibb naps, dances, takes baths and does tricks on Home</span></label>
           <label class="toggle"><input type="checkbox" id="setSounds"><span>Sounds: taps, cheers, and the sounds of your world (rain, birds, crickets…)</span></label>
+          <label class="toggle"><input type="checkbox" id="setAutoRead"><span>Read Maths and English questions out loud by themselves (on for age 8 and under)</span></label>
           <label class="toggle"><input type="checkbox" id="setMusic"><span>Music: a soft music-box tune on Home</span></label>
           <button class="chip-btn" id="tourAgain" type="button">Show me around again</button>
           <button class="cta" id="meWorld" style="width:100%">Change world and weather</button>
@@ -1160,6 +1169,7 @@ button.deck.locked { cursor: default; }
       <div class="q-pic" id="qPic" hidden></div>
       <div class="code" id="qCode"></div>
       <button class="q-hear" id="qHear" type="button" hidden>🔊 Read it to me</button>
+      <div class="q-buddy" id="qBuddy" aria-hidden="true" hidden><svg viewBox="0 0 120 110"></svg></div>
       <div class="options" id="qOptions" role="group" aria-label="Answers"></div>
     </div>
     <div id="sheetSlot" aria-live="polite"></div>
@@ -1969,6 +1979,7 @@ button.deck.locked { cursor: default; }
       if (Object.prototype.hasOwnProperty.call(NARRATORS, pf.narrator)) profile.narrator = pf.narrator;
       if (typeof pf.sounds === 'boolean') profile.sounds = pf.sounds;
       if (typeof pf.music === 'boolean') profile.music = pf.music;
+      if (typeof pf.autoRead === 'boolean') profile.autoRead = pf.autoRead;
       if (pf.toured === true) profile.toured = true;
       if (typeof pf.teacher === 'string') { var tn = pf.teacher.replace(/[\u0000-\u001f<>&"\\]/g, '').trim().slice(0, 14); if (tn) profile.teacher = tn; }
     }
@@ -2277,10 +2288,13 @@ button.deck.locked { cursor: default; }
     b.setAttribute('aria-pressed', String(onn)); b.setAttribute('aria-label', onn ? 'Sounds on. Tap to mute' : 'Sounds off. Tap to turn on');
     var t = document.getElementById('setSounds'); if (t) t.checked = onn;
     var m = document.getElementById('setMusic'); if (m) { m.checked = profile.music !== false; m.disabled = !onn; }
+    var ar = document.getElementById('setAutoRead'); if (ar) ar.checked = autoRead();
   }
   function setSounds(onn) { profile.sounds = onn; saveProfile(); renderSoundBtn(); if (onn) { SFX.unlock(); SFX.play('pop'); } sceneSound(); }
   document.getElementById('soundBtn').addEventListener('click', function () { setSounds(profile.sounds === false); });
   document.getElementById('setSounds').addEventListener('change', function (e) { setSounds(e.target.checked); });
+  function autoRead() { return typeof profile.autoRead === 'boolean' ? profile.autoRead : profile.age <= 8; }
+  document.getElementById('setAutoRead').addEventListener('change', function (e) { profile.autoRead = e.target.checked; saveProfile(); });
   document.getElementById('setMusic').addEventListener('change', function (e) { profile.music = e.target.checked; saveProfile(); sceneSound(); });
   // browsers only allow sound after a tap: start the world's sound on the first one
   document.addEventListener('pointerdown', function first() { SFX.unlock(); setTimeout(sceneSound, 50); document.removeEventListener('pointerdown', first, true); }, true);
@@ -2652,6 +2666,7 @@ button.deck.locked { cursor: default; }
   }
   var pendingBuild = null; // lesson index whose build moment the house should play next time it opens
   function show(id) {
+    var qb = document.getElementById('qBuddy'); if (qb && id !== 'quiz') qb.hidden = true;
     if (id !== 'learn' && typeof stopBoard === 'function') stopBoard();
     screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
     if (id === 'learn' && typeof placeCaption === 'function') requestAnimationFrame(placeCaption);
@@ -4181,15 +4196,36 @@ button.deck.locked { cursor: default; }
       f(function (v) { return /^en[-_](IN|GB)/.test(v.lang) && /natural|online|google/i.test(v.name); }) ||
       f(function (v) { return /^en/.test(v.lang); });
   }
-  function speakText(t) { return t.replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu, '').replace(/_+/g, ' blank ').replace(/₹\s?(\d+)/g, '$1 rupees').replace(/×/g, ' times ').replace(/÷/g, ' shared by ').replace(/−/g, ' minus ').replace(/\s+/g, ' ').trim(); }
+  function speakText(t) { return t.replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu, '').replace(/_+/g, ' blank ').replace(/₹\s?1\b/g, '1 rupee').replace(/₹\s?(\d+)/g, '$1 rupees').replace(/×/g, ' times ').replace(/÷/g, ' shared by ').replace(/−/g, ' minus ').replace(/\s+/g, ' ').trim(); }
+  var qBud = document.getElementById('qBuddy'), qBudAt = -2;
+  function qBuddyMood(m) { qBud.querySelector('svg').innerHTML = lumiSVG(m || 'happy'); }
+  // -2: resting by the read button; -1: the question; 0, 1, 2…: that choice
+  function qPoint(i) {
+    if (document.getElementById('quiz').hidden || COURSE === 'py') { qBud.hidden = true; return; }
+    qBud.hidden = false; qBudAt = i;
+    document.querySelectorAll('#qOptions .opt').forEach(function (o, k) { o.classList.toggle('reading', k === i); });
+    document.getElementById('qText').classList.toggle('reading', i === -1);
+    var tgt = i >= 0 ? document.querySelectorAll('#qOptions .opt')[i] : i === -1 ? document.getElementById('qText') : document.getElementById('qHear');
+    if (!tgt) return;
+    var r = tgt.getBoundingClientRect(), x, y;
+    if (i >= 0) { x = r.right - 58; y = r.top + (r.height - 48) / 2; qBud.style.transform = 'scaleX(-1)'; }      // inside the choice, at its right end, facing it
+    else if (i === -1) { x = Math.min(window.innerWidth - 60, r.right + 6); y = r.top - 6; qBud.style.transform = 'scaleX(-1)'; }
+    else { x = r.right + 10; y = r.top + (r.height - 48) / 2; qBud.style.transform = ''; }                      // resting by the read button
+    qBud.style.left = Math.max(4, Math.min(window.innerWidth - 56, x)) + 'px'; qBud.style.top = Math.max(4, y) + 'px';
+    qBud.classList.toggle('bob', i >= -1);
+  }
+  window.addEventListener('resize', function () { if (!qBud.hidden) qPoint(qBudAt); });
+  document.getElementById('quiz').addEventListener('scroll', function () { if (!qBud.hidden) qPoint(qBudAt); }, true);
   function hearQ(q) {
-    if (q.snd) { playPhon(q.snd, q.gap); return; }
+    if (q.snd) { qPoint(-1); playPhon(q.snd, q.gap); setTimeout(function () { if (Q[qi] === q && answers[qi] === undefined) qPoint(-2); }, 2600); return; }
     if (!hasTTS) return;
     try {
       speechSynthesis.cancel();
       var v = pickVoice(), parts = [speakText(q.text)].concat(q.options.map(function (o, i) { return 'Option ' + 'ABCD'[i] + '. ' + speakText(o) + '.'; }));
-      parts.forEach(function (t) { // one sentence at a time, so each option gets its own clear pause
+      parts.forEach(function (t, k) { // one sentence at a time, so each option gets its own clear pause
         var u = new SpeechSynthesisUtterance(t); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = profile.narrator === 'ryan' ? 'en-GB' : 'en-IN';
+        u.onstart = function () { if (Q[qi] === q) qPoint(k - 1); }; // the robot goes to what is being read
+        if (k === parts.length - 1) u.onend = function () { if (Q[qi] === q && answers[qi] === undefined) qPoint(-2); };
         u.rate = 0.86; u.pitch = 1; speechSynthesis.speak(u);
       });
     } catch (e) {}
@@ -4204,7 +4240,8 @@ button.deck.locked { cursor: default; }
     document.getElementById('qCode').innerHTML = q.code; document.getElementById('qCode').hidden = !q.code;
     var qp = document.getElementById('qPic'); qp.innerHTML = q.pic || ''; qp.hidden = !q.pic; qp.classList.toggle('rich', !!q.pic && /class="q[gc]|class="qrow/.test(q.pic)); qp.classList.toggle('long', !!q.pic && !qp.classList.contains('rich') && q.pic.replace(/<[^>]+>/g, '').length > 14);
     var qh = document.getElementById('qHear'); qh.hidden = COURSE === 'py'; qh.textContent = q.snd ? '🔊 Hear it again' : '🔊 Read it to me';
-    if (q.snd && !done) setTimeout(function () { if (Q[qi] === q) hearQ(q); }, 250);
+    qBuddyMood('happy'); setTimeout(function () { qPoint(-2); }, 30);
+    if (!done && COURSE !== 'py' && (q.snd || autoRead())) setTimeout(function () { if (Q[qi] === q && answers[qi] === undefined) hearQ(q); }, 450);
     document.getElementById('qEmbers').textContent = '+' + earned;
     document.getElementById('qBack').hidden = qi === 0;
     var prog = '';
@@ -4233,6 +4270,8 @@ button.deck.locked { cursor: default; }
     var right = i === q.answer;
     if (right) { firstTry++; earned += 10; burst(btn); }
     SFX.play(right ? 'right' : 'wrong');
+    try { if (hasTTS) speechSynthesis.cancel(); } catch (e) {} playPhon.tok = {};
+    if (COURSE !== 'py') { qBuddyMood(right ? 'cheer' : 'oops'); qPoint(i); document.querySelectorAll('#qOptions .opt').forEach(function (o) { o.classList.remove('reading'); }); }
     document.querySelectorAll('#qOptions .opt').forEach(function (b, k) {
       b.disabled = true;
       if (k === q.answer) b.classList.add('right'); else if (k === i) { b.classList.add('wrong'); } else b.classList.add('dim');
