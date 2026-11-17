@@ -27,6 +27,7 @@
       '.pz-placed{position:absolute;animation:pzSnap .3s cubic-bezier(.3,1.5,.5,1)}@keyframes pzSnap{from{transform:scale(1.2)}}' +
       '.pz-board.done{border-color:#7CF5C8;box-shadow:0 0 0 6px rgba(124,245,200,.35),0 10px 30px rgba(0,0,0,.4)}' +
       '.pz-board.done .pz-placed{outline:none}' +
+      '.pz-back{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));width:42px;height:42px;border-radius:12px;border:1.5px solid rgba(255,246,236,.35);background:rgba(255,255,255,.08);color:#FFF6EC;font-size:22px;font-weight:900;cursor:pointer}' +
       '.pz-skip{background:none;border:0;color:#FFF6EC;opacity:.7;font:inherit;font-weight:800;font-size:14px;text-decoration:underline;cursor:pointer;padding:8px}' +
       '.pz-cheer{font-size:26px;font-weight:900;color:#7CF5C8;min-height:34px;text-align:center}' +
       '@media (prefers-reduced-motion:reduce){.pz,.pz-placed,.pz-piece.shake{animation:none}}';
@@ -71,7 +72,7 @@
     var maxW = Math.min(window.innerWidth - 32, 420), maxH = Math.min(window.innerHeight * 0.42, 360);
     var bw = Math.min(maxW, maxH * cols / rows), bh = bw * rows / cols, pw = bw / cols, ph = bh / rows;
     var ov = document.createElement('div'); ov.className = 'pz'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', o.title || 'Build it');
-    ov.innerHTML = '<h2></h2><p>Drag each piece into its place. You can also tap a piece, then tap its spot.</p><div class="pz-main"><div class="pz-board"></div><div class="pz-tray"></div></div><div class="pz-cheer" aria-live="polite"></div><button class="pz-skip" type="button">Let Nibb build it</button>';
+    ov.innerHTML = '<button class="pz-back" type="button" aria-label="Back to lessons">'+'\u2190'+'</button><h2></h2><p>Drag each piece into its place. You can also tap a piece, then tap its spot.</p><div class="pz-main"><div class="pz-board"></div><div class="pz-tray"></div></div><div class="pz-cheer" aria-live="polite"></div><button class="pz-skip" type="button">Let Nibb build it</button>';
     ov.querySelector('h2').textContent = o.title || 'Build it!';
     document.body.appendChild(ov);
     var board = ov.querySelector('.pz-board'), tray = ov.querySelector('.pz-tray'), cheer = ov.querySelector('.pz-cheer');
@@ -142,6 +143,8 @@
       }, solved ? 1100 : 0);
     }
     ov.querySelector('.pz-skip').addEventListener('click', function () { finish(false); });
+    ov.querySelector('.pz-back').addEventListener('click', function () { finish(false); if (window.parent !== window) window.parent.postMessage({ cq: 'home' }, '*'); });
+    if (window.parent === window) ov.querySelector('.pz-back').hidden = true;
   }
   window.CQPuzzle = { start: start };
 })();

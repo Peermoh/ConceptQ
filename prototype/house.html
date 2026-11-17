@@ -182,7 +182,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
 
   <section class="view" id="houseView" aria-label="House">
     <header class="pad">
-      <div style="display: flex; gap: 8px; align-items: center; min-width: 0"><button class="chip" id="outBtn" hidden aria-label="Back outside"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>Outside</button><div class="title glass"><b>My House</b><span id="houseSub">Ground floor · outside</span></div></div>
+      <div style="display: flex; gap: 8px; align-items: center; min-width: 0"><button class="chip" id="lessonsBtn" hidden aria-label="Back to lessons" title="Back to lessons" style="flex: 0 0 auto; padding-inline: 10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><button class="chip" id="outBtn" hidden aria-label="Back outside"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>Outside</button><div class="title glass"><b>My House</b><span id="houseSub">Ground floor · outside</span></div></div>
       <div style="display: flex; gap: 6px"><button class="chip" id="worldBtn" aria-label="Change the world around your house">Spring</button><button class="chip" id="resetBtn">Reset</button><button class="chip" id="floorBtn" hidden aria-label="Show the other floor">Upstairs</button></div>
     </header>
     <div class="scene" id="houseScene">
@@ -2451,6 +2451,8 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
       setTimeout(function () { ARRIVED = []; }, 2600);
     }, still ? 1200 : n === 9 || n === 12 ? 3600 : 2400);
   }
+  // inside the app: a way back to the lessons (the app listens for this message)
+  if (window.parent !== window) { var lb = document.getElementById('lessonsBtn'); lb.hidden = false; lb.addEventListener('click', function () { window.parent.postMessage({ cq: 'home' }, '*'); }); }
   var buildArg = /[?&]build=(\d+)\b/.exec(location.search);
   var BUILD_NOW = buildArg ? +buildArg[1] : -1;
   if (BUILD_NOW >= 0 && BUILD_NOW === PROGRESS - 1) playBuild(BUILD_NOW);

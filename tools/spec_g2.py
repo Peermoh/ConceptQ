@@ -3,6 +3,14 @@
 # A question: (text, picture, step it tests, (right, why), (wrong, why), (wrong, why)[, sounds to play])
 # Generators are JavaScript functions returning mq(text, picture, [[right, why], [wrong, why], ...]) (or null to retry).
 
+def G(n, k, item, box=''):  # n groups of k, each in its basket / box / bundle
+    return ''.join('<span class="qg">' + ('<i>%s</i>' % box if box else '') + (item * k if k <= 6 else '<span class="qgrid">' + ('<span>%s</span>' % item) * k + '</span>' if k <= 10 else item + '<b class="qn">×%d</b>' % k) + '</span>' for _ in range(n))
+def MANY(n, item):  # loose things in rows of five
+    if n > 20: return '<span class="qg">%s<b class="qn">×%d</b></span>' % (item, n)
+    return ''.join('<span class="qrow">' + item * min(5, n - i) + '</span>' for i in range(0, n, 5))
+def KIDS(n): return '<span class="qg qk">' + '🧒' * n + '</span>'
+def COINS(*v): return ''.join('<span class="qc%s">₹%d</span>' % (' note' if x >= 20 else '', x) for x in v)
+
 def Q(text, pic, step, *opts, snd=None):
     return dict(text=text, pic=pic, step=step, opts=list(opts), snd=snd)
 
@@ -12,17 +20,17 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
  dict(key='m2_groups', title='Counting in groups', part='fruit stall', icon='tx:2·4·6', bg='#FFC861',
   text='Count in twos, fives and tens instead of one by one.',
   done='You can count in groups! Come and see the fruit stall open on Market Street.',
-  quiz=[Q('Count the shells in twos. How many?', '🐚🐚  🐚🐚  🐚🐚  🐚🐚', 0, ('8', '2, 4, 6, 8: four pairs make 8.'), ('4', '4 is how many pairs. Each pair has 2 shells.'), ('6', 'Count one more pair: 2, 4, 6, 8.')),
-        Q('Count the fingers in fives. How many?', '✋  ✋  ✋  ✋', 1, ('20', '5, 10, 15, 20.'), ('4', 'That is how many hands. Each hand has 5 fingers.'), ('15', 'There are four hands: 5, 10, 15, 20.')),
-        Q('Each bunch has 10 bananas. How many bananas?', '🍌×10  🍌×10  🍌×10', 2, ('30', '10, 20, 30.'), ('3', '3 is how many bunches, not bananas.'), ('13', 'Count in tens: 10, 20, 30.')),
-        Q('3 plates with 4 laddoos on each. How many laddoos?', '🟡🟡🟡🟡  🟡🟡🟡🟡  🟡🟡🟡🟡', 3, ('12', '4, 8, 12: three groups of 4 make 12.'), ('7', 'That adds 3 and 4. We need 3 groups of 4.'), ('10', 'Count again in fours: 4, 8, 12.')),
+  quiz=[Q('Count the shells in twos. How many?', G(4, 2, '🐚'), 0, ('8', '2, 4, 6, 8: four pairs make 8.'), ('4', '4 is how many pairs. Each pair has 2 shells.'), ('6', 'Count one more pair: 2, 4, 6, 8.')),
+        Q('Count the fingers in fives. How many?', G(4, 1, '✋'), 1, ('20', '5, 10, 15, 20.'), ('4', 'That is how many hands. Each hand has 5 fingers.'), ('15', 'There are four hands: 5, 10, 15, 20.')),
+        Q('Each bunch has 10 bananas. How many bananas?', G(3, 10, '🍌'), 2, ('30', '10, 20, 30.'), ('3', '3 is how many bunches, not bananas.'), ('13', 'Count in tens: 10, 20, 30.')),
+        Q('3 plates with 4 laddoos on each. How many laddoos?', G(3, 4, '🟡', '🍽️'), 3, ('12', '4, 8, 12: three groups of 4 make 12.'), ('7', 'That adds 3 and 4. We need 3 groups of 4.'), ('10', 'Count again in fours: 4, 8, 12.')),
         Q('What comes next? 10, 20, 30, 40, __', '', 4, ('50', 'Every jump is 10, so 40 + 10 = 50.'), ('41', 'The jump is 10, not 1.'), ('45', 'That jump is 5. Here every jump is 10.'))],
   gen=[("""function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 6), seq = [a, a + s, a + 2 * s, a + 3 * s];
         return mq('What comes next? ' + seq.join(', ') + ', __', '', [[a + 4 * s, 'Every jump is ' + s + ', so ' + seq[3] + ' + ' + s + ' = ' + (a + 4 * s) + '.'], [seq[3] + 1, 'The jump is ' + s + ', not 1.'], [a + 5 * s, 'That jumps twice. Add ' + s + ' once.']]); }""", 4),
-       ("""function () { var g = ri(2, 5), k = ri(2, 5), f = pickOne(['🥭', '🍎', '🍊', '🍋']), grp = new Array(k + 1).join(f);
-        return mq(g + ' baskets with ' + k + ' fruits each. How many fruits?', new Array(g + 1).join(grp + '  ').trim(), [[g * k, 'Count in ' + k + 's ' + g + ' times: ' + g + ' groups of ' + k + ' make ' + g * k + '.'], [g + k, 'That adds ' + g + ' and ' + k + '. Count every fruit in every basket.'], [g * k + k, 'That counts one basket too many.']]); }""", 3),
+       ("""function () { var g = ri(2, 5), k = ri(2, 5), f = pickOne(['🥭', '🍎', '🍊', '🍋']);
+        return mq(g + ' baskets with ' + k + ' fruits each. How many fruits?', grp(g, k, f, '🧺'), [[g * k, 'Count in ' + k + 's ' + g + ' times: ' + g + ' groups of ' + k + ' make ' + g * k + '.'], [g + k, 'That adds ' + g + ' and ' + k + '. Count every fruit in every basket.'], [g * k + k, 'That counts one basket too many.']]); }""", 3),
        ("""function () { var n = ri(2, 9);
-        return mq('Each bundle has 10 sticks. How many sticks in ' + n + ' bundles?', new Array(n + 1).join('🥢 ').trim(), [[n * 10, 'Count in tens: ' + n + ' tens make ' + n * 10 + '.'], [n, n + ' is how many bundles, not sticks.'], [n + 10, 'Count in tens, not ones.']]); }""", 2)],
+        return mq('Each bundle has 10 sticks. How many sticks in ' + n + ' bundles?', grp(n, 10, '🥢', '🪢'), [[n * 10, 'Count in tens: ' + n + ' tens make ' + n * 10 + '.'], [n, n + ' is how many bundles, not sticks.'], [n + 10, 'Count in tens, not ones.']]); }""", 2)],
   cards=[('How do you count in twos?', '2, 4, 6, 8, 10: jump 2 each time.'), ('Count in fives', '5, 10, 15, 20, 25'), ('4 groups of 3 makes how many?', '12: 3, 6, 9, 12.')]),
 
  dict(key='m2_shapes', title='Solid shapes', part='toy-block shop', icon='em:🎲', bg='#9FE3FF',
@@ -122,17 +130,17 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
  dict(key='m2_share', title='Equal groups and sharing', part='sweet-box shop', icon='tx:12÷3', bg='#FFB0D8',
   text='Groups of the same size, times, and sharing fairly.',
   done='You can share fairly! Come and see the sweet-box shop on Market Street.',
-  quiz=[Q('3 boxes with 4 sweets in each. How many sweets?', '🍬🍬🍬🍬 | 🍬🍬🍬🍬 | 🍬🍬🍬🍬', 0, ('12', '4, 8, 12: 3 groups of 4.'), ('7', 'That adds 3 and 4.'), ('34', 'We count the sweets, not write the digits together.')),
+  quiz=[Q('3 boxes with 4 sweets in each. How many sweets?', G(3, 4, '🍬', '📦'), 0, ('12', '4, 8, 12: 3 groups of 4.'), ('7', 'That adds 3 and 4.'), ('34', 'We count the sweets, not write the digits together.')),
         Q('What does 3 × 4 mean?', '', 1, ('3 groups of 4', '× means groups of.'), ('3 plus 4', 'That is 3 + 4. × means groups of.'), ('3 take away 4', 'That would be −. × means groups of.')),
-        Q('12 sweets shared equally by 3 friends. How many each?', '🍬 × 12', 2, ('4', '12 ÷ 3 = 4: each friend gets 4.'), ('9', 'That takes 3 away. We share.'), ('3', '3 is how many friends.')),
+        Q('12 sweets shared equally by 3 friends. How many each?', MANY(12, '🍬') + KIDS(3), 2, ('4', '12 ÷ 3 = 4: each friend gets 4.'), ('9', 'That takes 3 away. We share.'), ('3', '3 is how many friends.')),
         Q('3 × 4 = 12. So 12 ÷ 3 = ?', '', 3, ('4', 'Times and sharing are partners.'), ('12', '12 is how many sweets in all.'), ('36', 'That multiplies again.')),
-        Q('7 sweets shared by 2 friends. How many are left over?', '🍬🍬🍬🍬🍬🍬🍬', 4, ('1', 'Each gets 3, which uses 6. One is left.'), ('0', '7 does not share evenly by 2.'), ('3', '3 is how many each friend gets.'))],
-  gen=[("""function () { var a = ri(2, 5), b = ri(2, 5), s = new Array(b + 1).join('🍬');
-        return mq(a + ' × ' + b + ' = ?', new Array(a + 1).join(s + ' | ').replace(/ \\| $/, ''), [[a * b, a + ' groups of ' + b + ' make ' + a * b + '.'], [a + b, 'That adds. × means groups of.'], [a * b + b, 'Count the groups again: there are ' + a + '.']]); }""", 1),
+        Q('7 sweets shared by 2 friends. How many are left over?', MANY(7, '🍬') + KIDS(2), 4, ('1', 'Each gets 3, which uses 6. One is left.'), ('0', '7 does not share evenly by 2.'), ('3', '3 is how many each friend gets.'))],
+  gen=[("""function () { var a = ri(2, 5), b = ri(2, 5);
+        return mq(a + ' × ' + b + ' = ?', grp(a, b, '🍬', '📦'), [[a * b, a + ' groups of ' + b + ' make ' + a * b + '.'], [a + b, 'That adds. × means groups of.'], [a * b + b, 'Count the groups again: there are ' + a + '.']]); }""", 1),
        ("""function () { var k = ri(2, 5), e = ri(2, 6), n = k * e, f = pickOne([['🍬', 'sweets'], ['🍪', 'biscuits'], ['🟡', 'laddoos']]);
-        return mq(n + ' ' + f[1] + ' shared equally by ' + k + ' friends. How many each?', f[0] + ' × ' + n, [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many friends.']]); }""", 2),
+        return mq(n + ' ' + f[1] + ' shared equally by ' + k + ' friends. How many each?', many(n, f[0]) + kids(k), [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many friends.']]); }""", 2),
        ("""function () { var k = pickOne([2, 3]), n = ri(5, 14); if (n % k === 0) return null;
-        return mq(n + ' sweets shared by ' + k + ' friends. How many are left over?', '🍬 × ' + n, [[n % k, 'Each gets ' + Math.floor(n / k) + ', which uses ' + (Math.floor(n / k) * k) + '. ' + (n % k) + ' left.'], [0, n + ' does not share evenly by ' + k + '.'], [Math.floor(n / k), 'That is how many each friend gets.']]); }""", 4)],
+        return mq(n + ' sweets shared by ' + k + ' friends. How many are left over?', many(n, '🍬') + kids(k), [[n % k, 'Each gets ' + Math.floor(n / k) + ', which uses ' + (Math.floor(n / k) * k) + '. ' + (n % k) + ' left.'], [0, n + ' does not share evenly by ' + k + '.'], [Math.floor(n / k), 'That is how many each friend gets.']]); }""", 4)],
   cards=[('What does × mean?', 'Groups of: 3 × 4 is 3 groups of 4.'), ('12 ÷ 3 = ?', '4: share 12 into 3 equal groups.'), ('7 shared by 2: how many left over?', '1 (each gets 3).')]),
 
  dict(key='m2_time', title='Time and seasons', part='clock tower', icon='em:🕗', bg='#C3A6FF',
@@ -154,15 +162,15 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
  dict(key='m2_money', title='Money', part='coin stall', icon='tx:₹20', bg='#7CF5C8',
   text='Coins and notes, adding prices and giving change.',
   done='You can pay and give change! Come and see the coin stall at the fair.',
-  quiz=[Q('₹10 + ₹5 + ₹5 = ?', '', 1, ('₹20', '10 + 5 + 5 = 20.'), ('₹15', 'Add both ₹5 coins.'), ('₹105', 'Add the amounts, do not write them side by side.')),
-        Q('A balloon costs ₹15. You pay ₹20. How much change?', '🎈', 3, ('₹5', '₹20 − ₹15 = ₹5.'), ('₹35', 'That adds. Change is what is left.'), ('₹15', 'That is the price.')),
+  quiz=[Q('₹10 + ₹5 + ₹5 = ?', COINS(10, 5, 5), 1, ('₹20', '10 + 5 + 5 = 20.'), ('₹15', 'Add both ₹5 coins.'), ('₹105', 'Add the amounts, do not write them side by side.')),
+        Q('A balloon costs ₹15. You pay ₹20. How much change?', '🎈 ' + COINS(20), 3, ('₹5', '₹20 − ₹15 = ₹5.'), ('₹35', 'That adds. Change is what is left.'), ('₹15', 'That is the price.')),
         Q('A kite costs ₹12 and a ball ₹8. How much for both?', '🪁 ⚽', 4, ('₹20', '12 + 8 = 20.'), ('₹4', 'That takes away. For both, we add.'), ('₹12', 'That is only the kite.')),
         Q('Which is the biggest note?', '', 0, ('₹100', '100 is the most.'), ('₹50', '50 is less than 100.'), ('₹20', '20 is less than 100.')),
         Q('You have ₹20. A toy costs ₹25. Can you buy it?', '🧸', 2, ('No, you need ₹5 more', '25 is more than 20.'), ('Yes, with ₹5 left', '25 is more than 20, so there is not enough.'), ('Yes, exactly', '₹20 is not the same as ₹25.'))],
   gen=[("""function () { var c = [pickOne([1, 2, 5, 10]), pickOne([1, 2, 5, 10]), pickOne([1, 2, 5])], t = c[0] + c[1] + c[2];
-        return mq(c.map(function (x) { return '₹' + x; }).join(' + ') + ' = ?', '🪙', [['₹' + t, c.join(' + ') + ' = ' + t + '.'], ['₹' + (t - c[2]), 'Add all three coins.'], ['₹' + (t + 1), 'Add again carefully.']]); }""", 1),
+        return mq(c.map(function (x) { return '₹' + x; }).join(' + ') + ' = ?', coins(c), [['₹' + t, c.join(' + ') + ' = ' + t + '.'], ['₹' + (t - c[2]), 'Add all three coins.'], ['₹' + (t + 1), 'Add again carefully.']]); }""", 1),
        ("""function () { var pay = pickOne([20, 50]), p = ri(pay - 18, pay - 2), t = pickOne([['🎈', 'A balloon'], ['🍦', 'An ice cream'], ['🪀', 'A yo-yo'], ['📒', 'A notebook']]);
-        return mq(t[1] + ' costs ₹' + p + '. You pay ₹' + pay + '. How much change?', t[0], [['₹' + (pay - p), '₹' + pay + ' − ₹' + p + ' = ₹' + (pay - p) + '.'], ['₹' + (pay + p), 'That adds. Change is what is left.'], ['₹' + p, 'That is the price.']]); }""", 3),
+        return mq(t[1] + ' costs ₹' + p + '. You pay ₹' + pay + '. How much change?', t[0] + ' ' + coins([pay]), [['₹' + (pay - p), '₹' + pay + ' − ₹' + p + ' = ₹' + (pay - p) + '.'], ['₹' + (pay + p), 'That adds. Change is what is left.'], ['₹' + p, 'That is the price.']]); }""", 3),
        ("""function () { var a = ri(5, 25), b = ri(3, 20), t = shuffled([['🪁', 'kite'], ['⚽', 'ball'], ['🍫', 'chocolate'], ['🧃', 'juice']]).slice(0, 2);
         return mq('A ' + t[0][1] + ' costs ₹' + a + ' and a ' + t[1][1] + ' ₹' + b + '. How much for both?', t[0][0] + ' ' + t[1][0], [['₹' + (a + b), a + ' + ' + b + ' = ' + (a + b) + '.'], ['₹' + Math.abs(a - b), 'That takes away. For both, we add.'], ['₹' + a, 'That is only the ' + t[0][1] + '.']]); }""", 4)],
   cards=[('₹10 + ₹5 + ₹5 = ?', '₹20'), ('How do you work out change?', 'Take the price away from what you pay: ₹20 − ₹15 = ₹5.'), ('Name three coins.', '₹1, ₹2, ₹5 (and ₹10).')]),
@@ -187,17 +195,17 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
  dict(key='m2_challenge', title='the Market Day challenge', part='market gate', icon='boss', bg='#FF7A6B', challenge=True,
   text='Run a stall: count the stock, share it, add prices and give change.',
   done='You finished Market Street! The market gate is up, with bunting. Come and see.',
-  quiz=[Q('4 crates with 5 mangoes each. How many mangoes?', '🥭🥭🥭🥭🥭 ×4', 1, ('20', '5, 10, 15, 20.'), ('9', 'That adds 4 and 5.'), ('45', 'Count in fives, 4 times.')),
-        Q('20 mangoes into 4 bags equally. How many in each bag?', '🛍️ 🛍️ 🛍️ 🛍️', 2, ('5', '20 ÷ 4 = 5.'), ('16', 'That takes 4 away. We share.'), ('4', '4 is how many bags.')),
+  quiz=[Q('4 crates with 5 mangoes each. How many mangoes?', G(4, 5, '🥭', '📦'), 1, ('20', '5, 10, 15, 20.'), ('9', 'That adds 4 and 5.'), ('45', 'Count in fives, 4 times.')),
+        Q('20 mangoes into 4 bags equally. How many in each bag?', MANY(20, '🥭') + '<span class="qg">🛍️🛍️🛍️🛍️</span>', 2, ('5', '20 ÷ 4 = 5.'), ('16', 'That takes 4 away. We share.'), ('4', '4 is how many bags.')),
         Q('₹25 + ₹14 = ?', '', 3, ('₹39', '25 + 14 = 39.'), ('₹11', 'That takes away. We add.'), ('₹29', 'Check the tens: 2 + 1 = 3.')),
         Q('A customer pays ₹50 for ₹39. How much change?', '💵', 4, ('₹11', '50 − 39 = 11.'), ('₹89', 'That adds. Change is what is left.'), ('₹21', 'Check: 39 + 11 = 50.')),
         Q('Which shape is the mango crate?', '📦', 0, ('cuboid', 'A crate is a box: a cuboid.'), ('sphere', 'A sphere is round like a ball.'), ('cone', 'A cone has a point.'))],
   gen=[("""function () { var c = ri(2, 6), k = pickOne([5, 10]);
-        return mq(c + ' crates with ' + k + ' fruits each. How many fruits?', new Array(c + 1).join('📦 ').trim(), [[c * k, 'Count in ' + k + 's: ' + c + ' groups of ' + k + ' make ' + c * k + '.'], [c + k, 'That adds ' + c + ' and ' + k + '.'], [c * k + k, 'That counts one crate too many.']]); }""", 1),
+        return mq(c + ' crates with ' + k + ' fruits each. How many fruits?', grp(c, k, pickOne(['🍎', '🥭', '🍊']), '📦'), [[c * k, 'Count in ' + k + 's: ' + c + ' groups of ' + k + ' make ' + c * k + '.'], [c + k, 'That adds ' + c + ' and ' + k + '.'], [c * k + k, 'That counts one crate too many.']]); }""", 1),
        ("""function () { var k = ri(2, 5), e = ri(2, 6), n = k * e;
-        return mq(n + ' mangoes into ' + k + ' bags equally. How many in each bag?', '🥭 × ' + n, [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many bags.']]); }""", 2),
+        return mq(n + ' mangoes into ' + k + ' bags equally. How many in each bag?', many(n, '🥭') + '<span class="qg">' + rpt('🛍️', k) + '</span>', [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many bags.']]); }""", 2),
        ("""function () { var p = ri(21, 48);
-        return mq('A customer pays ₹50 for ₹' + p + '. How much change?', '💵', [['₹' + (50 - p), '₹50 − ₹' + p + ' = ₹' + (50 - p) + '.'], ['₹' + (50 + p), 'That adds. Change is what is left.'], ['₹' + (60 - p), 'Check by adding back: ' + p + ' + ' + (50 - p) + ' = 50.']]); }""", 4)],
+        return mq('A customer pays ₹50 for ₹' + p + '. How much change?', coins([50]), [['₹' + (50 - p), '₹50 − ₹' + p + ' = ₹' + (50 - p) + '.'], ['₹' + (50 + p), 'That adds. Change is what is left.'], ['₹' + (60 - p), 'Check by adding back: ' + p + ' + ' + (50 - p) + ' = 50.']]); }""", 4)],
   cards=[('Market Day: 4 crates of 5. How many?', '20'), ('Market Day: ₹50 for ₹39. Change?', '₹11'), ('How do you check change?', 'Add it back to the price: ₹39 + ₹11 = ₹50.')]),
 ])
 
@@ -251,6 +259,23 @@ JS_EN = r"""
     if (others.length < 2) others = others.concat(shuffled(CVC).slice(0, 2 - others.length));
     var q = mq('Which word has the "' + g[0] + '" sound?', '🔊 ' + g[0], [[wopt(w), w + ' has ' + g[0] + '.']].concat(others.map(function (x) { return [wopt(x), x + ' does not have ' + g[0] + '.']; })));
     if (q) q.snd = ['snd_' + g[0]]; return q; }; }
+  // Which letter makes this sound? (c and k sound the same, so never both)
+  function genLetter(letters) { return function () {
+    var L = pickOne(letters), pool = 'satpinmdgocerhbfl'.split('').filter(function (c) { return c !== L && !(L === 'c' && c === 'k') && !(L === 'k' && c === 'c'); }), w = shuffled(pool).slice(0, 2);
+    var q = mq('Which letter makes this sound?', '🔊', [[L, L + ' says ' + L + ', like in ' + (CVC.filter(function (x) { return x[0] === L; })[0] || L) + '.']].concat(w.map(function (c) { return [c, c + ' makes a different sound.']; })));
+    if (q) q.snd = ['snd_' + L]; return q; }; }
+  // Change the first sound: cat → hat (both picture words)
+  function genChange() { return function () {
+    var pairs = []; CVC.forEach(function (a) { CVC.forEach(function (b) { if (a !== b && a.slice(1) === b.slice(1)) pairs.push([a, b]); }); }); if (!pairs.length) return null;
+    var x = pickOne(pairs), others = shuffled(CVC.filter(function (w) { return w !== x[1] && w !== x[0] && w[0] === x[1][0]; }).concat(CVC.filter(function (w) { return w !== x[1] && w !== x[0] && w.slice(1) !== x[0].slice(1); }))).slice(0, 2);
+    if (others.length < 2) return null;
+    return mq('Change ' + x[0][0] + ' in "' + x[0] + '" to ' + x[1][0] + '. What new word do you get?', EPIC[x[0]] + ' → ?', [[wopt(x[1]), x[1][0] + ', ' + x[1].slice(1).split('').join(', ') + ' makes ' + x[1] + '.']].concat(others.map(function (w) { return [wopt(w), w + ' is not ' + x[1][0] + ' + ' + x[0].slice(1) + '.']; }))); }; }
+  // Which sound pair is missing? _ _ i p
+  function genPair(groups) { return function () {
+    var g = pickOne(groups), w = pickOne(g[1]), i = w.indexOf(g[0]); if (i < 0) return null;
+    var shown = w.slice(0, i).split('').join(' ') + (i ? ' ' : '') + '_ _' + (w.slice(i + 2) ? ' ' + w.slice(i + 2).split('').join(' ') : '');
+    var q = mq('Which sound pair is missing? ' + shown, EPIC[w], [[g[0], w + ' has ' + g[0] + '.']].concat(shuffled(groups.filter(function (h) { return h !== g && w.indexOf(h[0]) < 0; })).slice(0, 2).map(function (h) { return [h[0], w.slice(0, i) + h[0] + w.slice(i + 2) + ' is not the word in the picture.']; })));
+    if (q) q.snd = ['w_' + w]; return q; }; }
 """
 
 ENGLISH = dict(id='english', name='English', place='Story Library', grade='Grade 2', icon='🔤', bg='#FF8FC7',
@@ -421,3 +446,104 @@ ENGLISH = dict(id='english', name='English', place='Story Library', grade='Grade
        ("genHas([['sh', ['ship', 'fish', 'shell']], ['ch', ['chips', 'chick']], ['ee', ['tree', 'bee']], ['oa', ['boat', 'goat', 'coat']]])", 3)],
   cards=[('Story Time: who came to play with the fish?', 'A duck.'), ('Blend f, i, sh', 'fish'), ('What do good readers do with new words?', 'Sound them out.')]),
 ])
+
+# ---------------- more question makers, so a quiz rarely repeats ----------------
+# names, things and places are picked at random inside each one
+_N = "['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']"
+EXTRA = {
+ 'm2_groups': [
+  ("""function () { var n = ri(2, 6), who = pickOne(%s);
+        return mq(who + ' has ' + n + ' pairs of socks. How many socks?', grp(n, 2, '🧦'), [[n * 2, 'Count in twos: ' + n + ' pairs make ' + n * 2 + '.'], [n, n + ' is the number of pairs.'], [n + 2, 'Each pair has 2 socks. Count in twos.']]); }""" % _N, 0),
+  ("""function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 5), seq = [a, a + s, a + 2 * s, a + 3 * s], gap = ri(1, 2), right = seq[gap];
+        seq[gap] = '__'; return mq('Which number is missing? ' + seq.join(', '), '', [[right, 'The jump is ' + s + ' each time.'], [right + 1, 'The jump is ' + s + ', not 1.'], [right + s, 'That skips one jump too many.']]); }""", 4),
+  ("""function () { var n = ri(2, 6);
+        return mq(n + ' children each hold up one hand. How many fingers?', grp(n, 1, '✋'), [[n * 5, 'Count in fives: ' + n + ' hands make ' + n * 5 + ' fingers.'], [n, n + ' is the number of hands.'], [n * 5 + 5, 'Count the hands again: ' + n + '.']]); }""", 1)],
+ 'm2_shapes': [
+  ("""function () { var roll = pickOne([true, false]), R = ['⚽ ball', '🍊 orange', '🥫 tin', '🌍 globe'], N = ['🎲 dice', '📦 box', '🧱 brick', '📕 book'], r = pickOne(roll ? R : N), w = shuffled(roll ? N : R).slice(0, 2);
+        return mq('Which one can ' + (roll ? 'roll' : 'not roll') + '?', '', [[r, roll ? 'It has a curved side, so it rolls.' : 'It has only flat faces, so it slides but does not roll.']].concat(w.map(function (x) { return [x, roll ? 'It has only flat faces, so it does not roll.' : 'It has a curved side, so it can roll.']; }))); }""", 3),
+  ("""function () { var F = [['How many faces does a cube have?', 6, [4, 8], '🎲'], ['How many corners does a cube have?', 8, [6, 4], '🎲'], ['How many flat ends does a cylinder have?', 2, [1, 0], '🥫'], ['How many flat faces does a sphere have?', 0, [1, 2], '⚽']], x = pickOne(F);
+        return mq(x[0], x[3], [[x[1], 'Look closely and count: ' + x[1] + '.']].concat(x[2].map(function (v) { return [v, 'Count again carefully.']; }))); }""", 2)],
+ 'm2_numbers': [
+  ("""function () { var t = ri(1, 9), o = ri(0, 9);
+        return mq(t + ' tens and ' + o + ' ones make which number?', rpt('▮', t) + ' ' + rpt('•', o), [[t * 10 + o, t + ' tens is ' + t * 10 + ', and ' + o + ' more is ' + (t * 10 + o) + '.'], [o * 10 + t, 'The tens come first: ' + t + ', then the ones: ' + o + '.'], [t + o, 'Tens are worth 10 each.']]); }""", 0),
+  ("""function () { var W = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'], O = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'], t = ri(2, 9), o = ri(1, 9), n = t * 10 + o;
+        return mq('Which number is ' + W[t - 2] + '-' + O[o] + '?', '', [[n, W[t - 2] + ' is ' + t + ' tens, ' + O[o] + ' is ' + o + ' ones.'], [o * 10 + t, 'The tens digit comes first.'], [t * 100 + o, 'Two digits are enough: ' + n + '.']]); }""", 1),
+  ("""function () { var a = ri(11, 96);
+        return mq('Which number comes between ' + a + ' and ' + (a + 2) + '?', '', [[a + 1, a + ', ' + (a + 1) + ', ' + (a + 2) + '.'], [a + 3, 'That comes after ' + (a + 2) + '.'], [a - 1, 'That comes before ' + a + '.']]); }""", 2)],
+ 'm2_flat': [
+  ("""function () { var S = [['▲', 'triangle', 3], ['■', 'square', 4], ['▬', 'rectangle', 4]], x = pickOne(S);
+        return mq('How many sides does a ' + x[1] + ' have?', x[0], [[x[2], 'A ' + x[1] + ' has ' + x[2] + ' straight sides.'], [x[2] + 1, 'Count the sides again.'], [x[2] === 3 ? 4 : 3, 'Count the sides again.']]); }""", 2),
+  ("""function () { var S = [['●', 'circle'], ['▲', 'triangle'], ['■', 'square'], ['▬', 'rectangle']], x = pickOne(S);
+        return mq('What is this shape called?', x[0], [[x[1], 'This is a ' + x[1] + '.']].concat(shuffled(S.filter(function (y) { return y !== x; })).slice(0, 2).map(function (y) { return [y[1], 'A ' + y[1] + ' looks like ' + y[0] + '.']; }))); }""", 1)],
+ 'm2_lines': [
+  ("""function () { var C = [['🌈 rainbow', 'curved'], ['🍌 banana', 'curved'], ['⭕ ring', 'curved'], ['📏 ruler', 'straight'], ['✏️ pencil', 'straight'], ['🚪 door edge', 'straight']], x = pickOne(C), want = pickOne(['curved', 'straight']);
+        var right = pickOne(C.filter(function (c) { return c[1] === want; })), w = shuffled(C.filter(function (c) { return c[1] !== want; })).slice(0, 2);
+        return mq('Which one has a ' + want + ' line?', '', [[right[0], 'A ' + right[0].split(' ').slice(1).join(' ') + ' is ' + want + '.']].concat(w.map(function (c) { return [c[0], 'A ' + c[0].split(' ').slice(1).join(' ') + ' is ' + c[1] + '.']; }))); }""", 4)],
+ 'm2_addsub': [
+  ("""function () { var who = pickOne(%s), it = pickOne([['🔵', 'marbles'], ['🌸', 'flowers'], ['🖍️', 'crayons'], ['⭐', 'stickers']]), a = ri(12, 45), b = ri(11, 40);
+        return mq(who + ' has ' + a + ' ' + it[1] + ' and gets ' + b + ' more. How many now?', it[0], [[a + b, a + ' + ' + b + ' = ' + (a + b) + '.'], [Math.abs(a - b), 'Gets more means add.'], [a + b + 10, 'Add the tens again.']]); }""" % _N, 1),
+  ("""function () { var who = pickOne(%s), it = pickOne([['🎈', 'balloons', 'fly away'], ['🍪', 'biscuits', 'are eaten'], ['🐦', 'birds', 'fly off']]), a = ri(25, 60), b = ri(11, 20);
+        return mq(who + ' has ' + a + ' ' + it[1] + '. ' + b + ' ' + it[2] + '. How many are left?', it[0], [[a - b, a + ' − ' + b + ' = ' + (a - b) + '.'], [a + b, 'Some went away, so take away.'], [a - b + 10, 'Check the tens: ' + a + ' − ' + b + ' = ' + (a - b) + '.']]); }""" % _N, 2)],
+ 'm2_measure': [
+  ("""function () { var a = ri(5, 40), b = ri(5, 40); if (a === b) return null; var t = pickOne(['ribbon', 'rope', 'stick', 'string']);
+        return mq('Which ' + t + ' is longer?', '📏', [[Math.max(a, b) + ' cm', Math.max(a, b) + ' is more than ' + Math.min(a, b) + '.'], [Math.min(a, b) + ' cm', Math.min(a, b) + ' cm is shorter.'], ['They are the same', a + ' and ' + b + ' are different.']]); }""", 2),
+  ("""function () { var who = pickOne(%s), n = ri(4, 9), m = ri(2, 3);
+        return mq(who + "'s table is " + n + ' hand spans long. The bench is ' + m + ' spans shorter. How long is the bench?', rpt('✋', n), [[n - m, n + ' − ' + m + ' = ' + (n - m) + ' spans.'], [n + m, 'Shorter means take away.'], [m, m + ' is how much shorter.']]); }""" % _N, 1)],
+ 'm2_share': [
+  ("""function () { var k = ri(2, 5), e = ri(2, 5), who = pickOne(%s);
+        return mq(who + ' gives ' + e + ' sweets to each of ' + k + ' friends. How many sweets is that?', grp(k, e, '🍬', '🧒'), [[k * e, k + ' groups of ' + e + ' = ' + k * e + '.'], [k + e, 'That adds. Count every sweet.'], [k * e - e, 'Count the friends again: ' + k + '.']]); }""" % _N, 1),
+  ("""function () { var a = ri(2, 5), b = ri(2, 5);
+        return mq(a + ' × ' + b + ' = ' + a * b + '. So ' + a * b + ' ÷ ' + a + ' = ?', '', [[b, 'Times and sharing are partners.'], [a * b, a * b + ' is the total.'], [a, a + ' is how many groups.']]); }""", 3)],
+ 'm2_time': [
+  ("""function () { var S = [['☀️', 'hot and sunny', 'summer'], ['🌧️', 'rainy, with dark clouds', 'monsoon'], ['❄️', 'cold, with chilly mornings', 'winter']], x = pickOne(S);
+        return mq('It is ' + x[1] + '. Which season is it?', x[0], [[x[2], x[2] + ' is ' + x[1] + '.']].concat(S.filter(function (y) { return y !== x; }).map(function (y) { return [y[2], y[2] + ' is ' + y[1] + '.']; }))); }""", 4),
+  ("""function () { var h = ri(1, 11), who = pickOne(%s), act = pickOne(['plays football', 'reads a book', 'paints', 'helps cook']);
+        return mq(who + ' ' + act + ' for 1 hour, starting at ' + h + " o'clock. When does " + who + ' stop?', String.fromCodePoint(0x1F54F + h), [[(h + 1) + " o'clock", h + " o'clock + 1 hour = " + (h + 1) + " o'clock."], ['half past ' + h, 'That is only half an hour.'], [(h + 2) + " o'clock", 'That is 2 hours.']]); }""" % _N, 2)],
+ 'm2_money': [
+  ("""function () { var a = ri(5, 95), b = ri(5, 95); if (a === b) return null;
+        return mq('Which is more money?', '', [['₹' + Math.max(a, b), Math.max(a, b) + ' is more than ' + Math.min(a, b) + '.'], ['₹' + Math.min(a, b), Math.min(a, b) + ' is less.'], ['They are the same', 'They are different amounts.']]); }""", 0),
+  ("""function () { var T = pickOne([[10, [5, 5], [5, 2, 1], [10, 5]], [15, [10, 5], [10, 2, 2], [5, 5]], [20, [10, 10], [10, 5, 2], [5, 5, 5]], [12, [10, 2], [5, 5, 1], [10, 1]]]);
+        return mq('Which coins make ₹' + T[0] + '?', '🪙', [[T[1].map(function (v) { return '₹' + v; }).join(' + '), T[1].join(' + ') + ' = ' + T[0] + '.'], [T[2].map(function (v) { return '₹' + v; }).join(' + '), 'That makes ₹' + T[2].reduce(function (p, q) { return p + q; }) + '.'], [T[3].map(function (v) { return '₹' + v; }).join(' + '), 'That makes ₹' + T[3].reduce(function (p, q) { return p + q; }) + '.']]); }""", 1)],
+ 'm2_data': [
+  ("""function () { var F = shuffled([['🍎', 'apples'], ['🍌', 'bananas'], ['🍊', 'oranges']]).slice(0, 2), a = ri(2, 7), b = ri(2, 7);
+        return mq(F[0][0] + ' ' + a + ' · ' + F[1][0] + ' ' + b + '. How many fruits in all?', many(a, F[0][0]) + many(b, F[1][0]), [[a + b, a + ' + ' + b + ' = ' + (a + b) + '.'], [Math.abs(a - b), 'In all means add them.'], [a + b + 1, 'Count again.']]); }""", 3),
+  ("""function () { var n = ri(1, 4);
+        return mq('Make the tally for ' + (5 + n) + '. What do you draw?', '', [['<s>||||</s> ' + rpt('|', n), 'A crossed group of 5 and ' + n + ' more.'], [rpt('|', 5 + n), 'After 4 marks, cross them to make the 5th.'], ['<s>||||</s> <s>||||</s>', 'That is 10.']]); }""", 0)],
+ 'm2_challenge': [
+  ("""function () { var a = ri(11, 35), b = ri(10, 30), t = shuffled([['🥭', 'mangoes'], ['🍌', 'bananas'], ['🍉', 'a melon'], ['🍇', 'grapes']]).slice(0, 2);
+        return mq('A customer buys ' + t[0][1] + ' for ₹' + a + ' and ' + t[1][1] + ' for ₹' + b + '. How much in all?', t[0][0] + ' ' + t[1][0], [['₹' + (a + b), a + ' + ' + b + ' = ' + (a + b) + '.'], ['₹' + Math.abs(a - b), 'In all means add.'], ['₹' + (a + b + 10), 'Check the tens.']]); }""", 3),
+  ("""function () { var n = ri(3, 6) * 5;
+        return mq('Tally board: how many customers came?', rpt('<s>||||</s> ', n / 5).trim(), [[n, 'Count in fives: ' + n + '.'], [n / 5, 'Each crossed group is 5, not 1.'], [n + 5, 'Count the groups again.']]); }""", 0)],
+ 'e2_s1': [("genLetter(['s', 'a', 't', 'p', 'i', 'n'])", 1)],
+ 'e2_s2': [("genLetter(['m', 'd', 'g', 'o', 'c'])", 1), ("genStart(['s', 'a', 't', 'p', 'i', 'n', 'm', 'd', 'g', 'o', 'c'])", 4)],
+ 'e2_s3': [("genLetter(['e', 'u', 'r', 'h', 'b', 'f', 'l'])", 2), ("genBlend(['s', 'a', 't', 'p', 'i', 'n', 'm', 'd', 'g', 'o', 'c', 'e', 'u', 'r', 'h', 'b', 'f', 'l'])", 4)],
+ 'e2_blend': [("genChange()", 2), ("genStart(['s', 'a', 't', 'p', 'i', 'n', 'm', 'd', 'g', 'o', 'c', 'e', 'u', 'r', 'h', 'b', 'f', 'l'])", 0)],
+ 'e2_digraph': [("genPair([['sh', ['ship', 'shell', 'fish']], ['ch', ['chips', 'chick', 'cheese']], ['th', ['thumb', 'bath']], ['ng', ['ring', 'king', 'swing']]])", 1)],
+ 'e2_long': [("genPair([['ai', ['rain', 'train', 'snail']], ['ee', ['tree', 'bee', 'sheep']], ['oa', ['boat', 'goat', 'coat']]])", 1)],
+ 'e2_tricky': [
+  ("""function () { var T = ['the', 'said', 'was', 'they', 'come', 'you', 'are', 'my'], D = ['cat', 'sun', 'pig', 'map', 'hen', 'dog', 'bed', 'cup'], t = pickOne(T), d = shuffled(D).slice(0, 2);
+        return mq('Which one is a tricky word?', '', [[t, t + ' does not follow the sounds: we learn it by sight.']].concat(d.map(function (w) { return [w, w + ' follows the sounds: ' + w.split('').join(', ') + '.']; }))); }""", 0)],
+ 'e2_words': [
+  ("""function () { var P = [['🏫', 'school', 'place'], ['🏞️', 'park', 'place'], ['👩‍🏫', 'teacher', 'person'], ['👶', 'baby', 'person'], ['🐘', 'elephant', 'animal'], ['🐸', 'frog', 'animal'], ['🪁', 'kite', 'thing'], ['📚', 'book', 'thing']], x = pickOne(P), kinds = ['person', 'place', 'animal', 'thing'];
+        return mq('"' + x[1] + '" is a naming word for a…', x[0], [[x[2], x[1] + ' names ' + (x[2] === 'animal' ? 'an ' : 'a ') + x[2] + '.']].concat(shuffled(kinds.filter(function (k) { return k !== x[2]; })).slice(0, 2).map(function (k) { return [k, 'Look again: ' + x[1] + ' is ' + (x[2] === 'animal' ? 'an ' : 'a ') + x[2] + '.']; }))); }""", 1)],
+ 'e2_describe': [
+  ("""function () { var S = [['a ___ elephant', 'big', ['tiny', 'small'], '🐘'], ['a ___ ice cream', 'cold', ['hot', 'warm'], '🍦'], ['the ___ sun', 'hot', ['cold', 'wet'], '☀️'], ['a ___ pillow', 'soft', ['hard', 'sharp'], '🛏️'], ['a ___ ant', 'tiny', ['huge', 'tall'], '🐜'], ['a ___ smile', 'happy', ['sad', 'angry'], '😊']], x = pickOne(S);
+        return mq('Pick the best describing word: ' + x[0], x[3], [[x[1], x[0].replace('___', x[1]) + '.']].concat(x[2].map(function (w) { return [w, 'Look at the picture: it is ' + x[1] + '.']; }))); }""", 2)],
+ 'e2_plural': [
+  ("""function () { var P = [['cat', 'cats'], ['hen', 'hens'], ['box', 'boxes'], ['bus', 'buses'], ['man', 'men'], ['child', 'children'], ['mouse', 'mice'], ['dish', 'dishes'], ['cup', 'cups']], x = pickOne(P), many1 = pickOne([true, false]), other = shuffled(P.filter(function (y) { return y !== x; })).slice(0, 2);
+        return mq('Which word means more than one?', '', [[x[1], x[1] + ' is more than one ' + x[0] + '.']].concat(other.map(function (y) { return [y[0], y[0] + ' is just one.']; }))); }""", 1)],
+ 'e2_sentence': [
+  ("""function () { var S = ['we went to the park', 'my dog can run fast', 'the bird is in the tree', 'i like red apples', 'the bus is big'], s = pickOne(S), w = s.split(' ')[0];
+        return mq('Which word needs a capital letter? ' + s + '.', '', [[w, 'A sentence starts with a capital letter: ' + w.charAt(0).toUpperCase() + w.slice(1) + '.']].concat(shuffled(s.split(' ').slice(1).filter(function (x) { return x !== 'i'; })).slice(0, 2).map(function (x) { return [x, x + ' is in the middle, so it stays small.']; }))); }""", 1)],
+ 'e2_story': [
+  ("""function () { var N = ['Mina', 'Ravi', 'Anu', 'Sam'], P = [['the park', '🏞️'], ['the beach', '🏖️'], ['the zoo', '🦁'], ['school', '🏫']], D = ['Monday', 'Saturday', 'Sunday'], n = pickOne(N), p = pickOne(P), d = pickOne(D), ask = ri(0, 1);
+        var story = 'On ' + d + ', ' + n + ' went to ' + p[0] + '. It was fun!';
+        if (ask) return mq(story + ' Where did ' + n + ' go?', p[1], [[p[0], story.split('.')[0] + '.']].concat(shuffled(P.filter(function (x) { return x !== p; })).slice(0, 2).map(function (x) { return [x[0], 'Read again: ' + p[0] + '.']; })));
+        return mq(story + ' When did ' + n + ' go?', '📅', [[d, 'The story says on ' + d + '.']].concat(D.filter(function (x) { return x !== d; }).map(function (x) { return [x, 'Read again: on ' + d + '.']; }))); }""", 4)],
+ 'e2_challenge': [("genStart(['s', 'a', 't', 'p', 'i', 'n', 'm', 'd', 'g', 'o', 'c', 'e', 'u', 'r', 'h', 'b', 'f', 'l'])", 1),
+  ("""function () { var R = [['fish', 'dish'], ['duck', 'truck'], ['rain', 'train'], ['pond', 'wand'], ['play', 'day']], x = pickOne(R), w = shuffled(['cat', 'sun', 'bed', 'pig', 'cup']).slice(0, 2);
+        return mq('Which word rhymes with ' + x[0] + '?', '', [[x[1], x[0] + ' and ' + x[1] + ' end with the same sound.']].concat(w.map(function (y) { return [y, y + ' does not end like ' + x[0] + '.']; }))); }""", 3)],
+}
+for C in (MATHS, ENGLISH):
+    for L in C['lessons']:
+        L['gen'] = L['gen'] + EXTRA.get(L['key'], [])

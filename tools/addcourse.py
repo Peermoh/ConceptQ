@@ -27,7 +27,7 @@ def course_js(C):
         qsteps[k] = [q['step'] for q in les['quiz']]
         ch = les.get('challenge')
         room = 'Challenge' if ch else 'Lesson %d of %d' % (i + 1, n - 1)
-        data.append('    %d: { board: %s, quiz: %s, key: %s, labels: %s,\n         tag: %s, title: %s, topic: %s,\n         lastBtn: %s, doneTitle: %s, doneCta: %s,\n         doneText: %s }' % (
+        data.append('    %d: { board: %s, quiz: %s, size: 5, fresh: 3, key: %s, labels: %s,\n         tag: %s, title: %s, topic: %s,\n         lastBtn: %s, doneTitle: %s, doneCta: %s,\n         doneText: %s }' % (
             i, N, J(quiz), J(k), J(L[k]['labels']), J(C['floors'][0][0] + ' · ' + room), J(les['title'][0].upper() + les['title'][1:]), J(les['title'].replace('the ', '', 1) if ch else les['title'].lower()),
             J('Open the ' + les['part']), J('The ' + les['part'] + (' are' if les['part'].endswith('s') else ' is') + ' ready!'), J('See it built'), J(les['done'])))
         lessons.append({'title': les['title'], 'part': les['part'], 'card': les['title'][0].upper() + les['title'][1:], 'text': les['text']})
@@ -51,6 +51,12 @@ js = (START +
       '  // a question can show a picture (pic) and play sounds (snd: clips from the phonics sound sheet)\n'
       '  function mq(text, pic, pairs) { var q = mk(text, \'\', pairs); if (q && pic) q.pic = pic; return q; }\n'
       '  function an(w) { return (/^[aeiou]/i.test(w) ? \'an \' : \'a \') + w; }\n' +
+      '  // pictures that show what the words say: groups in their basket / box / bundle, loose things in rows, coins as chips\n'
+      '  function rpt(t, n) { return new Array(n + 1).join(t); }\n'
+      '  function grp(n, k, item, box) { var s = \'\'; for (var i = 0; i < n; i++) s += \'<span class="qg">\' + (box ? \'<i>\' + box + \'</i>\' : \'\') + (k <= 6 ? rpt(item, k) : k <= 10 ? \'<span class="qgrid">\' + rpt(\'<span>\' + item + \'</span>\', k) + \'</span>\' : item + \'<b class="qn">×\' + k + \'</b>\') + \'</span>\'; return s; }\n'
+      '  function many(n, item) { if (n > 20) return \'<span class="qg">\' + item + \'<b class="qn">×\' + n + \'</b></span>\'; var s = \'\'; for (var i = 0; i < n; i += 5) s += \'<span class="qrow">\' + rpt(item, Math.min(5, n - i)) + \'</span>\'; return s; }\n'
+      '  function kids(n) { return \'<span class="qg qk">\' + rpt(\'🧒\', n) + \'</span>\'; }\n'
+      '  function coins(list) { return list.map(function (v) { return \'<span class="qc\' + (v >= 20 ? \' note\' : \'\') + \'">₹\' + v + \'</span>\'; }).join(\'\'); }\n' +
       S.JS_EN % {'PIC': J(S.PIC)} + '\n' +
       '  var PHON_SEG = ' + open('phon_seg.json').read() + ';\n' +
       '\n'.join(blocks) + '\n  var COURSE_PACKS = {};\n' + '\n'.join(packs) + '\n' +
