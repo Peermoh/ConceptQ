@@ -1,0 +1,315 @@
+<title>Number Town and Story Library</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; each grade is a band with its place on the map and a grid of lesson cards. Dark, like the app. */
+:root {
+  --deep: #1A0B1F;
+  --night: #2A1330;
+  --sheet: #33193A;
+  --line: rgba(255, 236, 214, 0.14);
+  --cream: #FFF1E2;
+  --muted: #D9BFD2;
+  --amber: #FFB547;
+  --amber-soft: rgba(255, 181, 71, 0.16);
+  --mint: #6EE7B7;
+  --coral: #FF7A6B;
+  --chalk: #2E4A3C;
+  --font-display: 'Paytone One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html { background: var(--deep); }
+body { background: var(--deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.05; }
+h2 { font-size: 26px; }
+h3 { font-size: 22px; line-height: 1.15; }
+p { margin: 0; max-width: 68ch; }
+code, .code { font-family: var(--font-code); font-size: 13.5px; }
+.eyebrow { font-weight: 900; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 12px; }
+header p { font-size: 17px; color: var(--muted); }
+
+.decide { background: var(--sheet); border: 1.5px solid var(--amber); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.decide ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.decide li { max-width: 72ch; }
+.decide b { color: var(--amber); }
+
+.strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.strip a { flex: 0 0 auto; width: 104px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 800; display: flex; flex-direction: column; gap: 4px; border-radius: 12px; padding: 6px; }
+.strip a:hover, .strip a:focus-visible { background: var(--night); color: var(--cream); outline: none; }
+.strip svg { width: 92px; height: 77px; display: block; }
+
+.room { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; padding-top: 28px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.frame { display: flex; flex-direction: column; gap: 10px; }
+.frame svg { width: 100%; max-width: 280px; aspect-ratio: 6 / 5; height: auto; border-radius: 16px; background: var(--night); }
+.frame .cap { font-size: 13px; color: var(--muted); }
+.frame .cap b { color: var(--amber); }
+.plan { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--night); color: var(--muted); }
+.tag b { color: var(--cream); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.steps li { counter-increment: s; background: var(--chalk); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps li::before { content: counter(s) ". " attr(data-t); font-weight: 900; font-size: 14px; color: #F4F7EE; }
+.steps code { color: #DDEBD8; white-space: pre-wrap; word-break: break-word; }
+.living { background: var(--amber-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.living b { color: var(--amber); }
+
+section.more { display: flex; flex-direction: column; gap: 14px; padding-top: 28px; border-top: 1px solid var(--line); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); font-weight: 900; }
+td code { color: var(--mint); }
+
+@media (max-width: 700px) {
+  .room { grid-template-columns: 1fr; }
+  .frame svg { max-width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .new { animation: glow 2.4s ease-in-out infinite; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+}
+
+.worlds { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.world { background: var(--night); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.world h3 { font-size: 22px; }
+.map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.map div { background: var(--sheet); border-radius: 12px; padding: 8px 10px; font-size: 13px; font-weight: 800; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.map div b { font-family: var(--font-display); font-weight: 400; color: var(--cream); font-size: 15px; }
+.map div.first { outline: 1.5px solid var(--amber); }
+.map span.g { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+.subj { display: flex; gap: 8px; flex-wrap: wrap; }
+.subj button { font: inherit; font-weight: 900; font-size: 15px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; }
+.subj button[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); color: #2A1A05; }
+.subj button:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
+.grade { display: flex; flex-direction: column; gap: 14px; padding-top: 26px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.ghead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ghead p { color: var(--muted); }
+.lessons { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+.card { background: var(--sheet); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.card .n { font-size: 12px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.card h4 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 18px; line-height: 1.2; }
+.card .build { font-size: 14px; } .card .build b { color: var(--mint); }
+.card .life { font-size: 14px; color: var(--muted); }
+.card .q { font-size: 13.5px; background: var(--chalk); border-radius: 10px; padding: 7px 9px; color: #E8F1E3; }
+.card.ch { background: var(--amber-soft); outline: 1.5px solid var(--amber); }
+.card.ch .n { color: var(--amber); }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">ConceptQ · Maths and English · Grades 2 to 10 · CBSE / NCERT</span>
+    <h1>Number Town and Story Library</h1>
+    <p>Two new courses beside Python. Maths builds <b>Number Town</b>, one district per grade. English builds the <b>Story Library</b>, one wing per grade. Every lesson builds something real in its place, with Nibb teaching on the chalkboard, fresh quizzes and flashcards, just like the Python house. Topics follow the NCERT books in their order; the stories and examples are our own. Grades 2 to 5 are planned lesson by lesson below and get built first; grades 6 to 10 are planned by topic.</p>
+  </header>
+
+  <div class="decide">
+    <span class="eyebrow">Five choices to confirm before I write lessons</span>
+    <ol>
+      <li><b>Our own stories, NCERT's topics (recommended).</b> Each lesson teaches what its NCERT chapter teaches, in the same order, but with our own examples and characters. Copying textbook stories and exercises is not allowed, and our own versions can be tied to the town and library.</li>
+      <li><b>A young-learner mode for grades 2 and 3.</b> Nibb reads every question aloud, any word can be tapped to hear it, many answers are pictures, steps are shorter (5 or 6), and buttons are bigger.</li>
+      <li><b>One app, three courses.</b> The Learn tab gets a course switch: Python, Maths, English. Each course has its own path, progress, place to build and flashcard deck. Embers, the streak and the prize wheel are shared.</li>
+      <li><b>Speaking practice is listen-and-repeat.</b> The app cannot use the microphone, so English speaking steps play a model line, the learner says it aloud, then taps "I said it". Reading and listening are fully checked.</li>
+      <li><b>Build order.</b> First the course switch, then Grade 2 Maths and English together (23 lessons), then grades 3, 4 and 5, publishing after each batch so you can test as it grows. Grades 6 to 10 come after you have tried the primary grades.</li>
+    </ol>
+  </div>
+
+  <section class="more">
+    <span class="eyebrow">The two places you build</span>
+    <div class="worlds">
+      <div class="world"><h3>Number Town (Maths)</h3><p class="muted">A district per grade, built shop by shop. The highlighted districts are built first.</p><div class="map" id="mapM"></div></div>
+      <div class="world"><h3>Story Library (English)</h3><p class="muted">A wing per grade, filled shelf by shelf. The highlighted wings are built first.</p><div class="map" id="mapE"></div></div>
+    </div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Grades 2 to 5, lesson by lesson</span>
+    <div class="subj" role="group" aria-label="Subject"><button type="button" id="btnM" aria-pressed="true">Maths</button><button type="button" id="btnE" aria-pressed="false">English</button></div>
+    <div id="grades"></div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Grades 6 to 10, by topic</span>
+    <h2>Maths</h2>
+    <div class="tbl"><table><thead><tr><th>Grade</th><th>District</th><th>Topics (NCERT order)</th></tr></thead><tbody id="upM"></tbody></table></div>
+    <h2>English</h2>
+    <div class="tbl"><table><thead><tr><th>Grade</th><th>Wing</th><th>Grammar</th><th>Writing</th><th>Reading and poems</th></tr></thead><tbody id="upE"></tbody></table></div>
+  </section>
+
+  <section class="more">
+    <span class="eyebrow">Sizes</span>
+    <h2>How big the first build is</h2>
+    <p>Grades 2 to 5: about <b>55 Maths</b> and <b>48 English</b> lessons, so 103 in all, each 5 to 8 steps with two narrator voices, a quiz that changes every time, and 2 to 4 flashcards. That is a little more than twice the whole Python course, so it is built in eight batches of about 13 lessons.</p>
+  </section>
+</div>
+
+<script>
+var MAP_M = [['2', 'Market Street'], ['3', 'Park and Playground'], ['4', 'Railway Station'], ['5', 'Farm and Dairy'], ['6', 'Town Hall and Map Room'], ['7', 'Bank and Bazaar'], ['8', 'Science Museum'], ['9', 'Bridge and River Works'], ['10', 'Hilltop Observatory']];
+var MAP_E = [['2', 'Picture-book Corner'], ['3', 'Poem Garden'], ['4', 'Story Wing'], ['5', 'Treehouse Reading Room'], ['6', 'Newsroom'], ['7', 'Post Office'], ['8', 'Debate Hall'], ['9', 'Theatre Stage'], ['10', 'Writers\' Studio']];
+// [title, NCERT chapter it follows, what it builds, everyday example, a sample question]
+var M = {
+ 2: ['Market Street', 'Joyful Mathematics', [
+  ['Counting in groups', 'Ch 1, A Day at the Beach', 'fruit crates at the stall', 'Count shells in twos, fives and tens instead of one by one.', '4 bags with 5 mangoes each. How many mangoes?'],
+  ['Solid shapes', 'Ch 2, Shapes Around Us', 'a toy-block shop', 'A ball is a sphere, a dice is a cube, a can is a cylinder.', 'Which one can roll and stack? 🥫 ⚽ 🎲'],
+  ['Numbers to 100', 'Ch 3, Fun with Numbers', 'house numbers along the street', 'House 47 is 4 tens and 7 ones.', 'Which number comes just after 59?'],
+  ['Flat shapes and shadows', 'Ch 4, Shadow Story', 'shop signboards', 'A coin makes a circle shadow; a book makes a rectangle.', 'How many corners does a triangle have?'],
+  ['Lines', 'Ch 5, Playing with Lines', 'road markings', 'Standing, sleeping, slanting and curved lines on the road.', 'Which line is like a lamp post: standing or sleeping?'],
+  ['Adding and taking away', 'Ch 6, Decoration for Festival', 'strings of festival lights', 'Add bulbs to a string, take away the broken ones.', '36 lights, 9 break. How many still shine?'],
+  ['Long, short, heavy, light', 'Ch 7, Rani’s Gift', 'the tailor’s shop', 'Measure a ribbon with hand spans, then with a ruler in cm.', 'Which is longer: 12 cm or 21 cm?'],
+  ['Equal groups and sharing', 'Ch 8, Grouping and Sharing', 'the sweet-box shop', 'Share 12 laddoos equally between 3 friends.', '3 boxes of 4 sweets. How many sweets?'],
+  ['Time and seasons', 'Ch 9, Which Season is it?', 'the clock tower', 'Breakfast at 8 o’clock; mangoes in summer.', 'What comes after Tuesday?'],
+  ['Money', 'Ch 10, Fun at the Fair', 'the coin stall', 'Make ₹20 with ₹10, ₹5 and ₹2 coins.', 'A balloon costs ₹15. You pay ₹20. Change?'],
+  ['Counting with tallies', 'Ch 11, Data Handling', 'the tally board at the gate', 'Tick a tally for each car that passes.', 'Which fruit has the most tallies?'],
+  ['Challenge: Market Day', 'All of Grade 2', 'the market gate with bunting', 'Run a stall: count, share, add up and give change.', '', true]]],
+ 3: ['Park and Playground', 'Maths Mela', [
+  ['Names and tallies', 'Ch 1, What’s in a Name?', 'the park signpost', 'Count the letters in everyone’s name and make a tally.', 'Whose name has the most letters?'],
+  ['Shapes in toys', 'Ch 2, Toy Joy', 'the toy kiosk', 'Faces, edges and corners of a toy box.', 'How many faces does a cube have?'],
+  ['Numbers to 200', 'Ch 3, Double Century', 'numbered benches', 'Skip-count the benches by 10s to 200.', '150 + 10 = ?'],
+  ['Maps and directions', 'Ch 4, Vacation with My Nani Maa', 'the park map board', 'Left of the swings, behind the slide.', 'Is the pond to the left or right of the gate?'],
+  ['Fun with shapes', 'Ch 5, Fun with Shapes', 'tangram path tiles', 'Seven tangram pieces make a cat.', 'Two triangles can make a ___?'],
+  ['Hundreds, tens and ones', 'Ch 6, House of Hundreds I', 'the ticket counter', '352 tickets: 3 hundreds, 5 tens, 2 ones.', 'What is 4 hundreds and 6 ones?'],
+  ['Times tables', 'Ch 7, Raksha Bandhan', 'the rakhi stall', '5 rows of 6 rakhis is 5 × 6.', '6 × 4 = ?'],
+  ['Fair shares', 'Ch 8, Fair Share', 'the picnic tables', 'Cut a roti into halves and quarters.', 'Half of 18 is?'],
+  ['Adding big numbers', 'Ch 9, House of Hundreds II', 'the visitor counter', '245 visitors in the morning, 132 after lunch.', '245 + 132 = ?'],
+  ['Patterns', 'Ch 10, Fun at Class Party!', 'party bunting', 'Red, blue, blue, red, blue, blue…', 'What comes next: 2, 4, 6, __?'],
+  ['Filling and lifting', 'Ch 11, Filling and Lifting', 'the water fountain', 'A bottle holds 1 litre; a bag of rice weighs 5 kg.', 'Which holds more: a cup or a bucket?'],
+  ['Give and take', 'Ch 12, Give and Take', 'the snack cart', 'Buy a snack and work out the change.', '₹50 − ₹32 = ?'],
+  ['Time goes on', 'Ch 13, Time Goes On', 'the sundial', 'Half past four; the days in a month.', 'How many days are in a week?'],
+  ['Challenge: The Park Fair', 'Ch 14, The Surajkund Fair', 'the fair’s big wheel', 'Plan the fair: tickets, tallies, change and times.', '', true]]],
+ 4: ['Railway Station', 'Maths Mela', [
+  ['Shapes around us', 'Ch 1, Shapes Around Us', 'the station building', 'Circles, rectangles and triangles in the station.', 'Which shape has 4 equal sides?'],
+  ['Views from different sides', 'Ch 2, Hide and Seek', 'the signal tower', 'A train from the top, the front and the side.', 'From the top, a cylinder looks like a ___?'],
+  ['Patterns around us', 'Ch 3, Pattern Around Us', 'patterned platform tiles', 'Tile patterns and number patterns.', '5, 10, 15, __?'],
+  ['Thousands', 'Ch 4, Thousands Around Us', 'the departure board', '1,250 passengers a day.', 'Write 3 thousands, 4 hundreds and 5 ones.'],
+  ['Fractions', 'Ch 5, Sharing and Measuring', 'the food stall', 'Share a pizza in quarters.', 'Which is bigger: ½ or ¼?'],
+  ['Length in m and km', 'Ch 6, Measuring Length', 'the platform markings', 'The platform is 300 m; the next station is 12 km.', 'How many cm in 1 m?'],
+  ['Adding and subtracting', 'Ch 7, The Cleanest Village', 'the cleaning crew’s cart', 'Count bags of rubbish collected each day.', '1,345 + 2,210 = ?'],
+  ['Weight and capacity', 'Ch 8, Weigh it, Pour it', 'the luggage scale', 'A suitcase of 15 kg; a water tank of 500 L.', '1 kg = ___ g?'],
+  ['Multiplication', 'Ch 9, Equal Groups', 'the carriages', '12 carriages with 24 seats each.', '12 × 3 = ?'],
+  ['Division', 'Ch 10, Elephants, Tigers and Leopards', 'the parcel office', 'Share 96 parcels between 4 vans.', '84 ÷ 4 = ?'],
+  ['Symmetry', 'Ch 11, Fun with Symmetry', 'the station clock face', 'Fold a butterfly picture along its line.', 'How many lines of symmetry does a square have?'],
+  ['Clocks and calendars', 'Ch 12, Ticking Clocks and Turning Calendar', 'the timetable', 'The train leaves at 14:30; it arrives 3 hours later.', '3 hours after 9:00 is?'],
+  ['Reading charts', 'Ch 14, Data Handling', 'the passenger chart', 'A bar chart of trains each day.', 'Which day had the most trains?'],
+  ['Challenge: The Transport Museum', 'Ch 13, The Transport Museum', 'the steam engine on display', 'Tickets, times, distances and fares, all together.', '', true]]],
+ 5: ['Farm and Dairy', 'Maths Mela', [
+  ['Large numbers', 'Ch 1, We the Travellers I', 'the farm gate sign', 'Lakhs and thousands: 1,25,000 visitors a year.', 'Write one lakh in figures.'],
+  ['Fractions', 'Ch 2, Fractions', 'the fruit orchard', '¾ of the trees have mangoes.', '½ + ¼ = ?'],
+  ['Angles as turns', 'Ch 3, Angles as Turns', 'the windmill', 'A quarter turn is a right angle.', 'How many right angles in a full turn?'],
+  ['Adding big numbers', 'Ch 4, We the Travellers II', 'the visitors’ book', 'Add the visitors from two months.', '23,450 + 12,300 = ?'],
+  ['Far and near', 'Ch 5, Far and Near', 'the milk van route', 'From the farm to the market is 8 km 200 m.', '1 km = ___ m?'],
+  ['Litres of milk', 'Ch 6, The Dairy Farm', 'the milk cans', '25 cows give 10 litres each.', '25 × 10 = ?'],
+  ['Shapes and patterns', 'Ch 7, Shapes and Patterns', 'the barn tiles', 'Repeating shapes on the barn floor.', 'What comes next in the pattern?'],
+  ['Weight and capacity', 'Ch 8, Weight and Capacity', 'the weighing shed', 'Sacks of grain in kg; jugs in mL.', '2 kg 500 g = ___ g?'],
+  ['Multiply and divide', 'Ch 9, Coconut Farm', 'the coconut stacks', '144 coconuts packed 12 to a crate.', '144 ÷ 12 = ?'],
+  ['Symmetrical designs', 'Ch 10, Symmetrical Designs', 'the rangoli by the door', 'Rangoli the same on both sides.', 'Is this pattern symmetrical?'],
+  ['Area and perimeter', 'Ch 11, Grandmother’s Quilt', 'the vegetable beds', 'Fence round a bed; squares inside it.', 'A 4 by 3 bed: area?'],
+  ['Seconds and minutes', 'Ch 12, Racing Seconds', 'the race track', 'Race times in seconds.', '90 seconds = ___ min ___ s?'],
+  ['Multiples and patterns', 'Ch 13, Animal Jumps', 'the hopping track', 'A frog jumps 3 at a time: 3, 6, 9…', 'Is 24 on the frog’s path?'],
+  ['Maps and locations', 'Ch 14, Maps and Locations', 'the farm map', 'Grid maps and directions.', 'What is north of the barn?'],
+  ['Challenge: Farm Open Day', 'Ch 15, Data Through Pictures', 'the farm shop', 'Plan the open day with charts, money, weights and times.', '', true]]]
+};
+var E = {
+ 2: ['Picture-book Corner', [
+  ['Letter sounds and blends', 'sh, ch, th, and blends like bl, st', 'alphabet bunting', 'Ship, chip, thin: hear the two letters make one sound.', 'Which word starts with sh? 🐑 ship / sit'],
+  ['Sight words', 'the, was, said, they, come', 'a word wall', 'Words we read on sight, without sounding out.', 'Tap the word "said".'],
+  ['Naming words', 'nouns: people, places, things, animals', 'the picture-book shelf', 'Mum, park, ball, cat are naming words.', 'Which is a naming word: run / dog / happy?'],
+  ['Doing words', 'verbs: run, jump, eat, read', 'the reading mat', 'What is the dog doing? It is running.', 'Pick the doing word: The bird sings.'],
+  ['Describing words', 'adjectives: big, red, soft, happy', 'cushions in every colour', 'A big, red, soft cushion.', 'Which word describes the ball: The red ball rolls.'],
+  ['a or an', 'a before consonant sounds, an before vowel sounds', 'name labels on the boxes', 'a cat, an apple, an egg, a dog.', '__ umbrella: a or an?'],
+  ['One and many', 'plurals with -s and -es', 'the toy baskets', 'one cat, two cats; one box, two boxes.', 'One bus, two ___?'],
+  ['Capitals and full stops', 'sentence starts and ends', 'the notice board', 'A sentence starts with a capital and ends with a full stop.', 'Which is written correctly?'],
+  ['Rhymes and a poem', 'rhyming words, reading a short poem aloud', 'the poem cushion', 'Cat, hat, mat all rhyme.', 'Which word rhymes with "sun"?'],
+  ['Picture talk and a story', 'talk about a picture; read a short story', 'the storytelling chair', 'Who is in the picture? What happens next?', 'Who found the lost kitten?'],
+  ['Challenge: Story Time', 'all of Grade 2', 'a puppet theatre', 'Read a short story with Nibb and answer questions about it.', '', true]]],
+ 3: ['Poem Garden', [
+  ['Vowels and consonants', 'a, e, i, o, u and the rest', 'garden path stones', 'Every word needs a vowel.', 'Which letter is a vowel: b / o / t?'],
+  ['Common and proper nouns', 'city / Delhi, girl / Meera', 'name plates on the flower beds', 'Proper nouns get a capital letter.', 'Which is a proper noun?'],
+  ['Pronouns', 'he, she, it, we, they', 'stepping stones', 'Meera is kind. She shares.', 'Ravi and Anu are friends. ___ play together.'],
+  ['is, am, are', 'the verb "be" now', 'garden benches', 'I am, she is, they are.', 'The flowers ___ red.'],
+  ['has and have', 'owning things', 'flower pots', 'He has a kite; we have kites.', 'She ___ a blue bag.'],
+  ['Doing it now', 'present continuous: is running', 'the swing', 'The bird is singing right now.', 'The boy ___ (read) a book now.'],
+  ['Yesterday words', 'simple past: -ed and irregular', 'the garden diary', 'Yesterday I played; I went to the park.', 'Yesterday we ___ (go) to the zoo.'],
+  ['Opposites and same meanings', 'antonyms and synonyms', 'pairs of watering cans', 'Hot and cold; big and large.', 'The opposite of "happy" is?'],
+  ['Questions and exclamations', '? and !', 'signposts', 'Where is my hat? What a lovely day!', 'Which mark ends "How old are you"?'],
+  ['Reading a poem', 'rhythm, rhyme and feeling', 'the poem fountain', 'Clap the beat of each line.', 'Which two lines rhyme?'],
+  ['Write about a friend', 'five good sentences', 'the friendship tree', 'Name, looks, likes, what you do together, why they are special.', 'Order these sentences.'],
+  ['Challenge: Poem Garden Show', 'all of Grade 3', 'a little stage among the flowers', 'Read a poem, find its rhymes and write a line of your own.', '', true]]],
+ 4: ['Story Wing', [
+  ['a, an and the', 'articles', 'shelf labels', 'A book (any), the book (that one).', 'I saw ___ moon last night.'],
+  ['Boys, girls and many', 'gender nouns and irregular plurals', 'character cards', 'king / queen; child / children; mouse / mice.', 'One mouse, two ___?'],
+  ['How it happens', 'adverbs: slowly, loudly, happily', 'the reading lamps', 'The tortoise walked slowly.', 'Pick the adverb: She sang sweetly.'],
+  ['Where things are', 'prepositions: in, on, under, between', 'the bookshelves', 'The cat is under the table.', 'The book is ___ the bag (inside).'],
+  ['Joining words', 'and, but, or, because', 'the bookends', 'I was tired, but I finished.', 'I stayed in ___ it was raining.'],
+  ['Three times', 'simple past, present and future', 'the timeline mural', 'I played, I play, I will play.', 'Tomorrow I ___ (visit) Nani.'],
+  ['Question words', 'who, what, where, when, why, how', 'the question box', 'Who? A person. Where? A place.', '___ is your birthday? (a time)'],
+  ['Sound-alike words', 'homophones: see/sea, write/right', 'the word puzzle table', 'They sound the same but mean different things.', 'I can ___ the ship on the sea. (see/sea)'],
+  ['Writing a paragraph', 'topic sentence, details, ending', 'the writing desk', 'One idea, three details, one closing line.', 'Which is the topic sentence?'],
+  ['A letter to a friend', 'informal letter', 'the letterbox', 'Address, date, Dear…, news, ending.', 'Where does the date go?'],
+  ['Reading for meaning', 'find facts in a passage', 'the story map', 'Read a story and answer who, where and why.', 'Why did the fox run away?'],
+  ['Challenge: Story Wing Open Day', 'all of Grade 4', 'the storytelling stage', 'Read, answer, fix the grammar, write a short note.', '', true]]],
+ 5: ['Treehouse Reading Room', [
+  ['Subject and predicate', 'who it is about, what it says', 'the treehouse ladder', 'The monkey | climbed the tree.', 'Find the subject: My sister paints well.'],
+  ['Kinds of sentences', 'telling, asking, commands, exclamations', 'four signposts', 'Close the door. What a view!', 'Which kind: Please sit down.'],
+  ['Continuous tenses', 'was / is / will be + -ing', 'the clock on the wall', 'I was reading when it rained.', 'At 8 tomorrow I ___ (travel).'],
+  ['Comparing', 'tall, taller, tallest', 'the height chart', 'good, better, best.', 'This is the ___ (good) book I have read.'],
+  ['Word beginnings and endings', 'prefixes and suffixes', 'word blocks', 'un + happy; care + ful.', 'Opposite of "kind" with a prefix?'],
+  ['Commas and apostrophes', 'lists and belonging', 'the punctuation jar', 'Ravi’s bag; pens, pencils and paper.', 'Where does the apostrophe go?'],
+  ['Speech marks', 'direct speech', 'speech bubbles', '"Let’s go," said Meera.', 'Which is punctuated correctly?'],
+  ['Notices', 'writing a short notice', 'the treehouse notice board', 'Title, date, what, when, where, who to ask.', 'What must every notice have?'],
+  ['Diary entries', 'writing about your day and feelings', 'a diary on the desk', 'Date, what happened, how you felt.', 'Which line belongs in a diary?'],
+  ['Telling a story', 'beginning, middle and end', 'the story lantern', 'A problem, what they tried, how it ended.', 'Put the story in order.'],
+  ['Poems: like and as', 'simile and metaphor', 'the poem window', 'As brave as a lion; the classroom was a zoo.', 'Which is a simile?'],
+  ['Reading between the lines', 'inference', 'the detective chair', 'Clues tell us what the story does not say.', 'How did Raju feel? How do you know?'],
+  ['Challenge: The Treehouse Times', 'all of Grade 5', 'a newspaper printing press', 'Write a short news page: a notice, a story and a report.', '', true]]]
+};
+var UP_M = [
+ ['6', 'Town Hall and Map Room', 'Patterns in Mathematics; Lines and Angles; Number Play; Data Handling and Presentation; Prime Time; Perimeter and Area; Fractions; Playing with Constructions; Symmetry; The Other Side of Zero (integers)'],
+ ['7', 'Bank and Bazaar', 'Large Numbers Around Us; Arithmetic Expressions; decimals (A Peek Beyond the Point); algebra with letters; parallel and intersecting lines; number play; triangles; fractions; congruence; integers; finding common ground (HCF/LCM); more decimals; coordinates (Connecting the Dots); constructions and tilings; equations (Finding the Unknown)'],
+ ['8', 'Science Museum', 'squares and cubes; exponents (Power Play); number stories; quadrilaterals; number play; distributing and multiplying expressions; proportional reasoning; fractions in disguise (percentages); the Baudhayana–Pythagoras theorem; geometry themes; graphs; area; algebra play'],
+ ['9', 'Bridge and River Works', 'number systems; polynomials; coordinate geometry; linear equations in two variables; lines and angles; triangles; quadrilaterals; circles; Heron’s formula; surface areas and volumes; statistics (new NCERT book: Ganita Manjari)'],
+ ['10', 'Hilltop Observatory', 'real numbers; polynomials; pair of linear equations; quadratic equations; arithmetic progressions; triangles; coordinate geometry; trigonometry and its uses (heights and distances); circles; areas related to circles; surface areas and volumes; statistics; probability']];
+var UP_E = [
+ ['6', 'Newsroom', 'all simple and continuous tenses; active and passive voice (intro); direct and indirect speech (intro); determiners', 'notice, informal letter, diary, message', 'reading for facts; poems and their feelings'],
+ ['7', 'Post Office', 'perfect tenses; modals (can, must, should); subject–verb agreement; clauses (intro)', 'formal letter, email, story', 'figures of speech: simile, metaphor, alliteration'],
+ ['8', 'Debate Hall', 'voice; reported speech in passages; conditionals; non-finites', 'speech, debate, article, report', 'personification, rhyme scheme, the poet’s message'],
+ ['9', 'Theatre Stage', 'tenses in passages; modals; clauses; determiners; editing and omission', 'descriptive paragraph, story, diary, letters', 'drama; literary devices; character sketches'],
+ ['10', 'Writers’ Studio', 'tenses, modals, voice, reported speech, sentence transformation, gap filling', 'formal letters (enquiry, complaint, order), analytical paragraph', 'prose and poetry for the board exam: theme, tone, devices']];
+
+function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+[['mapM', MAP_M], ['mapE', MAP_E]].forEach(function (x) { var m = document.getElementById(x[0]); x[1].forEach(function (d) { var c = el('div', +d[0] <= 5 ? 'first' : '', '<span class="g">Grade ' + d[0] + '</span><b>' + esc(d[1]) + '</b>'); m.appendChild(c); }); });
+function render(subj) {
+  var g = document.getElementById('grades'); g.innerHTML = '';
+  [2, 3, 4, 5].forEach(function (gr) {
+    var data = subj === 'M' ? M[gr] : E[gr], list = subj === 'M' ? data[2] : data[1];
+    var sec = el('div', 'grade'); sec.id = subj + gr;
+    var n = list.length;
+    sec.appendChild(el('div', 'ghead', '<h3>Grade ' + gr + ': ' + esc(data[0]) + '</h3><p>' + (subj === 'M' ? 'Follows NCERT ' + esc(data[1]) + ' · ' : '') + (n - 1) + ' lessons + a challenge</p>'));
+    var grid = el('div', 'lessons');
+    list.forEach(function (L, i) {
+      var c = el('div', 'card' + (L[5] ? ' ch' : ''));
+      c.appendChild(el('span', 'n', L[5] ? 'Master Builder challenge' : 'Lesson ' + (i + 1) + ' · ' + esc(L[1])));
+      c.appendChild(el('h4', null, esc(L[0])));
+      c.appendChild(el('div', 'build', 'Builds <b>' + esc(L[2]) + '</b>'));
+      c.appendChild(el('div', 'life', esc(L[3])));
+      if (L[4]) c.appendChild(el('div', 'q', 'Sample question: ' + esc(L[4])));
+      grid.appendChild(c);
+    });
+    sec.appendChild(grid); g.appendChild(sec);
+  });
+}
+var bM = document.getElementById('btnM'), bE = document.getElementById('btnE');
+function pick(s) { bM.setAttribute('aria-pressed', s === 'M'); bE.setAttribute('aria-pressed', s === 'E'); render(s); }
+bM.addEventListener('click', function () { pick('M'); }); bE.addEventListener('click', function () { pick('E'); });
+pick('M');
+var um = document.getElementById('upM'); UP_M.forEach(function (r) { um.appendChild(el('tr', null, '<td><b>' + r[0] + '</b></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td>')); });
+var ue = document.getElementById('upE'); UP_E.forEach(function (r) { ue.appendChild(el('tr', null, '<td><b>' + r[0] + '</b></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td>')); });
+</script>
