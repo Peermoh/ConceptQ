@@ -1,0 +1,11 @@
+// Cloudflare Worker that serves the ConceptQ app as a static site.
+// Cloudflare builds this on every push (Workers Builds runs `npx wrangler deploy`).
+{
+  "name": "conceptq",               // must match the Worker's name in the Cloudflare dashboard
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,              // turn on https://conceptq.<account>.workers.dev
+  "assets": {
+    "directory": "./prototype",     // the app: index.html, house.html, world.html, audio/
+    "not_found_handling": "404-page"
+  }
+}
