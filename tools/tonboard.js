@@ -10,7 +10,7 @@ const desk = process.argv[2] === 'desktop';
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(700);
   console.log('welcome visible:', await p.isVisible('#welcome'), '| home visible:', await p.isVisible('#home'));
   await p.screenshot({ path: 'iso/W1-' + tag + '.png' });
-  await p.fill('#wlNameIn', 'Mia'); await p.click('#wlNameGo'); await p.waitForTimeout(300);
+  await p.fill('#wlNameIn', 'Mia'); await p.click('#wlNameGo'); await p.waitForTimeout(300); await p.click('#wlTeachGo'); await p.waitForTimeout(300);
   console.log('age title:', await p.textContent('#wlAgeH'), '| age buttons', await p.$$eval('#wlAges button', e => e.length));
   await p.screenshot({ path: 'iso/W2-' + tag + '.png' });
   await p.click('#wlAges button:has-text("7")'); await p.waitForTimeout(400);

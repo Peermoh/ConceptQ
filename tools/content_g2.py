@@ -182,7 +182,7 @@ lesson('e2_s1', [
 ])
 lesson('e2_s2', [
  ('More sounds', [T('More sounds'), C('m · d · g · o · c · k')],
-  "Here are six more sounds for our wall. Listen to each one, then say it after Nibb."),
+  "Here are six more sounds for our wall. Listen to each one, then say it after me."),
  ('m and d', [T('m and d'), C('m  🗺️  mmm  ·  map'), C('d  🐶  d  ·  dog')],
   "M says mmm, as if something tastes nice. Map starts with mmm. D says d, and dog starts with d."),
  ('g and o', [T('g and o'), C('g  🚪  g  ·  gate'), C('o  🐙  o  ·  on')],
