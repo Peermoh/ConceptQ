@@ -6641,18 +6641,19 @@ button.deck.locked { cursor: default; }
     BOARD.forEach(function (st) { probe.textContent = st.say; hi = Math.max(hi, probe.offsetHeight); });
     probe.remove(); cap.style.minHeight = hi + 'px';
   }
-  // On phones (narrow, or short in landscape) the caption moves onto the board; elsewhere it stays below the controls
+  // On phones and tablets (touch screens, either way round) and small windows the caption moves onto the board; elsewhere it stays below the controls
   var capHome = null;
   function placeCaption() {
     var cap = document.getElementById('caption'), wrap = document.querySelector('#learn .board-wrap'), board = document.getElementById('board'); if (!cap || !wrap) return;
     if (!capHome) capHome = { parent: cap.parentNode, next: cap.nextSibling };
-    var phone = window.matchMedia('(max-width: 639px), (max-height: 520px)').matches;
+    var phone = window.matchMedia('(max-width: 639px), (max-height: 520px), (pointer: coarse)').matches; // phones and tablets, any way round
     if (phone && cap.parentNode !== wrap) wrap.appendChild(cap);
     if (!phone && cap.parentNode !== capHome.parent) capHome.parent.insertBefore(cap, capHome.next);
     cap.classList.toggle('on-board', phone); board.classList.toggle('cap-pad', phone && !cap.classList.contains('off'));
     sizeCaption();
   }
   window.addEventListener('resize', function () { clearTimeout(sizeCaption._t); sizeCaption._t = setTimeout(placeCaption, 150); });
+  window.addEventListener('orientationchange', function () { setTimeout(placeCaption, 300); });
   // Nibb says code out loud ("underscore underscore init underscore underscore dot p y"); the caption shows it as code
   // (__init__.py). Each spoken word still gets its own timing entry, all pointing at the one code span.
   function codeRanges(say) {
