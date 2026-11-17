@@ -271,3 +271,5 @@ quiz built fresh every time (hand-written questions + generators checked against
 - Fixes in this round: stairs climb to an opening (not into the window) and the tile at their foot stays clear; room
   walls extend on wide screens; on phones the topic arrows sit in their own gutters and Nibb perches between the
   floor title and the tiles.
+- Narration says `__init__` as "underscore underscore init underscore underscore" (no "dunder"), and the caption and
+  Read tab show spoken code as code (`__init__.py`, `saws.py`) while keeping word-by-word timing (2026-11-17).
