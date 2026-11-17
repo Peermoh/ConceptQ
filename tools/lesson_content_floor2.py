@@ -1,8 +1,14 @@
 # Floor 2 (Intermediate) lessons, added on top of the full ground floor.
 from lesson_content_full import L, add  # noqa: F401  (add() checks every cue against the narration)
+from lesson_examples import A  # an everyday example for each step of the bigger lessons
 def lesson(key, steps):
     L[key] = dict(labels=[], steps=[])
     for i, (label, lines, say, cue) in enumerate(steps):
+        if key in A and i < len(A[key]):
+            ex = A[key][i]
+            assert not any(c in ex for c in cue[1:]), (key, i, [c for c in cue[1:] if c in ex])
+            say = ex + ' ' + say
+            if lines[0][0] == 'title': cue = [' '.join(ex.split()[:3])] + list(cue[1:])  # the title goes up as the example starts
         add(key, i, '%d. %s' % (i + 1, label), lines, say, cue)
 
 lesson('lists1', [

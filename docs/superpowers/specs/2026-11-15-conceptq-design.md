@@ -273,3 +273,7 @@ quiz built fresh every time (hand-written questions + generators checked against
   floor title and the tiles.
 - Narration says `__init__` as "underscore underscore init underscore underscore" (no "dunder"), and the caption and
   Read tab show spoken code as code (`__init__.py`, `saws.py`) while keeping word-by-word timing (2026-11-17).
+- Every step of the Floor 3 and Floor 4 lessons (21 lessons, 179 steps) opens with an everyday example
+  (tools/lesson_examples.py): a toolbox for packages, a cookie cutter for classes, a library book for context
+  managers, one cook making breakfast for async. Nibb says it first while the step title goes up; "Read it" shows it
+  as an "In real life" note above the explanation (2026-11-17).
