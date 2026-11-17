@@ -257,6 +257,31 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .my-courses .mc { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 16px; background: rgba(255,255,255,.05); }
 .my-courses .mc .cn-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: linear-gradient(160deg, var(--c1), var(--c2)); flex: 0 0 auto; }
 .my-courses .mc .t { flex: 1; min-width: 0; } .my-courses .mc .t b { display: block; } .my-courses .mc .t span { font-size: 13px; opacity: .75; font-weight: 700; }
+/* ---- guided tour: a spotlight on one part of the screen, and the robot explaining it ---- */
+.tour { position: fixed; inset: 0; z-index: 80; pointer-events: auto; }
+.tour-ring { position: fixed; border-radius: 18px; box-shadow: 0 0 0 4px #FFE07A, 0 0 0 9999px rgba(12,4,20,.72); transition: all .35s cubic-bezier(.3,1.2,.4,1); pointer-events: none; }
+.tour-card { position: fixed; left: 16px; right: 16px; max-width: 380px; margin: 0 auto; background: var(--sheet-bg, #2A1340); color: var(--cream, #FFF6EC); border: 2px solid #FFE07A; border-radius: 22px; padding: 14px 16px; box-shadow: 0 14px 34px rgba(0,0,0,.5); transition: top .35s, bottom .35s; }
+.tour-card .tc-top { display: flex; gap: 10px; align-items: flex-start; }
+.tour-card svg { flex: 0 0 auto; width: 56px; height: 52px; }
+.tour-card h3 { margin: 0 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+.tour-card p { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.4; }
+.tour-card .tc-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.tour-card .tc-dots { flex: 1; display: flex; gap: 5px; }
+.tour-card .tc-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.25); }
+.tour-card .tc-dots i.on { background: #FFE07A; }
+.tour-card button { border: 0; border-radius: 999px; padding: 9px 16px; font: inherit; font-weight: 900; cursor: pointer; }
+.tour-card .tc-next { background: #FFB547; color: #2A1330; }
+.tour-card .tc-skip { background: none; color: inherit; opacity: .7; text-decoration: underline; padding: 9px 6px; }
+/* ---- prize hint on the wheel ---- */
+.wheel-hint { margin: 0; text-align: center; font-weight: 700; font-size: 14px; color: var(--muted); }
+.wheel-hint button { background: none; border: 0; padding: 0; color: #FFB547; font: inherit; font-weight: 900; text-decoration: underline; cursor: pointer; }
+/* ---- the robot as the app logo ---- */
+#greet { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw; }
+#topName { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw; }
+@media (max-width: 430px) { #home .topbar { gap: 6px; } #home .topbar .chips { gap: 5px; flex-wrap: nowrap; } #home .topbar .chips .chip { padding-left: 8px; padding-right: 8px; } #greet { display: none; } #topName { max-width: 24vw; } }
+@media (max-width: 360px) { #home .brand-text { display: none; } }
+#topAvatar.logo { background: linear-gradient(160deg, #3B2560, #1D1030) !important; padding: 0; overflow: hidden; }
+#topAvatar.logo svg { width: 118%; height: 118%; margin: -4% 0 0 -9%; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -788,7 +813,7 @@ button.deck.locked { cursor: default; }
 .pe-ideas button { padding: 6px 10px; border-radius: 999px; border: 1.5px dashed var(--line); background: none; color: inherit; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .pe-prev { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; }
 .pe-prev svg { width: min(220px, 70vw); height: auto; }
-.wheel-edit { background: none; border: 0; color: var(--muted); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; padding: 6px; }
+.wheel-edit-old { background: none; border: 0; color: var(--muted); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; padding: 6px; }
 .wheel-box { position: relative; width: min(300px, 78vw); aspect-ratio: 1; margin: 6px auto 0; }
 .wheel-box .wheel { width: 100%; height: 100%; display: block; }
 .wheel-pointer { position: absolute; top: -8px; left: 50%; width: 30px; transform: translateX(-50%); z-index: 2; }
@@ -822,6 +847,7 @@ button.deck.locked { cursor: default; }
         <div class="brand-text"><small id="greet">Good evening</small><strong id="topName">Nova</strong></div>
       </div>
       <div class="chips">
+        <button class="chip" id="soundBtn" type="button" aria-pressed="true" aria-label="Sounds on. Tap to mute"><span id="soundIc" aria-hidden="true">🔊</span></button>
         <button class="chip scene-btn" id="sceneBtn" aria-label="Change world and weather"><svg id="sceneIcon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"></svg></button>
         <span class="chip" title="Embers earned">
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3 4 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-6 0 2 1 3 2.5 3C10 8 11 5 12 2z" fill="#FFB547"/></svg>
@@ -1056,6 +1082,8 @@ button.deck.locked { cursor: default; }
           <label class="toggle"><input type="checkbox" id="setVoice"><span>Nibb reads lessons out loud</span></label>
           <label class="toggle"><input type="checkbox" id="setCaptions"><span>Show captions in lessons</span></label>
           <label class="toggle"><input type="checkbox" id="setAntics"><span>Nibb naps and does tricks on Home</span></label>
+          <label class="toggle"><input type="checkbox" id="setSounds"><span>Sounds: taps, cheers, and the sounds of your world (rain, birds, crickets…)</span></label>
+          <button class="chip-btn" id="tourAgain" type="button">Show me around again</button>
           <button class="cta" id="meWorld" style="width:100%">Change world and weather</button>
         </section>
         <section class="panel danger" aria-labelledby="resetH">
@@ -1134,7 +1162,7 @@ button.deck.locked { cursor: default; }
       <div class="wheel-result" id="wheelResult" aria-live="polite" hidden><span>You won</span><b id="wheelPrize"></b><small id="wheelClaim"></small></div>
       <button class="cta mint" style="width:100%" id="wheelSpin">Spin!</button>
       <button class="cta" style="width:100%" id="wheelClose">Close</button>
-      <button class="wheel-edit" id="wheelEdit" type="button">✏️ Change prizes</button>
+      <p class="wheel-hint" id="wheelHint">💡 Want different prizes? A grown-up can <button id="wheelEdit" type="button">change them</button>.</p>
     </div>
   </div>
 
@@ -1863,6 +1891,8 @@ button.deck.locked { cursor: default; }
       if (COLORS.indexOf(pf.color) >= 0) profile.color = pf.color;
       ['voice', 'captions', 'antics'].forEach(function (k) { if (typeof pf[k] === 'boolean') profile[k] = pf[k]; });
       if (Object.prototype.hasOwnProperty.call(NARRATORS, pf.narrator)) profile.narrator = pf.narrator;
+      if (typeof pf.sounds === 'boolean') profile.sounds = pf.sounds;
+      if (pf.toured === true) profile.toured = true;
       if (typeof pf.teacher === 'string') { var tn = pf.teacher.replace(/[\u0000-\u001f<>&"\\]/g, '').trim().slice(0, 14); if (tn) profile.teacher = tn; }
     }
   } catch (e) {}
@@ -1938,9 +1968,26 @@ button.deck.locked { cursor: default; }
     }
     if (later.length) body.appendChild(el('p', 'later-note', later.length + (later.length === 1 ? ' more course opens' : ' more courses open') + ' when you are older: ' + later.map(function (c) { return c.name + ' (' + c.minAge + '+)'; }).join(', ') + '.'));
   }
+  // the app logo is the robot teacher: in the top bar and as the browser tab icon
+  var logoDone = false;
+  function setLogo() {
+    var a = document.getElementById('topAvatar'); if (!a || logoDone) return;
+    a.className += ' logo'; a.innerHTML = '<svg viewBox="0 0 120 110" aria-hidden="true">' + lumiSVG('happy') + '</svg>'; a.removeAttribute('aria-hidden');
+    a.setAttribute('role', 'img'); a.setAttribute('aria-label', 'Nibb, your robot teacher');
+    try {
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 110"><rect width="120" height="110" rx="26" fill="#2A1340"/>' + lumiSVG('happy').replace(/class="[^"]*"/g, '') + '</svg>';
+      var l = document.querySelector('link[rel="icon"]') || document.createElement('link'); l.rel = 'icon'; l.type = 'image/svg+xml';
+      l.href = 'data:image/svg+xml,' + encodeURIComponent(svg); document.head.appendChild(l);
+    } catch (e) {}
+    logoDone = true;
+  }
   function applyProfile() {
-    document.getElementById('topName').textContent = profile.name;
-    ['topAvatar', 'meAvatar'].forEach(function (id) { var a = document.getElementById(id); a.textContent = profile.name.charAt(0).toUpperCase(); a.style.background = profile.color; });
+    var tn = window.CQ_TEACHER || profile.teacher || 'Nibb';
+    document.getElementById('topName').textContent = tn;
+    var gr = document.getElementById('greet'); if (gr && !/, /.test(gr.textContent)) gr.textContent = gr.textContent + ', ' + profile.name;
+    document.title = tn + ' · ConceptQ';
+    setLogo();
+    ['meAvatar'].forEach(function (id) { var a = document.getElementById(id); a.textContent = profile.name.charAt(0).toUpperCase(); a.style.background = profile.color; });
     var more = COURSES.filter(function (c) { return !c.live && profile.age >= c.minAge; }).length;
     document.getElementById('coursesMore').textContent = more ? '+' + more + ' more to explore' : 'See all courses';
   }
@@ -2025,6 +2072,86 @@ button.deck.locked { cursor: default; }
     document.getElementById('streakLbl').textContent = st === 1 ? 'day in a row' : 'days in a row';
     document.getElementById('streakKey').textContent = wk === 7 ? 'A whole week: golden door key!' : (7 - wk) + ' more for a golden door key';
   }
+
+  // ================= sounds =================
+  // Small sounds for taps, right and wrong answers, wins and the wheel, plus the sound of your world on Home
+  // and in your house / town: birds by day, crickets at night, rain, wind, snow chimes, bubbles in the aquarium.
+  // All made with Web Audio (no files). Off with the speaker chip, or in Me.
+  var SFX = (function () {
+    var ctx = null, master = null, amb = null, nbuf = null;
+    function on() { return profile.sounds !== false; }
+    function ac() {
+      if (!ctx) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); master = ctx.createGain(); master.gain.value = 0.55; master.connect(ctx.destination); }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    function noise() { if (!nbuf) { nbuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); var d = nbuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } var n = ctx.createBufferSource(); n.buffer = nbuf; n.loop = true; return n; }
+    function tone(f, dur, type, vol, at, f2, dest) {
+      var t = (at || 0) + ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.15, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || master); o.start(t); o.stop(t + dur + 0.05);
+    }
+    var UI = {
+      tap: function () { tone(880, 0.06, 'sine', 0.05); },
+      right: function () { [523, 659, 784].forEach(function (f, i) { tone(f, 0.22, 'triangle', 0.13, i * 0.08); }); tone(1568, 0.3, 'sine', 0.05, 0.24); },
+      wrong: function () { tone(330, 0.16, 'triangle', 0.12, 0, 260); tone(247, 0.22, 'triangle', 0.1, 0.13, 196); },
+      win: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.3, 'triangle', 0.13, i * 0.1); }); [1319, 1568, 2093].forEach(function (f, i) { tone(f, 0.25, 'sine', 0.05, 0.45 + i * 0.07); }); },
+      tick: function () { tone(1400, 0.03, 'square', 0.03); },
+      pop: function () { tone(500, 0.09, 'sine', 0.1, 0, 900); },
+      whoosh: function () { var n = noise(), f = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime; f.type = 'bandpass'; f.Q.value = 1; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(2400, t + 0.35); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4); n.connect(f); f.connect(g); g.connect(master); n.start(t); n.stop(t + 0.45); }
+    };
+    function play(name) { if (!on() || !ac() || !UI[name]) return; try { UI[name](); } catch (e) {} }
+    // the world's own sound, looping quietly until stopped
+    function stopAmb() { if (!amb) return; var a = amb; amb = null; try { a.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.3); } catch (e) {} a.timers.forEach(clearTimeout); setTimeout(function () { a.nodes.forEach(function (n) { try { n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} }); }, 1500); }
+    function ambient(world, weather, time) {
+      var key = world + '/' + weather + '/' + time;
+      if (amb && amb.key === key) return;
+      stopAmb();
+      if (!on() || !ac()) return;
+      var g = ctx.createGain(), a = { key: key, gain: g, nodes: [], timers: [] }; g.gain.value = 0.0001; g.connect(master); g.gain.setTargetAtTime(1, ctx.currentTime, 0.8); amb = a;
+      function bed(type, freq, q, vol, lfo) { // filtered noise: rain, wind, the sea
+        var n = noise(), f = ctx.createBiquadFilter(), v = ctx.createGain(); f.type = type; f.frequency.value = freq; f.Q.value = q; v.gain.value = vol;
+        n.connect(f); f.connect(v); v.connect(g); n.start(); a.nodes.push(n);
+        if (lfo) { var o = ctx.createOscillator(), og = ctx.createGain(); o.frequency.value = lfo; og.gain.value = vol * 0.8; o.connect(og); og.connect(v.gain); o.start(); a.nodes.push(o); }
+      }
+      function every(lo, hi, fn) { (function next() { a.timers.push(setTimeout(function () { if (amb !== a) return; try { fn(); } catch (e) {} next(); }, lo + Math.random() * (hi - lo))); })(); }
+      function at(f, dur, type, vol, delay, f2) { tone(f, dur, type, vol, delay, f2, g); }
+      var wet = weather === 'rain' || weather === 'storm', night = time === 'night';
+      if (world === 'ocean') { // aquarium: a slow sea swell and rising bubbles
+        bed('lowpass', 380, 0.7, 0.05, 0.08);
+        every(700, 2600, function () { var b = 2 + Math.floor(Math.random() * 4); for (var i = 0; i < b; i++) at(280 + Math.random() * 300, 0.12, 'sine', 0.035, i * 0.09, 900 + Math.random() * 500); });
+        return;
+      }
+      if (wet) bed('lowpass', weather === 'storm' ? 900 : 1400, 0.4, weather === 'storm' ? 0.09 : 0.06);
+      if (weather === 'storm') every(7000, 14000, function () { var n = noise(), f = ctx.createBiquadFilter(), v = ctx.createGain(), t = ctx.currentTime; f.type = 'lowpass'; f.frequency.value = 110; v.gain.setValueAtTime(0.0001, t); v.gain.exponentialRampToValueAtTime(0.5, t + 0.15); v.gain.exponentialRampToValueAtTime(0.0001, t + 2.6); n.connect(f); f.connect(v); v.connect(g); n.start(t); n.stop(t + 2.7); });
+      if (weather === 'wind' || world === 'canyon' && !wet) bed('bandpass', 420, 0.8, weather === 'wind' ? 0.07 : 0.02, 0.13);
+      if (weather === 'snow' || world === 'snow') { bed('bandpass', 900, 0.6, 0.015, 0.1); every(3500, 8000, function () { at([1568, 1760, 2093, 2349][Math.floor(Math.random() * 4)], 1.2, 'sine', 0.025); }); }
+      if (night) every(500, 1300, function () { for (var i = 0; i < 3; i++) at(4300 + Math.random() * 300, 0.035, 'sine', 0.02, i * 0.06); }); // crickets
+      else if (!wet && world !== 'snow' && weather !== 'snow') every(world === 'spring' ? 900 : 2200, world === 'spring' ? 3200 : 6000, function () { // birds
+        var f = 2200 + Math.random() * 1600, n = 2 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) at(f, 0.09, 'sine', 0.03, i * 0.12, f * (1.25 + Math.random() * 0.3));
+      });
+    }
+    return { play: play, ambient: ambient, stop: stopAmb, unlock: function () { if (on()) ac(); } };
+  })();
+  function sceneSound() {
+    var where = ['home', 'house'].filter(function (id) { return !document.getElementById(id).hidden; })[0];
+    if (where && profile.sounds !== false) SFX.ambient(scene.world, scene.weather, currentTime()); else SFX.stop();
+  }
+  function renderSoundBtn() {
+    var b = document.getElementById('soundBtn'), onn = profile.sounds !== false; if (!b) return;
+    document.getElementById('soundIc').textContent = onn ? '🔊' : '🔇';
+    b.setAttribute('aria-pressed', String(onn)); b.setAttribute('aria-label', onn ? 'Sounds on. Tap to mute' : 'Sounds off. Tap to turn on');
+    var t = document.getElementById('setSounds'); if (t) t.checked = onn;
+  }
+  function setSounds(onn) { profile.sounds = onn; saveProfile(); renderSoundBtn(); if (onn) { SFX.unlock(); SFX.play('pop'); } sceneSound(); }
+  document.getElementById('soundBtn').addEventListener('click', function () { setSounds(profile.sounds === false); });
+  document.getElementById('setSounds').addEventListener('change', function (e) { setSounds(e.target.checked); });
+  // browsers only allow sound after a tap: start the world's sound on the first one
+  document.addEventListener('pointerdown', function first() { SFX.unlock(); setTimeout(sceneSound, 50); document.removeEventListener('pointerdown', first, true); }, true);
+  // a soft tap on the main buttons
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.cta, [data-nav], .topic, .chip, .cq-card, .chip-btn'); if (b && b.id !== 'soundBtn') SFX.play('tap'); });
+  renderSoundBtn();
 
   // ================= Nibb follows you and keeps busy =================
   var buddy = document.getElementById('buddy'), lumiSpot = document.getElementById('lumiSpot'), homeScroll = document.getElementById('homeScroll');
@@ -2258,6 +2385,7 @@ button.deck.locked { cursor: default; }
     var scr = document.getElementById(id), keepNav = document.activeElement && document.activeElement.closest && document.activeElement.closest('#' + id + ' [data-navbar]');
     if (!keepNav) { var navBtn = document.querySelector('#' + id + ' [data-navbar] [data-nav="' + id + '"]'); if (navBtn && document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-navbar]')) navBtn.focus(); else { scr.setAttribute('tabindex', '-1'); scr.focus({ preventScroll: true }); } }
     if (id === 'home') refreshHome();
+    if (typeof sceneSound === 'function') setTimeout(sceneSound, 0);
     // reload the house each time, so it picks up lessons finished since it was last opened
     if (id === 'house') { markHouseSeen(); document.getElementById('houseFrame').src = (COURSE === 'py' ? 'house.html?v=' : 'world.html?course=' + COURSE + '&v=') + state.current + (pendingBuild !== null ? '&build=' + pendingBuild : ''); pendingBuild = null; }
   }
@@ -2409,7 +2537,10 @@ button.deck.locked { cursor: default; }
     var g = document.getElementById('wheelG');
     g.style.transition = still ? 'none' : 'transform 4s cubic-bezier(.15,.75,.15,1)';
     g.style.transform = 'rotate(' + wheelAngle + 'deg)';
+    // ticks that slow down with the wheel
+    if (!still) { var tk = 0; (function tick(d) { if (tk++ > 40 || d > 600) return; SFX.play('tick'); setTimeout(function () { tick(d * 1.09); }, d); })(45); }
     setTimeout(function () {
+      SFX.play('win');
       spinning = false; document.getElementById('wheelSpin').disabled = false;
       rewards.used++; rewards.wins.push({ p: list[pick], t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards();
       var res = document.getElementById('wheelResult'); res.hidden = false;
@@ -3745,6 +3876,7 @@ button.deck.locked { cursor: default; }
     answers[qi] = i;
     var right = i === q.answer;
     if (right) { firstTry++; earned += 10; burst(btn); }
+    SFX.play(right ? 'right' : 'wrong');
     document.querySelectorAll('#qOptions .opt').forEach(function (b, k) {
       b.disabled = true;
       if (k === q.answer) b.classList.add('right'); else if (k === i) { b.classList.add('wrong'); } else b.classList.add('dim');
@@ -3862,7 +3994,7 @@ button.deck.locked { cursor: default; }
     var dj = document.getElementById('doneJar'), sr = spinsReady();
     dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
     dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;
-    show('done');
+    show('done'); SFX.play('win');
   }
 
 
@@ -4078,7 +4210,7 @@ button.deck.locked { cursor: default; }
     app.style.setProperty('--sheet-bg', mix(UI_BG[world], '#FFFFFF', 0.06));
     var hour = new Date().getHours();
     var greet = t === 'night' ? 'Good night' : t === 'sunset' ? 'Good evening' : t === 'morning' ? 'Good morning' : (hour < 12 ? 'Good morning' : 'Good afternoon');
-    document.getElementById('greet').textContent = greet;
+    document.getElementById('greet').textContent = greet + ', ' + profile.name;
     var bw = document.getElementById('bubbleWhen'); if (bw) bw.textContent = !LESSON_DATA[Math.min(state.current, ALL_LESSONS - 1)] ? 'Soon' : (t === 'night' || t === 'sunset') ? 'Tonight' : 'Today';
     document.getElementById('sceneIcon').innerHTML = weatherIcon(w, t);
     setParticles(); document.body.classList.toggle('windy', scene.weather === 'wind' || scene.weather === 'storm');
@@ -4213,7 +4345,7 @@ button.deck.locked { cursor: default; }
         b.addEventListener('click', function () {
           scene[key] = opt[0];
           try { localStorage.setItem('cq-scene', JSON.stringify(scene)); } catch (e) {}
-          renderPicker(); buildScene(); drawNodes();
+          renderPicker(); buildScene(); drawNodes(); if (typeof sceneSound === 'function') sceneSound();
         });
         row.appendChild(b);
       });
@@ -7837,6 +7969,51 @@ button.deck.locked { cursor: default; }
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.wire-hit')) { e.preventDefault(); sayFact(e.target.closest('.wire-hit')); } });
   window.addEventListener('resize', function () { buildScene(); drawNodes(); });
 
+  // ================= guided tour: what each part of the app does =================
+  // Shown once after the welcome (and once for learners from before); Me → "Show me around again" replays it.
+  function tourSteps() {
+    var place = COURSE === 'maths' ? 'Town' : COURSE === 'english' ? 'Library' : 'House';
+    return [
+      ['#courseTabs', 'Your course', 'This is the course you are doing. When you add another course in Me, a Switch button appears here.'],
+      ['#startBtn', 'Start a lesson', 'Tap here for your next lesson. Nibb teaches it on the board, out loud, then asks a few questions.'],
+      ['#topics', 'Your path', 'All the lessons, in order. Done ones get a tick. Tap one to play it again.'],
+      ['[data-nav="house"]', 'Your ' + place.toLowerCase(), 'Every lesson builds something. After a lesson you build it yourself, like a puzzle, and it appears here.'],
+      ['[data-nav="cards"]', 'Flashcards', 'Cards help you remember what you learned. A few minutes a day is plenty.'],
+      ['#prizeTile', 'Prize wheel', 'Lessons give you embers. Fill the jar, then spin the wheel to win a prize a grown-up picks.'],
+      ['#sceneBtn', 'Your world', 'Change the world, the weather and the time of day. Your house or town changes too.'],
+      ['#soundBtn', 'Sounds', 'Birds, rain and cheers. Tap here to turn sounds off or on.'],
+      ['[data-nav="me"]', 'Me', 'Your name, Nibb\'s name, your courses, prizes and settings. You can watch this tour again there.']
+    ];
+  }
+  function startTour() {
+    show('home'); document.getElementById('homeScroll') && (document.getElementById('homeScroll').scrollTop = 0);
+    var steps = tourSteps().filter(function (st) { var el = document.querySelector('#home ' + st[0]) || document.querySelector(st[0]); return el && el.getClientRects().length; }), k = 0;
+    var ov = document.createElement('div'); ov.className = 'tour'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Tour of the app');
+    ov.innerHTML = '<div class="tour-ring"></div><div class="tour-card"><div class="tc-top"><svg viewBox="0 0 120 110" aria-hidden="true">' + lumiSVG('happy') + '</svg><div><h3></h3><p></p></div></div><div class="tc-row"><span class="tc-dots"></span><button class="tc-skip" type="button">Skip</button><button class="tc-next" type="button">Next</button></div></div>';
+    document.body.appendChild(ov);
+    var ring = ov.querySelector('.tour-ring'), card = ov.querySelector('.tour-card');
+    function end() { ov.remove(); profile.toured = true; saveProfile(); window.removeEventListener('resize', place); }
+    function place() {
+      var st = steps[k], el = document.querySelector('#home ' + st[0]) || document.querySelector(st[0]);
+      el.scrollIntoView({ block: 'center', behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' });
+      var r = el.getBoundingClientRect(), pad = 6;
+      ring.style.left = (r.left - pad) + 'px'; ring.style.top = (r.top - pad) + 'px'; ring.style.width = (r.width + pad * 2) + 'px'; ring.style.height = (r.height + pad * 2) + 'px';
+      var below = r.top + r.height / 2 < window.innerHeight / 2;
+      card.style.top = below ? Math.min(window.innerHeight - 200, r.bottom + 16) + 'px' : 'auto';
+      card.style.bottom = below ? 'auto' : Math.min(window.innerHeight - 200, window.innerHeight - r.top + 16) + 'px';
+      card.querySelector('h3').textContent = st[1]; card.querySelector('p').textContent = st[2];
+      card.querySelector('.tc-dots').innerHTML = steps.map(function (x, i) { return '<i class="' + (i === k ? 'on' : '') + '"></i>'; }).join('');
+      card.querySelector('.tc-next').textContent = k === steps.length - 1 ? 'Let\'s learn!' : 'Next';
+      card.querySelector('.tc-next').focus({ preventScroll: true });
+    }
+    card.querySelector('.tc-next').addEventListener('click', function () { if (++k >= steps.length) { end(); SFX.play('win'); } else { SFX.play('whoosh'); place(); } });
+    card.querySelector('.tc-skip').addEventListener('click', end);
+    ov.addEventListener('keydown', function (e) { if (e.key === 'Escape') end(); });
+    window.addEventListener('resize', place);
+    setTimeout(place, 60);
+  }
+  document.getElementById('tourAgain').addEventListener('click', startTour);
+
   // ---- first visit: name, age, then pick your adventure ----
   function wlStep(id) { ['wlName', 'wlTeach', 'wlAge', 'wlPick'].forEach(function (s2) { document.getElementById(s2).hidden = s2 !== id; }); var f = document.querySelector('#' + id + ' input, #' + id + ' button'); if (f) setTimeout(function () { f.focus(); }, 50); }
   var wlChoice = null;
@@ -7882,14 +8059,15 @@ button.deck.locked { cursor: default; }
   document.querySelectorAll('[data-wl]').forEach(function (b) { b.addEventListener('click', function () { wlStep(b.getAttribute('data-wl')); }); });
   document.getElementById('wlGo').addEventListener('click', function () {
     if (!wlChoice) return;
-    profile.courses = []; joinCourse(wlChoice); profile.onboarded = true; saveProfile(); saveProgress(); show('home');
+    profile.courses = []; joinCourse(wlChoice); profile.onboarded = true; saveProfile(); saveProgress(); show('home'); applyProfile();
+    setTimeout(startTour, 700);
   });
   // learners from before this screen existed: their joined courses are the ones with progress, plus the one on screen
   if (!profile.courses && !FIRST_RUN) {
     profile.courses = ['py', 'maths', 'english'].filter(function (c) { return c === COURSE || doneIn(c) > 0; });
     saveProfile();
   }
-  if (FIRST_RUN) startWelcome(); else show('home');
+  if (FIRST_RUN) startWelcome(); else { show('home'); if (!profile.toured && !/[?&]notour\b/.test(location.search)) setTimeout(startTour, 1200); }
 })();
 </script>
 </html>
