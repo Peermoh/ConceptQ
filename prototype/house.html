@@ -225,6 +225,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
 
 </div></div>
 
+<script src="puzzle.js"></script>
 <script>
 (function () {
   // ---------- data ----------
@@ -2394,6 +2395,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     20: 'Party on the balcony! Files, sets, dictionaries, functions and try, all together. You finished the second floor!'
   };
 
+  var PART_NAME = ["welcome sign", "building supplies", "foundation", "walls and roof", "front door", "lamps", "garden gate", "staircase", "porch light", "floor beams", "floorboards", "corner posts", "walls and roof", "room doors", "wallpaper", "kitchen", "oven", "smoke alarm", "attic", "toolbox", "balcony", "workshop", "safety scaffolding", "parcel sorter", "dormer windows", "loft rooms", "hidden wiring", "loft furniture", "lift", "smart switches", "archive room", "inspection", "solar panels", "control room", "smart roof", "shed and water tap", "rain barrel", "string lights", "self-closing gate", "plant labels", "smart meter", "sprinklers", "antenna", "tool wall", "seed sieve", "smart garden"];
   function playBuild(n) {
     var bubble = document.getElementById('houseBubble'), nb = document.getElementById('houseNibb');
     if (n === 7) { houseMode = 'inside'; drawHouse(); } // the stairs are indoors
@@ -2404,6 +2406,14 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     if (n === 33) { houseMode = 'inside'; VIEW_FLOOR = 3; drawHouse(); }
     if (n >= 35) { houseMode = 'outside'; drawHouse(); } // the garden is built outside // the scaffolding comes down // the attic window and the balcony are seen from outside
     if (n >= 13 && n <= 16) { houseMode = 'inside'; VIEW_FLOOR = 2; drawHouse(); } // plates, wallpaper and the kitchen are upstairs
+    // the learner builds it first: the new part, cut into puzzle pieces; then it lands with the usual build moment
+    var pzParts = document.querySelectorAll('#houseSvg [data-part="' + n + '"]');
+    if (window.CQPuzzle && pzParts.length && !playBuild.puzzled) {
+      playBuild.puzzled = true;
+      say(document.getElementById('houseBubble'), 'Your turn to build! Put the pieces together.', false, document.getElementById('houseNibb'));
+      CQPuzzle.start({ svg: document.getElementById('houseSvg'), parts: [].slice.call(pzParts), title: 'Build the ' + (PART_NAME[n] || 'new part') + '!', onDone: function () { playBuild(n); } });
+      return;
+    }
     if (n === 12 && !still) { var rd = document.querySelector('#houseSvg .roof-g'); if (rd) rd.classList.add('roof-drop'); }
     if (n === 9 && !still) { var rg = document.querySelector('#houseSvg .roof-g'); if (rg) rg.classList.add('roof-lift'); }
     var parts = document.querySelectorAll('#houseSvg [data-part="' + n + '"]'), part = parts[0];

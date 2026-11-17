@@ -708,6 +708,17 @@ button.deck.locked { cursor: default; }
 .wheel-dlg[hidden] { display: none; }
 .wheel-card { width: min(420px, 100%); max-height: 100%; overflow: auto; background: var(--sheet-bg); border: 1.5px solid var(--line); border-radius: 26px; padding: 20px; display: flex; flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
 .wheel-info { margin: 0; color: var(--muted); font-weight: 800; }
+.pe-lbl { display: block; font-weight: 800; font-size: 14px; margin: 6px 0 2px; }
+.pe-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pe-rows li { display: flex; gap: 6px; align-items: center; }
+.pe-rows input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: rgba(0,0,0,.2); color: inherit; font: inherit; font-weight: 700; }
+.pe-emo, .pe-del { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid var(--line); background: rgba(255,255,255,.06); color: inherit; font-size: 20px; cursor: pointer; }
+.pe-del { font-size: 16px; font-weight: 900; }
+.pe-ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.pe-ideas button { padding: 6px 10px; border-radius: 999px; border: 1.5px dashed var(--line); background: none; color: inherit; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.pe-prev { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; }
+.pe-prev svg { width: min(220px, 70vw); height: auto; }
+.wheel-edit { background: none; border: 0; color: var(--muted); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; padding: 6px; }
 .wheel-box { position: relative; width: min(300px, 78vw); aspect-ratio: 1; margin: 6px auto 0; }
 .wheel-box .wheel { width: 100%; height: 100%; display: block; }
 .wheel-pointer { position: absolute; top: -8px; left: 50%; width: 30px; transform: translateX(-50%); z-index: 2; }
@@ -908,8 +919,12 @@ button.deck.locked { cursor: default; }
           <p class="muted small" id="prizePer"></p>
           <div class="gate" id="gateBox" hidden><label for="gateIn" id="gateQ"></label><input id="gateIn" inputmode="numeric" autocomplete="off"><div class="gate-row"><button class="chip-btn" id="gateOk" type="button">Check</button><button class="chip-btn ghost" id="gateCancel" type="button">Cancel</button></div><span class="gate-msg" id="gateMsg" aria-live="polite"></span></div>
           <div class="prize-edit" id="prizeEdit" hidden>
-            <label for="prizeText">Prizes, one per line (2 to 8)</label>
-            <textarea id="prizeText" rows="6"></textarea>
+            <span class="pe-lbl">Prizes on the wheel (2 to 8). Tap an emoji to change it.</span>
+            <ul class="pe-rows" id="prizeRows"></ul>
+            <button class="chip-btn ghost" id="prizeAdd" type="button">+ Add a prize</button>
+            <span class="pe-lbl">Ideas: tap to add</span>
+            <div class="pe-ideas" id="prizeIdeas"></div>
+            <div class="pe-prev"><svg viewBox="0 0 300 300" aria-hidden="true"><circle cx="150" cy="150" r="146" fill="#2A1330"/><g id="prizePrev"></g></svg><span class="muted small">How the wheel will look</span></div>
             <label for="prizePerSel">Embers to fill the jar</label>
             <select id="prizePerSel"><option value="100">100 (about 1 lesson)</option><option value="200">200 (2 to 3 lessons)</option><option value="300">300 (3 to 4 lessons)</option><option value="500">500 (about 6 lessons)</option></select>
             <span class="gate-msg" id="prizeEditMsg" aria-live="polite"></span>
@@ -1010,6 +1025,7 @@ button.deck.locked { cursor: default; }
       <div class="wheel-result" id="wheelResult" aria-live="polite" hidden><span>You won</span><b id="wheelPrize"></b><small id="wheelClaim"></small></div>
       <button class="cta mint" style="width:100%" id="wheelSpin">Spin!</button>
       <button class="cta" style="width:100%" id="wheelClose">Close</button>
+      <button class="wheel-edit" id="wheelEdit" type="button">✏️ Change prizes</button>
     </div>
   </div>
 
@@ -2249,20 +2265,47 @@ button.deck.locked { cursor: default; }
     if (!rewards.wins.length) { var li = document.createElement('li'); li.className = 'muted'; li.textContent = 'No prizes won yet.'; wl.appendChild(li); }
     document.getElementById('prizeEdit').hidden = true;
   }
-  document.getElementById('prizeChange').addEventListener('click', function () {
-    grownUpCheck(function () {
-      var ed = document.getElementById('prizeEdit'); ed.hidden = false;
-      document.getElementById('prizeText').value = prizeList().join('\n');
-      document.getElementById('prizePerSel').value = String(rewards.per);
-      document.getElementById('prizeText').focus();
-    });
+  // the prize editor: one row per prize (an emoji + words), add, remove, quick ideas and a live wheel preview
+  var PRIZE_EMO = ['🎁', '📺', '🍕', '🍦', '🎮', '🌳', '🌙', '🍫', '📚', '🎨', '⚽', '🚲', '🎬', '🧁', '🛝', '🏊', '⭐'];
+  var PRIZE_IDEAS = ['🍦 An ice cream', '🎨 Art time with me', '⚽ Play football together', '📚 A new storybook', '🎬 Movie night', '🛝 Trip to the park', '🧁 Bake a cake together', '🌙 15 minutes later to bed', '🎮 20 minutes of games', '🍕 Pizza night'];
+  // a fitting emoji for a prize written without one
+  function emoFor(t) { var K = [[/tv|show|episode/i, '📺'], [/game|gaming/i, '🎮'], [/park|walk|outside/i, '🌳'], [/later|bed|lie-in/i, '🌙'], [/film|movie|cinema/i, '🎬'], [/ice ?cream/i, '🍦'], [/pizza|takeaway|dinner|food/i, '🍕'], [/book|read/i, '📚'], [/cake|bake/i, '🧁'], [/chocolate|sweet|snack|treat/i, '🍫'], [/ball|football|play/i, '⚽'], [/bike|cycle/i, '🚲'], [/swim|pool/i, '🏊'], [/art|draw|paint/i, '🎨'], [/coffee/i, '☕']];
+    for (var i = 0; i < K.length; i++) if (K[i][0].test(t || '')) return K[i][1]; return '🎁'; }
+  function splitEmo(p) { var m = /^(\p{Extended_Pictographic}️?)\s*/u.exec(p); return m ? [m[1], p.slice(m[0].length)] : ['', p]; }
+  function rowList() { return [].map.call(document.querySelectorAll('#prizeRows li'), function (li) { var t = li.querySelector('input').value.trim().slice(0, 34), e = li.querySelector('.pe-emo').textContent; return t ? (e && e !== '＋' ? e + ' ' : '') + t : ''; }).filter(Boolean); }
+  function previewPrizes() { var l = rowList(); document.getElementById('prizePrev').innerHTML = wheelSVG(l.length ? l : ['…']); document.getElementById('prizeAdd').disabled = document.querySelectorAll('#prizeRows li').length >= 8; }
+  function addRow(p, focus) {
+    var ul = document.getElementById('prizeRows'); if (ul.children.length >= 8) return;
+    var sp = splitEmo(p || ''), li = document.createElement('li'), e = document.createElement('button'), inp = document.createElement('input'), del = document.createElement('button');
+    e.type = 'button'; e.className = 'pe-emo'; e.textContent = sp[0] || emoFor(sp[1]); if (!sp[0]) e.dataset.auto = '1'; e.setAttribute('aria-label', 'Change the emoji');
+    e.addEventListener('click', function () { delete e.dataset.auto; var i = PRIZE_EMO.indexOf(e.textContent); e.textContent = PRIZE_EMO[(i + 1) % PRIZE_EMO.length]; previewPrizes(); });
+    inp.value = sp[1]; inp.maxLength = 34; inp.placeholder = 'A prize, like "Trip to the park"'; inp.setAttribute('aria-label', 'Prize'); inp.addEventListener('input', function () { if (e.dataset.auto) e.textContent = emoFor(inp.value); previewPrizes(); });
+    del.type = 'button'; del.className = 'pe-del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Remove this prize');
+    del.addEventListener('click', function () { li.remove(); previewPrizes(); });
+    li.appendChild(e); li.appendChild(inp); li.appendChild(del); ul.appendChild(li); previewPrizes(); if (focus) inp.focus();
+  }
+  function openPrizeEditor() {
+    var ed = document.getElementById('prizeEdit'); ed.hidden = false;
+    document.getElementById('prizeRows').innerHTML = ''; prizeList().forEach(function (p) { addRow(p); });
+    var ideas = document.getElementById('prizeIdeas'); ideas.innerHTML = '';
+    PRIZE_IDEAS.forEach(function (p) { var b = document.createElement('button'); b.type = 'button'; b.textContent = p; b.addEventListener('click', function () { if (rowList().indexOf(p) < 0) addRow(p); }); ideas.appendChild(b); });
+    document.getElementById('prizePerSel').value = String(rewards.per); document.getElementById('prizeEditMsg').textContent = '';
+    ed.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+  document.getElementById('prizeAdd').addEventListener('click', function () { addRow('', true); });
+  document.getElementById('prizeChange').addEventListener('click', function () { grownUpCheck(openPrizeEditor); });
+  // from the wheel itself: go to Me, check it is a grown-up, then edit
+  document.getElementById('wheelEdit').addEventListener('click', function () {
+    document.getElementById('wheelDlg').hidden = true; show('me');
+    setTimeout(function () { document.getElementById('prizeH').scrollIntoView({ block: 'start' }); grownUpCheck(openPrizeEditor); }, 60);
   });
   document.getElementById('prizeSave').addEventListener('click', function () {
-    var list = document.getElementById('prizeText').value.split('\n').map(function (p) { return p.trim().slice(0, 40); }).filter(Boolean).slice(0, 8);
-    if (list.length < 2) { document.getElementById('prizeEditMsg').textContent = 'Add at least 2 prizes, one per line.'; return; }
+    var list = rowList().slice(0, 8);
+    if (list.length < 2) { document.getElementById('prizeEditMsg').textContent = 'Add at least 2 prizes.'; return; }
     rewards.prizes = list; rewards.per = +document.getElementById('prizePerSel').value || 200;
     rewards.used = Math.min(rewards.used, Math.floor(state.embers / rewards.per)); // changing the jar size never takes spins away
     saveRewards(); renderPrizes(); renderPrizeTile();
+    document.getElementById('prizeHint').textContent = 'Saved! The wheel has your prizes now.';
   });
   document.getElementById('prizeReset').addEventListener('click', function () { rewards.prizes = null; saveRewards(); renderPrizes(); });
 
@@ -3509,7 +3552,7 @@ button.deck.locked { cursor: default; }
     saveProgress();
     document.getElementById('doneTitle').textContent = LD.doneTitle;
     document.getElementById('doneText').textContent = LD.doneText;
-    document.getElementById('doneHouse').textContent = LD.doneCta;
+    document.getElementById('doneHouse').textContent = LD.doneCta === 'See it built' ? 'Build it yourself 🧩' : LD.doneCta;
     document.getElementById('dRight').textContent = firstTry + '/' + Q.length;
     document.getElementById('dEmbers').textContent = '+' + earned;
     document.getElementById('dCards').textContent = ensureCards();

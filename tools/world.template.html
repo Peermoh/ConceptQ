@@ -49,6 +49,7 @@ html, body { margin: 0; height: 100%; background: var(--deep); color: var(--text
 <div id="hint">Swipe along the street · tap what you built</div>
 <div id="toast" role="status"></div>
 <div id="sheet" role="dialog" aria-modal="false" aria-labelledby="shT"><div class="eb" id="shE"></div><h2 id="shT"></h2><div class="vis" id="shV"></div><p id="shP"></p><button id="shX" type="button">Close</button></div>
+<script src="puzzle.js"></script>
 <script>
 (function () {
   var DATA = /*DATA*/null;
@@ -213,6 +214,15 @@ html, body { margin: 0; height: 100%; background: var(--deep); color: var(--text
   function toast(t) { var el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); setTimeout(function () { el.classList.remove('on'); }, 3200); }
   function buildMoment(i) {
     scrollTo(i, false);
+    // the learner builds it first: the new build is cut into puzzle pieces, then it pops up with sparkles
+    var body0 = document.querySelector('.item[data-i="' + i + '"] .body');
+    if (window.CQPuzzle && body0 && !buildMoment.puzzled) {
+      buildMoment.puzzled = true; body0.style.opacity = '';
+      setTimeout(function () { // look it up again: a resize may have redrawn the street meanwhile
+        var el = document.querySelector('.item[data-i="' + i + '"] .body'); if (el) el.style.opacity = '';
+        CQPuzzle.start({ svg: document.querySelector('#street svg'), parts: [el], title: 'Build the ' + C.items[i].part + '!', onDone: function () { var e2 = document.querySelector('.item[data-i="' + i + '"] .body'); if (e2) e2.style.opacity = 0; buildMoment(i); } }); }, 300);
+      return;
+    }
     setTimeout(function () {
       var el = document.querySelector('.item[data-i="' + i + '"] .body'); if (!el) return;
       el.style.opacity = ''; el.classList.add('pop');
