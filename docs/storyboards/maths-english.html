@@ -112,13 +112,14 @@ td code { color: var(--mint); }
   </header>
 
   <div class="decide">
-    <span class="eyebrow">Five choices to confirm before I write lessons</span>
+    <span class="eyebrow">Six choices to confirm before I write lessons</span>
     <ol>
       <li><b>Our own stories, NCERT's topics (recommended).</b> Each lesson teaches what its NCERT chapter teaches, in the same order, but with our own examples and characters. Copying textbook stories and exercises is not allowed, and our own versions can be tied to the town and library.</li>
       <li><b>A young-learner mode for grades 2 and 3.</b> Nibb reads every question aloud, any word can be tapped to hear it, many answers are pictures, steps are shorter (5 or 6), and buttons are bigger.</li>
       <li><b>One app, three courses.</b> The Learn tab gets a course switch: Python, Maths, English. Each course has its own path, progress, place to build and flashcard deck. Embers, the streak and the prize wheel are shared.</li>
       <li><b>Speaking practice is listen-and-repeat.</b> The app cannot use the microphone, so English speaking steps play a model line, the learner says it aloud, then taps "I said it". Reading and listening are fully checked.</li>
-      <li><b>Build order.</b> First the course switch, then Grade 2 Maths and English together (23 lessons), then grades 3, 4 and 5, publishing after each batch so you can test as it grows. Grades 6 to 10 come after you have tried the primary grades.</li>
+      <li><b>English starts with phonics.</b> Grade 2 English opens with letter sounds, blending, two-letter sounds (sh, ch, th) and long vowels before any grammar. Try the sound board and questions in the phonics sample.</li>
+      <li><b>Build order.</b> First the course switch, then Grade 2 Maths and English together (25 lessons), then grades 3, 4 and 5, publishing after each batch so you can test as it grows. Grades 6 to 10 come after you have tried the primary grades.</li>
     </ol>
   </div>
 
@@ -147,7 +148,7 @@ td code { color: var(--mint); }
   <section class="more">
     <span class="eyebrow">Sizes</span>
     <h2>How big the first build is</h2>
-    <p>Grades 2 to 5: about <b>55 Maths</b> and <b>48 English</b> lessons, so 103 in all, each 5 to 8 steps with two narrator voices, a quiz that changes every time, and 2 to 4 flashcards. That is a little more than twice the whole Python course, so it is built in eight batches of about 13 lessons.</p>
+    <p>Grades 2 to 5: about <b>55 Maths</b> and <b>50 English</b> lessons, so 105 in all, each 5 to 8 steps with two narrator voices, a quiz that changes every time, and 2 to 4 flashcards. That is a little more than twice the whole Python course, so it is built in eight batches of about 13 lessons.</p>
   </section>
 </div>
 
@@ -218,17 +219,19 @@ var M = {
 };
 var E = {
  2: ['Picture-book Corner', [
-  ['Letter sounds and blends', 'sh, ch, th, and blends like bl, st', 'alphabet bunting', 'Ship, chip, thin: hear the two letters make one sound.', 'Which word starts with sh? 🐑 ship / sit'],
-  ['Sight words', 'the, was, said, they, come', 'a word wall', 'Words we read on sight, without sounding out.', 'Tap the word "said".'],
-  ['Naming words', 'nouns: people, places, things, animals', 'the picture-book shelf', 'Mum, park, ball, cat are naming words.', 'Which is a naming word: run / dog / happy?'],
-  ['Doing words', 'verbs: run, jump, eat, read', 'the reading mat', 'What is the dog doing? It is running.', 'Pick the doing word: The bird sings.'],
-  ['Describing words', 'adjectives: big, red, soft, happy', 'cushions in every colour', 'A big, red, soft cushion.', 'Which word describes the ball: The red ball rolls.'],
-  ['a or an', 'a before consonant sounds, an before vowel sounds', 'name labels on the boxes', 'a cat, an apple, an egg, a dog.', '__ umbrella: a or an?'],
+  ['First sounds: s a t p i n', 'phonics: each letter’s sound, not its name', 'alphabet bunting', 'S says sss, like in sun. Tap a letter to hear it.', 'Which picture starts with this sound? (sss)'],
+  ['More sounds: m d g o c k', 'phonics: new sounds, first blending', 'a sound wall', 'M says mmm, like in map; c and k both say kuh.', 'Blend m-a-p. Which word is it?'],
+  ['More sounds: e u r h b f l', 'phonics: the rest of the short sounds', 'letter blocks', 'H says hhh, like in hat; u says uh, like in up.', 'Which sound is missing? h _ t'],
+  ['Blending words', 'reading three-letter words: c-a-t, cat', 'the picture-book shelf', 'Say each sound, then push them together.', 'Blend p-i-g. Pick the picture.'],
+  ['Two letters, one sound', 'digraphs: sh, ch, th, ng', 'the reading mat', 'Ship, chip, thin, ring: two letters, one sound.', 'Which word starts with sh? ship / sit'],
+  ['Long vowel sounds', 'ai, ee, oa and the magic e (cake, bike)', 'a window seat', 'Rain, tree, boat; cap becomes cape with a magic e.', 'Which word has the long a sound: cap / cape?'],
+  ['Tricky words', 'sight words: the, said, was, they, come', 'a word wall', 'Some words do not follow the sounds; we learn them by sight.', 'Tap the word "said".'],
+  ['Naming and doing words', 'nouns and verbs', 'puppet shelves', 'Dog is a naming word; runs is a doing word.', 'Pick the doing word: The bird sings.'],
+  ['Describing words and a / an', 'adjectives; a or an', 'cushions in every colour', 'A big red ball; an apple, a cat.', '__ umbrella: a or an?'],
   ['One and many', 'plurals with -s and -es', 'the toy baskets', 'one cat, two cats; one box, two boxes.', 'One bus, two ___?'],
-  ['Capitals and full stops', 'sentence starts and ends', 'the notice board', 'A sentence starts with a capital and ends with a full stop.', 'Which is written correctly?'],
-  ['Rhymes and a poem', 'rhyming words, reading a short poem aloud', 'the poem cushion', 'Cat, hat, mat all rhyme.', 'Which word rhymes with "sun"?'],
+  ['Capitals, full stops and a poem', 'sentences; rhyming words', 'the poem cushion', 'A sentence starts with a capital letter. Cat, hat and mat rhyme.', 'Which word rhymes with "sun"?'],
   ['Picture talk and a story', 'talk about a picture; read a short story', 'the storytelling chair', 'Who is in the picture? What happens next?', 'Who found the lost kitten?'],
-  ['Challenge: Story Time', 'all of Grade 2', 'a puppet theatre', 'Read a short story with Nibb and answer questions about it.', '', true]]],
+  ['Challenge: Story Time', 'all of Grade 2', 'a puppet theatre', 'Read a short story with Nibb, sounding out new words, and answer questions.', '', true]]],
  3: ['Poem Garden', [
   ['Vowels and consonants', 'a, e, i, o, u and the rest', 'garden path stones', 'Every word needs a vowel.', 'Which letter is a vowel: b / o / t?'],
   ['Common and proper nouns', 'city / Delhi, girl / Meera', 'name plates on the flower beds', 'Proper nouns get a capital letter.', 'Which is a proper noun?'],

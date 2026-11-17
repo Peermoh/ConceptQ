@@ -1,0 +1,226 @@
+<meta charset="utf-8">
+<title>Phonics Sample</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=Andika:wght@400;700&display=swap">
+<style>
+/* Layout: one column; a sound board, then a question card that changes every time, then how the rest of English stays fresh. Dark, like the app. */
+:root {
+  --deep: #1A0B1F; --night: #2A1330; --sheet: #33193A; --line: rgba(255, 236, 214, 0.14);
+  --cream: #FFF1E2; --muted: #D9BFD2; --amber: #FFB547; --amber-soft: rgba(255, 181, 71, 0.16);
+  --mint: #6EE7B7; --coral: #FF7A6B; --chalk: #2E4A3C;
+  --font-display: 'Paytone One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-read: 'Andika', 'Nunito', system-ui, sans-serif; /* a font made for early readers: a and g as children write them */
+  color-scheme: dark;
+}
+html { background: var(--deep); }
+body { background: var(--deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; }
+h2 { font-size: 24px; }
+p { margin: 0; max-width: 66ch; }
+.eyebrow { font-weight: 900; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.voice { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pill { font: inherit; font-weight: 900; font-size: 14px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; min-height: 40px; }
+.pill[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); color: #2A1A05; }
+button:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
+.board { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 10px; }
+.tile { font: inherit; background: var(--chalk); color: #F4F7EE; border: 0; border-radius: 16px; padding: 12px 6px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 92px; }
+.tile b { font-family: var(--font-read); font-size: 38px; line-height: 1; }
+.tile span { font-size: 12px; font-weight: 800; color: #CFE3C8; }
+.tile.on { outline: 3px solid var(--amber); }
+.game { background: var(--night); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.ghead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.qtag { font-size: 13px; font-weight: 900; color: var(--muted); }
+.prompt { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.big { font: inherit; font-weight: 900; background: var(--amber); color: #2A1A05; border: 0; border-radius: 999px; padding: 12px 20px; min-height: 52px; cursor: pointer; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.18); }
+.ask { font-size: 20px; font-weight: 800; }
+.shown { font-family: var(--font-read); font-size: 44px; letter-spacing: 0.12em; display: flex; align-items: center; gap: 12px; }
+.shown .pic { font-size: 54px; letter-spacing: 0; }
+.opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.opt { font: inherit; background: var(--sheet); color: var(--cream); border: 2px solid var(--line); border-radius: 18px; padding: 14px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 110px; justify-content: center; }
+.opt .pic { font-size: 50px; line-height: 1.1; }
+.opt .lt { font-family: var(--font-read); font-size: 46px; line-height: 1; }
+.opt small { font-family: var(--font-read); font-size: 18px; color: var(--muted); }
+.opt.right { border-color: var(--mint); background: rgba(110,231,183,0.16); }
+.opt.wrong { border-color: var(--coral); opacity: 0.7; }
+.say { min-height: 26px; font-weight: 800; }
+.say.yes { color: var(--mint); } .say.no { color: var(--coral); }
+.count { background: var(--amber-soft); border-radius: 14px; padding: 12px 14px; }
+.count b { color: var(--amber); }
+.gram { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.gcard { background: var(--sheet); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.gcard .k { font-size: 12px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+.gcard .gq { font-family: var(--font-read); font-size: 22px; }
+.gcard .go { display: flex; gap: 8px; flex-wrap: wrap; }
+.gcard .go button { font: inherit; font-family: var(--font-read); font-size: 18px; background: var(--night); color: var(--cream); border: 2px solid var(--line); border-radius: 12px; padding: 6px 12px; cursor: pointer; min-height: 44px; }
+.gcard .go button.right { border-color: var(--mint); } .gcard .go button.wrong { border-color: var(--coral); opacity: 0.7; }
+.gcard .another { align-self: flex-start; font: inherit; font-weight: 900; font-size: 13px; color: var(--amber); background: none; border: 0; padding: 4px 0; cursor: pointer; }
+ul.banks { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+@media (max-width: 480px) { .opts { gap: 8px; } .opt { min-height: 96px; } .opt .pic { font-size: 42px; } .shown { font-size: 36px; } }
+@media (prefers-reduced-motion: no-preference) { .opt, .tile { transition: transform .12s ease; } .opt:active, .tile:active { transform: scale(0.96); } }
+</style>
+
+<div class="wrap">
+  <header style="display:flex; flex-direction:column; gap:10px">
+    <span class="eyebrow">ConceptQ English · Grade 2 starts here · sample</span>
+    <h1>Phonics sample</h1>
+    <p class="muted">English begins with sounds, before any grammar. Tap a letter to hear Nibb say it, then try the questions below: every press of "New question" makes a different one. This is a sample to check the sounds and the idea; the full lessons will look like the Python ones.</p>
+    <div class="voice" role="group" aria-label="Voice"><span class="muted" style="font-weight:800">Voice:</span><button class="pill" id="vP" aria-pressed="true">Prabhat (Indian English)</button><button class="pill" id="vR" aria-pressed="false">Ryan (British English)</button></div>
+  </header>
+
+  <section>
+    <span class="eyebrow">1 · The sound board</span>
+    <h2>Tap a letter to hear its sound</h2>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section>
+    <span class="eyebrow">2 · Questions that change every time</span>
+    <h2>Try it</h2>
+    <div class="game">
+      <div class="ghead"><span class="qtag" id="qtag">Question 1</span><button class="pill" id="next">New question</button></div>
+      <div class="prompt"><button class="big" id="hear">▶ Hear it again</button><span class="ask" id="ask"></span></div>
+      <div class="shown" id="shown" hidden></div>
+      <div class="opts" id="opts"></div>
+      <div class="say" id="say" aria-live="polite"></div>
+    </div>
+    <div class="count" id="count"></div>
+  </section>
+
+  <section>
+    <span class="eyebrow">3 · Later in English, the same idea</span>
+    <h2>Grammar questions are made fresh too</h2>
+    <p class="muted">Each question type draws from a bank of words, names and places, so the same lesson gives a different quiz every time. A few live examples (in the real lessons Nibb reads them aloud):</p>
+    <div class="gram" id="gram"></div>
+    <ul class="banks">
+      <li><b>Phonics:</b> a bank of about 300 picture words, grouped by the sounds they use, so a question only uses sounds the child has met.</li>
+      <li><b>Grammar:</b> word banks for each rule (nouns with a/an, plurals, past tenses, adjectives, pronouns) and sentence frames with changing names, places and things.</li>
+      <li><b>Reading:</b> several short stories per lesson; each quiz picks one and asks who, where and why about it.</li>
+      <li><b>Checked:</b> like the Python quizzes, every generator is tested thousands of times by a script so no question has two right answers.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+var SOUNDS = {"s": ["sss", "sun"], "a": ["ah", "ant"], "t": ["tuh", "tap"], "p": ["puh", "pen"], "i": ["ih", "ink"], "n": ["nnn", "net"], "m": ["mmm", "map"], "d": ["duh", "dog"], "g": ["guh", "gate"], "o": ["aw", "on"], "c": ["kuh", "cat"], "e": ["eh", "egg"], "h": ["hhh", "hat"], "b": ["buh", "bat"], "u": ["uh", "up"]};
+var PIC = {cat: '🐱', hat: '🎩', bat: '🦇', map: '🗺️', pan: '🍳', pin: '📌', pig: '🐷', dog: '🐶', sun: '☀️', bus: '🚌', cup: '☕', net: '🥅', hen: '🐔', pen: '🖊️', bed: '🛏️', pot: '🍲', tap: '🚰', hut: '🛖', bag: '👜', bun: '🍞'};
+var WORDS = Object.keys(PIC), VOW = ['a', 'e', 'i', 'o', 'u'];
+// real three-letter words: a wrong answer must never spell one of these, so each question has exactly one right answer
+var REAL = {}; ('bat cat hat mat rat sat pat fat vat bed red fed led wed big dig pig wig fig jig dog log hog fog jog cog bog bun fun run sun gun nun pun cap map tap nap lap gap sap hen pen ten den men pin bin tin win fin sin din pot hot dot not got cot lot rot bus cup pup hut nut cut but gut rut bag rag tag wag sag nag net wet set get let pet met jet bet pan can man fan ran tan van ban mad sad dad bad had pad lad mud bud hop mop top pop cop sip tip hip dip lip rip sit bit hit pit kit fit bib cab dab jab nab tab cub hub rub sub tub web gum hum mum sum bug hug jug mug rug dug pug tug ham jam ram yam dam hum him dim rim pen hem gem peg leg beg keg mob cob job rob sob nod pod rod cod god hid lid kid bid did rid mid tan pun sun gap tip den hen pet pit pat pot put').split(' ').forEach(function (w) { REAL[w] = 1; });
+var voice = 'prabhat';
+try { var sv = localStorage.getItem('phon-voice'); if (sv === 'ryan' || sv === 'prabhat') voice = sv; } catch (e) {}
+var player = new Audio(), playTok = 0;
+function src(name) { return 'audio/' + voice + '/' + name + '.mp3'; }
+// play clips one after another; a new call cancels the old sequence
+function play(names, gap) {
+  var tok = ++playTok, i = 0; gap = gap || 160;
+  (function next() {
+    if (tok !== playTok || i >= names.length) return;
+    player.src = src(names[i++]); player.onended = function () { setTimeout(next, gap); };
+    var pr = player.play(); if (pr && pr.catch) pr.catch(function () {});
+  })();
+}
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
+
+// 1 · sound board
+var board = document.getElementById('board');
+Object.keys(SOUNDS).forEach(function (L) {
+  var b = el('button', 'tile', '<b>' + L + '</b><span>' + SOUNDS[L][1] + '</span>'); b.type = 'button'; b.setAttribute('aria-label', L + ', as in ' + SOUNDS[L][1]);
+  b.addEventListener('click', function () { document.querySelectorAll('.tile.on').forEach(function (t) { t.classList.remove('on'); }); b.classList.add('on'); play(['say_' + L]); });
+  board.appendChild(b);
+});
+
+// 2 · questions: three kinds, each built at random from the word bank
+var qn = 0, cur = null, done = false;
+function makeStart() {
+  var w = pick(WORDS), L = w[0], others = shuffle(WORDS.filter(function (x) { return x[0] !== L; })).slice(0, 2);
+  return { kind: 'start', ask: 'Which picture starts with this sound?', audio: ['q_start', 'snd_' + L], opts: shuffle([w].concat(others)).map(function (x) { return { pic: PIC[x], label: x, right: x === w }; }), word: w };
+}
+function makeBlend() {
+  var w = pick(WORDS), others = shuffle(WORDS.filter(function (x) { return x !== w && (x[0] === w[0] || x[2] === w[2] || x[1] === w[1]); }));
+  if (others.length < 2) others = others.concat(shuffle(WORDS.filter(function (x) { return x !== w && others.indexOf(x) < 0; })));
+  return { kind: 'blend', ask: 'Blend the sounds. Which word is it?', audio: ['q_blend'].concat(w.split('').map(function (c) { return 'snd_' + c; })), gap: 380, opts: shuffle([w].concat(others.slice(0, 2))).map(function (x) { return { pic: PIC[x], label: x, right: x === w }; }), word: w };
+}
+function makeMissing() {
+  var w = pick(WORDS), pos = pick([0, 1, 2]), L = w[pos];
+  var pool = pos === 1 ? VOW : Object.keys(SOUNDS).filter(function (c) { return VOW.indexOf(c) < 0; });
+  var wrong = shuffle(pool.filter(function (c) { var t = w.slice(0, pos) + c + w.slice(pos + 1); return c !== L && !REAL[t]; })).slice(0, 2);
+  if (wrong.length < 2) return makeMissing(); // not enough safe wrong answers here: pick another word or position
+  return { kind: 'missing', ask: 'Which sound is missing?', audio: ['q_miss', 'w_' + w], shown: w.split('').map(function (c, i) { return i === pos ? '_' : c; }).join(''), pic: PIC[w], opts: shuffle([L].concat(wrong)).map(function (c) { return { letter: c, right: c === L }; }), word: w };
+}
+function newQ() {
+  qn++; done = false; cur = pick([makeStart, makeBlend, makeMissing])();
+  document.getElementById('qtag').textContent = 'Question ' + qn;
+  document.getElementById('ask').textContent = cur.ask;
+  var sh = document.getElementById('shown'); sh.hidden = cur.kind !== 'missing';
+  if (cur.kind === 'missing') sh.innerHTML = '<span class="pic" aria-hidden="true">' + cur.pic + '</span><span>' + cur.shown + '</span>';
+  var o = document.getElementById('opts'); o.innerHTML = '';
+  cur.opts.forEach(function (op) {
+    var b = el('button', 'opt', op.letter ? '<span class="lt">' + op.letter + '</span>' : '<span class="pic" aria-hidden="true">' + op.pic + '</span><small>' + op.label + '</small>'); b.type = 'button';
+    b.setAttribute('aria-label', op.letter ? 'the sound ' + op.letter : op.label);
+    b.addEventListener('click', function () {
+      if (done) return;
+      if (op.letter) play(['snd_' + op.letter]);
+      setTimeout(function () {
+        var s = document.getElementById('say');
+        if (op.right) { done = true; b.classList.add('right'); s.className = 'say yes'; s.textContent = 'Yes! ' + (cur.word ? cur.word.split('').join(' · ') + ' makes "' + cur.word + '".' : ''); play(['yes', 'w_' + cur.word]); }
+        else { b.classList.add('wrong'); s.className = 'say no'; s.textContent = 'Not quite. Listen again.'; play(['no'].concat(cur.audio.slice(1)), cur.gap); }
+      }, op.letter ? 600 : 0);
+    });
+    o.appendChild(b);
+  });
+  document.getElementById('say').textContent = ''; document.getElementById('say').className = 'say';
+  play(cur.audio, cur.gap);
+}
+document.getElementById('next').addEventListener('click', newQ);
+document.getElementById('hear').addEventListener('click', function () { if (cur) play(cur.audio, cur.gap); });
+
+// how many different questions this tiny sample can make
+(function () {
+  function c2(n) { return n * (n - 1) / 2; }
+  var start = 0, blend = 0, miss = 0;
+  WORDS.forEach(function (w) { start += c2(WORDS.filter(function (x) { return x[0] !== w[0]; }).length) * 6; blend += c2(WORDS.length - 1) * 6; });
+  WORDS.forEach(function (w) { [0, 1, 2].forEach(function (p) { var pool = p === 1 ? 4 : Object.keys(SOUNDS).length - 6; miss += c2(pool) * 6; }); });
+  var total = start + blend + miss;
+  document.getElementById('count').innerHTML = 'With just <b>15 sounds</b> and <b>20 picture words</b>, these three kinds of question can be put together in about <b>' + total.toLocaleString('en-IN') + '</b> different ways (counting the order of the answers). The full course has many more sounds and words.';
+})();
+
+// 3 · grammar examples
+var NAMES = ['Meera', 'Ravi', 'Anu', 'Arjun', 'Sara', 'Kabir', 'Isha', 'Dev'], PLACES = ['the park', 'school', 'the market', 'the zoo', 'Nani’s house', 'the beach'];
+var AN = [['apple', '🍎', 'an'], ['egg', '🥚', 'an'], ['umbrella', '☂️', 'an'], ['owl', '🦉', 'an'], ['ant', '🐜', 'an'], ['orange', '🍊', 'an'], ['elephant', '🐘', 'an'], ['ice cream', '🍦', 'an'], ['ball', '⚽', 'a'], ['kite', '🪁', 'a'], ['book', '📖', 'a'], ['cake', '🎂', 'a'], ['bus', '🚌', 'a'], ['house', '🏠', 'a'], ['dog', '🐶', 'a'], ['mango', '🥭', 'a']];
+var PL = [['box', 'boxes', 'boxs'], ['bus', 'buses', 'buss'], ['child', 'children', 'childs'], ['mouse', 'mice', 'mouses'], ['baby', 'babies', 'babys'], ['leaf', 'leaves', 'leafs'], ['dish', 'dishes', 'dishs'], ['tooth', 'teeth', 'tooths'], ['cat', 'cats', 'cates'], ['foot', 'feet', 'foots'], ['fox', 'foxes', 'foxs'], ['story', 'stories', 'storys']];
+var PT = [['go', 'went', 'goed'], ['eat', 'ate', 'eated'], ['see', 'saw', 'seed'], ['run', 'ran', 'runned'], ['play', 'played', 'plaied'], ['swim', 'swam', 'swimmed'], ['walk', 'walked', 'walkt'], ['write', 'wrote', 'writed'], ['jump', 'jumped', 'jumpt'], ['sing', 'sang', 'singed']];
+var GEN = [
+  ['a or an?', function () { var x = pick(AN); return { q: x[1] + ' ___ ' + x[0], opts: ['a', 'an'], right: x[2], why: x[2] === 'an' ? '"' + x[0] + '" starts with a vowel sound, so we say an.' : '"' + x[0] + '" starts with a consonant sound, so we say a.' }; }],
+  ['One and many', function () { var x = pick(PL); return { q: 'One ' + x[0] + ', two ___', opts: shuffle([x[1], x[2], x[0]]), right: x[1], why: 'The plural of ' + x[0] + ' is ' + x[1] + '.' }; }],
+  ['Yesterday', function () { var x = pick(PT), n = pick(NAMES), p = pick(PLACES); var verb = x[0], s = ['go', 'run', 'walk', 'swim', 'play'].indexOf(verb) >= 0 ? 'Yesterday ' + n + ' ___ (' + verb + ') ' + (verb === 'go' || verb === 'run' || verb === 'walk' ? 'to ' : 'at ') + p + '.' : 'Yesterday ' + n + ' ___ (' + verb + ') at ' + p + '.'; return { q: s, opts: shuffle([x[1], x[2], x[0]]), right: x[1], why: 'The past of ' + verb + ' is ' + x[1] + '.' }; }]
+];
+var gram = document.getElementById('gram');
+GEN.forEach(function (g) {
+  var card = el('div', 'gcard'); gram.appendChild(card);
+  function fill() {
+    var q = g[1](); card.innerHTML = '';
+    card.appendChild(el('span', 'k', g[0])); card.appendChild(el('div', 'gq', q.q));
+    var row = el('div', 'go'), msg = el('div', 'muted'); msg.style.fontSize = '14px';
+    q.opts.forEach(function (o) { var b = el('button', null, o); b.type = 'button'; b.addEventListener('click', function () { b.classList.add(o === q.right ? 'right' : 'wrong'); msg.textContent = o === q.right ? 'Yes! ' + q.why : 'Not quite. Try another one.'; }); row.appendChild(b); });
+    card.appendChild(row); card.appendChild(msg);
+    var a = el('button', 'another', 'Another one →'); a.type = 'button'; a.addEventListener('click', fill); card.appendChild(a);
+  }
+  fill();
+});
+
+function setVoice(v) { voice = v; try { localStorage.setItem('phon-voice', v); } catch (e) {} document.getElementById('vP').setAttribute('aria-pressed', v === 'prabhat'); document.getElementById('vR').setAttribute('aria-pressed', v === 'ryan'); }
+document.getElementById('vP').addEventListener('click', function () { setVoice('prabhat'); });
+document.getElementById('vR').addEventListener('click', function () { setVoice('ryan'); });
+setVoice(voice);
+// the first question is ready on the page; its audio plays when the learner taps (browsers only allow sound after a tap)
+(function () { var autoplay = play; play = function () {}; newQ(); play = autoplay; })();
+</script>
