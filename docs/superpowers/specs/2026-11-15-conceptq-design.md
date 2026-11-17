@@ -278,7 +278,7 @@ quiz built fresh every time (hand-written questions + generators checked against
   managers, one cook making breakfast for async. Nibb says it first while the step title goes up; "Read it" shows it
   as an "In real life" note above the explanation (2026-11-17).
 - Phones (portrait, and landscape when the screen is short): the caption sits at the top of the board as a two-line
-  subtitle bar that scrolls with the word being said; the chalk lines start below it. Desktop keeps it under the
+  subtitle bar that scrolls with the word being said; the chalk lines start below it. On every screen it now sits on the board (2026-11-17); earlier the desktop kept it under the
   controls (2026-11-17).
 - The finished-topic screen has a "You earned" panel: the lesson's house item(s) with an icon, and the part of the
   house it built ("You built" for lessons with no item, like the stairs) (2026-11-17).
