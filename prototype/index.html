@@ -1018,9 +1018,10 @@ button.deck.locked { cursor: default; }
       <div class="wl-step" id="wlTeach" hidden>
         <h1 id="wlTeachH">Nice to meet you!</h1>
         <p>What would you like to call me? Pick one or make up your own.</p>
-        <input id="wlTeachIn" maxlength="14" autocomplete="off" aria-label="Your teacher's name">
+        <input id="wlTeachIn" maxlength="14" autocomplete="off" aria-label="Your teacher's name" placeholder="Type a name">
         <div class="wl-names" id="wlNames"></div>
-        <button class="cta" id="wlTeachGo" type="button">Next</button>
+        <button class="chip-btn ghost" id="wlRoll" type="button">🎲 Surprise me</button>
+        <button class="cta" id="wlTeachGo" type="button" disabled>Next</button>
         <button class="wl-back" type="button" data-wl="wlName">Back</button>
       </div>
       <div class="wl-step" id="wlAge" hidden>
@@ -2293,25 +2294,44 @@ button.deck.locked { cursor: default; }
   function scheduleIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(doIdle, 4000 + Math.random() * 6000); }
   // ---- the shows: a copy of Nibb acts them out on a layer over the page, then the real Nibb comes back ----
   function busyScreen() { return document.querySelector('.tour, .wheel-dlg:not([hidden]), .pz') || !document.getElementById('wheelDlg').hidden; }
+  function freeBox() {
+    var hero = document.getElementById('homeHero').getBoundingClientRect(), top = document.querySelector('#home .topbar').getBoundingClientRect().bottom + 6;
+    var ct = document.getElementById('courseTabs').getBoundingClientRect(), bottom = (ct.height ? ct.top : hero.bottom) - 6;
+    return { left: Math.max(8, hero.left), right: Math.min(window.innerWidth - 8, hero.right), top: Math.max(8, top), bottom: Math.min(window.innerHeight - 8, bottom) };
+  }
   function stageShow(run) {
-    var lumi = document.getElementById('homeLumi'), r = lumi.getBoundingClientRect();
-    if (!r.width || r.bottom < 0 || r.top > window.innerHeight) return false; // only when Nibb is on screen
+    var lumi = document.getElementById('homeLumi'), lr = lumi.getBoundingClientRect(), box = freeBox();
+    // shows happen in the empty sky at the top of Home (never over cards or text), so that space must be on screen
+    var w = lr.width || 70, h = lr.height || 64;
+    if (box.bottom - box.top < h + 40 || box.right - box.left < w * 2.6) return false;
+    // if Nibb is somewhere else (on the perch above the lessons), it pops up into the sky for the show
+    var inside = lr.width && lr.top >= box.top - 4 && lr.bottom <= box.bottom + 4 && lr.left >= box.left - 4 && lr.right <= box.right + 4;
+    var r = inside ? lr : (function () { var x = box.left + (Math.random() < 0.5 ? 0.18 : 0.62) * (box.right - box.left - w), y = box.top + (box.bottom - box.top - h) * 0.55; return { left: x, top: y, right: x + w, bottom: y + h, width: w, height: h }; })();
     showing = true;
     var st = document.createElement('div'); st.className = 'antics'; st.setAttribute('aria-hidden', 'true'); document.body.appendChild(st);
     var actor = document.createElement('div'); actor.className = 'actor'; actor.innerHTML = '<svg viewBox="0 0 120 110">' + lumiSVG('happy') + '</svg>';
     actor.style.width = r.width + 'px'; actor.style.height = r.height + 'px'; actor.style.left = r.left + 'px'; actor.style.top = r.top + 'px';
     st.appendChild(actor); buddy.style.visibility = 'hidden';
+    if (!inside) actor.animate([{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(.3,1.4,.5,1)' });
     function prop(txt, x, y, cls) { var p = document.createElement('div'); p.className = 'prop' + (cls ? ' ' + cls : ''); p.textContent = txt; p.style.left = x + 'px'; p.style.top = y + 'px'; st.appendChild(p); return p; }
-    function done() { st.remove(); buddy.style.visibility = ''; showing = false; }
+    var hb = document.getElementById('homeBubble'); hb.style.visibility = 'hidden';
+    function done() {
+      function end() { st.remove(); buddy.style.visibility = ''; hb.style.visibility = ''; showing = false; }
+      if (inside) end(); else { var f = st.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }); f.onfinish = end; }
+    }
     var bubble = null;
     function say(t) { // a speech bubble beside where Nibb stands; the text uses the chosen name (the page swaps Nibb for it)
       if (!bubble) { bubble = document.createElement('div'); bubble.className = 'say'; st.appendChild(bubble); }
       bubble.textContent = t;
-      var x = r.left + r.width + 8, w = Math.min(220, window.innerWidth - 24); if (x + w > window.innerWidth - 12) x = Math.max(12, r.left - w - 8);
-      bubble.style.left = x + 'px'; bubble.style.top = Math.max(12, r.top - 10) + 'px';
+      var w = Math.min(200, box.right - box.left - 16); bubble.style.maxWidth = w + 'px';
+      var x = r.left + r.width + 8; if (x + w > box.right) x = Math.max(box.left, r.left - w - 8);
+      if (x + w > box.right && x <= box.left) x = box.left; // narrow: above Nibb instead
+      bubble.style.left = x + 'px'; bubble.style.top = Math.max(box.top, r.top - 6) + 'px';
       bubble.animate([{ opacity: 0, transform: 'scale(.8)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 200, fill: 'forwards' });
     }
-    try { run({ st: st, actor: actor, r: r, prop: prop, done: done, say: say, W: window.innerWidth, H: window.innerHeight }); } catch (e) { done(); }
+    // keep everything in the free box: nothing crosses the cards or text below
+    st.style.clipPath = 'inset(' + box.top + 'px ' + (window.innerWidth - box.right) + 'px ' + (window.innerHeight - box.bottom) + 'px ' + box.left + 'px round 18px)';
+    try { run({ st: st, actor: actor, r: r, prop: prop, done: done, say: say, box: box, W: window.innerWidth, H: window.innerHeight }); } catch (e) { done(); }
     return true;
   }
   function anim(el, frames, ms, ease) { return el.animate(frames, { duration: ms, easing: ease || 'ease-in-out', fill: 'forwards' }); }
@@ -2337,7 +2357,7 @@ button.deck.locked { cursor: default; }
     roam: function (k) {
       k.say(['Just stretching my wings!', 'Wheee!', 'Exploring!'][Math.floor(Math.random() * 3)]);
       var pts = [[0, 0]], x0 = k.r.left, y0 = k.r.top;
-      for (var i = 0; i < 4; i++) pts.push([Math.random() * (k.W - k.r.width) - x0, Math.max(60, Math.random() * (k.H * 0.6)) - y0]);
+      for (var i = 0; i < 4; i++) pts.push([k.box.left + Math.random() * Math.max(0, k.box.right - k.box.left - k.r.width) - x0, k.box.top + Math.random() * Math.max(0, k.box.bottom - k.box.top - k.r.height) - y0]);
       pts.push([0, 0]);
       anim(k.actor, pts.map(function (p, i) { return { transform: 'translate(' + p[0] + 'px,' + p[1] + 'px) rotate(' + (i % 2 ? 12 : -12) + 'deg)' }; }), 4200);
       SFX.play('whoosh'); setTimeout(function () { SFX.play('whoosh'); }, 2000);
@@ -2345,8 +2365,9 @@ button.deck.locked { cursor: default; }
     },
     doors: function (k) {
       k.say(['Knock knock! Who\'s there? Me!', 'I know a shortcut...', 'Be right back!'][Math.floor(Math.random() * 3)]);
-      var left = k.r.left > k.W / 2, d1x = left ? Math.max(8, k.r.left - 90) : Math.min(k.W - 70, k.r.right + 30), d1y = k.r.top + 10;
-      var d2x = left ? Math.min(k.W - 74, k.W * 0.82) : Math.max(8, k.W * 0.08), d2y = Math.max(70, Math.min(k.H - 220, k.r.top + (Math.random() < 0.5 ? -140 : 160)));
+      var B = k.box, mid = (B.left + B.right) / 2, left = k.r.left + k.r.width / 2 > mid;
+      var d1x = left ? Math.max(B.left + 4, k.r.left - 80) : Math.min(B.right - 64, k.r.right + 16), d1y = Math.min(B.bottom - 80, k.r.top + 6);
+      var d2x = left ? B.left + 6 : B.right - 66, d2y = B.top + Math.random() * Math.max(0, B.bottom - B.top - 80);
       var d1 = k.prop('🚪', d1x, d1y), d2 = k.prop('🚪', d2x, d2y); [d1, d2].forEach(function (d) { d.style.fontSize = '70px'; d.style.opacity = 0; });
       anim(d1, [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 300);
       var dx1 = d1x - k.r.left, dy1 = d1y - k.r.top, dx2 = d2x - k.r.left, dy2 = d2y - k.r.top;
@@ -2358,26 +2379,47 @@ button.deck.locked { cursor: default; }
       setTimeout(k.done, 4300);
     },
     rocket: function (k) {
-      var cx = k.r.left + k.r.width / 2, cy = k.r.top + k.r.height / 2, fromLeft = cx > k.W / 2, sx = fromLeft ? -80 : k.W + 20, sy = Math.max(20, cy - 220);
-      var rk = k.prop('🚀', sx, sy); rk.style.fontSize = '58px';
-      var ang = Math.atan2(cy - sy, (cx - 29) - sx) * 180 / Math.PI + 45; // the emoji points up and to the right
+      var B = k.box, cx = k.r.left + k.r.width / 2, cy = k.r.top + k.r.height / 2, fromLeft = cx > (B.left + B.right) / 2, sx = fromLeft ? B.left - 60 : B.right, sy = B.top + 4;
+      var rk = k.prop('🚀', sx, sy); rk.style.fontSize = '50px';
+      var ang = Math.atan2(cy - sy, (cx - 25) - sx) * 180 / Math.PI + 45; // the emoji points up and to the right
       k.say('Uh oh... is that a rocket?!');
-      anim(rk, [{ transform: 'translate(0,0) rotate(' + ang + 'deg)' }, { transform: 'translate(' + (cx - 29 - sx) + 'px,' + (cy - 29 - sy) + 'px) rotate(' + ang + 'deg)' }], 1300, 'ease-in');
-      SFX.play('whoosh'); setTimeout(function () { SFX.play('whoosh'); }, 600);
+      anim(rk, [{ transform: 'translate(0,0) rotate(' + ang + 'deg)' }, { transform: 'translate(' + (cx - 25 - sx) + 'px,' + (cy - 25 - sy) + 'px) rotate(' + ang + 'deg)' }], 1300, 'ease-in');
+      SFX.play('whoosh');
       setTimeout(function () {
         rk.remove();
-        var b = k.prop('💥', cx - 60, cy - 70, 'boom'); anim(b, [{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1.3)', opacity: 1, offset: 0.4 }, { transform: 'scale(1.6)', opacity: 0 }], 900, 'ease-out');
-        for (var i = 0; i < 6; i++) { var sm = k.prop(['💨', '⭐', '✨'][i % 3], cx - 12, cy - 12, 'small'), a = i / 6 * 6.28; anim(sm, [{ transform: 'translate(0,0)', opacity: 1 }, { transform: 'translate(' + Math.cos(a) * 90 + 'px,' + Math.sin(a) * 90 + 'px)', opacity: 0 }], 900, 'ease-out'); }
-        boom(); k.actor.style.filter = 'brightness(.35) saturate(.4)';
-        anim(k.actor, [{ transform: 'translate(0,0)' }, { transform: 'translate(-6px,2px) rotate(-8deg)' }, { transform: 'translate(6px,-2px) rotate(8deg)' }, { transform: 'translate(-4px,0) rotate(-4deg)' }, { transform: 'translate(0,0)' }], 700);
-        k.say(['BOOM! ...I\'m okay!', 'Ka-BOOM! Who ordered that?', 'Cough cough... that was NOT in the lesson plan.'][Math.floor(Math.random() * 3)]);
-        setTimeout(function () { k.actor.style.transition = 'filter .8s'; k.actor.style.filter = ''; anim(k.actor, [{ transform: 'scale(1)' }, { transform: 'scale(1.15) rotate(10deg)' }, { transform: 'scale(1)' }], 600); }, 1400);
-        setTimeout(k.done, 2400);
+        // a big soft cloud of smoke, not an explosion
+        for (var i = 0; i < 9; i++) { var c = k.prop(i % 3 ? '☁️' : '💨', cx - 22 + (Math.random() - 0.5) * 30, cy - 26 + (Math.random() - 0.5) * 24), a2 = Math.random() * 6.28, d = 25 + Math.random() * 45;
+          c.style.fontSize = (34 + Math.random() * 22) + 'px'; c.style.filter = 'grayscale(1) brightness(.85)';
+          anim(c, [{ transform: 'translate(0,0) scale(.3)', opacity: .95 }, { transform: 'translate(' + Math.cos(a2) * d + 'px,' + (Math.sin(a2) * d - 30) + 'px) scale(1.4)', opacity: .9, offset: 0.4 }, { transform: 'translate(' + Math.cos(a2) * d * 1.4 + 'px,' + (Math.sin(a2) * d - 70) + 'px) scale(1.8)', opacity: 0 }], 2200, 'ease-out'); }
+        SFX.play('whoosh'); k.actor.style.filter = 'brightness(.45) saturate(.3)';
+        anim(k.actor, [{ transform: 'translate(0,0)' }, { transform: 'translate(-5px,1px) rotate(-6deg)' }, { transform: 'translate(5px,-1px) rotate(6deg)' }, { transform: 'translate(-3px,0) rotate(-3deg)' }, { transform: 'translate(0,0)' }], 700);
+        k.say(['Cough cough! Who ordered the smoke?', 'Puff! ...I\'m okay! Just a bit sooty.', 'Cough... that was NOT in the lesson plan.'][Math.floor(Math.random() * 3)]);
+        setTimeout(function () { k.actor.style.transition = 'filter .9s'; k.actor.style.filter = ''; anim(k.actor, [{ transform: 'scale(1)' }, { transform: 'scale(1.12) rotate(10deg)' }, { transform: 'scale(1)' }], 600); }, 1500);
+        setTimeout(k.done, 2500);
       }, 1300);
+    },
+    dig: function (k) {
+      var cx = k.r.left + k.r.width / 2, gy = Math.min(k.box.bottom - 34, k.r.bottom - 6);
+      k.say(['Dig, dig, dig! I think there\'s treasure here!', 'X marks the spot!', 'Digging for buried treasure!'][Math.floor(Math.random() * 3)]);
+      var hole = k.prop('🕳️', cx - 26, gy - 14); hole.style.fontSize = '52px'; anim(hole, [{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }], 500);
+      var sh = k.prop('⛏️', cx + 14, k.r.top + 10, 'small'); sh.style.fontSize = '34px';
+      anim(sh, [0, 1, 2, 3, 4, 5, 6, 7].map(function (i) { return { transform: 'rotate(' + (i % 2 ? 40 : -20) + 'deg) translateY(' + (i % 2 ? 14 : 0) + 'px)' }; }), 2400);
+      anim(k.actor, [0, 1, 2, 3, 4, 5, 6, 7].map(function (i) { return { transform: 'translateY(' + (i % 2 ? 8 : 0) + 'px) rotate(' + (i % 2 ? 6 : 0) + 'deg)' }; }), 2400);
+      for (var i = 0; i < 10; i++) (function (i) { var d = k.prop(['🟫', '🪨', '🟤'][i % 3], cx - 8, gy - 6, 'small'); d.style.fontSize = '14px'; d.style.opacity = 0;
+        var dx = (i % 2 ? 1 : -1) * (20 + Math.random() * 40); anim(d, [{ opacity: 1, transform: 'translate(0,0)' }, { opacity: 1, transform: 'translate(' + dx / 2 + 'px,-40px)', offset: 0.5 }, { opacity: 0, transform: 'translate(' + dx + 'px,0)' }], 700).startTime = document.timeline.currentTime + i * 220; })(i);
+      for (var j = 0; j < 5; j++) setTimeout(function () { SFX.play('tick'); }, j * 480);
+      setTimeout(function () {
+        var found = ['💎', '🦴', '🪙', '🗝️', '🧸'][Math.floor(Math.random() * 5)], t = k.prop(found, cx - 22, gy - 20); t.style.fontSize = '44px';
+        anim(t, [{ transform: 'translateY(0) scale(.4)', opacity: 0 }, { transform: 'translateY(-60px) scale(1.2)', opacity: 1, offset: 0.5 }, { transform: 'translateY(-50px) scale(1)', opacity: 1 }], 800, 'cubic-bezier(.3,1.5,.5,1)');
+        SFX.play('right'); sh.remove();
+        k.say({ '💎': 'A diamond! Shiny!', '🦴': 'A bone?! Who buried this?', '🪙': 'A gold coin! I\'m rich!', '🗝️': 'A key! I wonder what it opens...', '🧸': 'My old teddy! I missed you!' }[found]);
+        anim(k.actor, [{ transform: 'translateY(0)' }, { transform: 'translateY(-16px)' }, { transform: 'translateY(0)' }], 500);
+      }, 2500);
+      setTimeout(k.done, 4300);
     }
   };
   // the BOOM itself (a burst of low noise), only when sounds are on
-  function boom() { SFX.play('whoosh'); SFX.play('wrong'); }
+  function boom() { SFX.play('whoosh'); }
   function playShow() {
     var names = Object.keys(SHOWS), n = names[Math.floor(Math.random() * names.length)];
     if (n === playShow.last) n = names[(names.indexOf(n) + 1) % names.length]; playShow.last = n;
@@ -8168,15 +8210,18 @@ button.deck.locked { cursor: default; }
   wlIn.addEventListener('input', function () { document.getElementById('wlNameGo').disabled = !wlIn.value.trim(); });
   function wlName() { var nm = wlIn.value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16); if (!nm) return; profile.name = nm; saveProfile(); applyProfile(); document.getElementById('wlAgeH').textContent = 'How old are you, ' + nm + '?'; document.getElementById('wlTeachH').textContent = 'Nice to meet you, ' + nm + '!'; showTeachStep(); }
   document.getElementById('wlNameGo').addEventListener('click', wlName);
-  var TEACHER_IDEAS = ['Nibb', 'Robo', 'Pixel', 'Sparky', 'Bolt', 'Luna', 'Zippy', 'Chip'];
+  var TEACHER_IDEAS = ['Robo', 'Pixel', 'Sparky', 'Bolt', 'Luna', 'Zippy', 'Chip', 'Beep'];
+  var TEACHER_MORE = ['Gizmo', 'Nova', 'Tinker', 'Comet', 'Bleep', 'Dot', 'Widget', 'Ziggy', 'Echo', 'Sprocket', 'Bubbles', 'Rusty', 'Orbit', 'Twinkle', 'Cosmo', 'Buzz'];
   function showTeachStep() {
     var inp = document.getElementById('wlTeachIn'), box = document.getElementById('wlNames');
-    inp.value = profile.teacher || 'Nibb'; box.innerHTML = '';
-    function mark() { box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.textContent === inp.value.trim())); }); }
+    inp.value = profile.teacher && profile.teacher !== 'Nibb' ? profile.teacher : ''; box.innerHTML = '';
+    var go = document.getElementById('wlTeachGo');
+    function mark() { box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.textContent === inp.value.trim())); }); go.disabled = !inp.value.trim(); }
+    document.getElementById('wlRoll').onclick = function () { var all = TEACHER_IDEAS.concat(TEACHER_MORE).filter(function (n) { return n !== inp.value; }); inp.value = all[Math.floor(Math.random() * all.length)]; mark(); SFX.play('pop'); };
     TEACHER_IDEAS.forEach(function (n) { var b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.addEventListener('click', function () { inp.value = n; mark(); }); box.appendChild(b); });
     inp.oninput = mark; mark(); wlStep('wlTeach');
   }
-  function wlTeach() { var v = setTeacher(document.getElementById('wlTeachIn').value); document.getElementById('wlTeachIn').value = v; wlStep('wlAge'); }
+  function wlTeach() { if (!document.getElementById('wlTeachIn').value.trim()) return; var v = setTeacher(document.getElementById('wlTeachIn').value); document.getElementById('wlTeachIn').value = v; wlStep('wlAge'); }
   document.getElementById('wlTeachGo').addEventListener('click', wlTeach);
   document.getElementById('wlTeachIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') wlTeach(); });
   wlIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') wlName(); });

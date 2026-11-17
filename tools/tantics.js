@@ -6,7 +6,7 @@ const { chromium, devices } = require('playwright');
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
   // ---- welcome as a 9-year-old: Python needs a grown-up ----
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(500);
-  await p.fill('#wlNameIn', 'Mia'); await p.click('#wlNameGo'); await p.waitForTimeout(200); await p.click('#wlTeachGo'); await p.waitForTimeout(200);
+  await p.fill('#wlNameIn', 'Mia'); await p.click('#wlNameGo'); await p.waitForTimeout(200); await p.fill('#wlTeachIn', 'Robo'); await p.click('#wlTeachGo'); await p.waitForTimeout(200);
   await p.click('#wlAges button:has-text("9")'); await p.waitForTimeout(300);
   console.log('py card tags:', await p.textContent('#wlCards .cq-card[data-c="py"] .tags'), '| dim:', await p.$eval('#wlCards .cq-card[data-c="py"]', e => e.classList.contains('dim')));
   await p.click('#wlCards .cq-card[data-c="py"]'); await p.waitForTimeout(300);
@@ -28,16 +28,20 @@ const { chromium, devices } = require('playwright');
   console.log('cancelled → still on Me, course:', await p.isVisible('#me'));
   // ---- the shows ----
   await p.uncheck('#setAntics'); await p.click('#me [data-nav="home"]'); await p.waitForTimeout(600);
-  for (const name of ['dance', 'bath', 'roam', 'doors', 'rocket']) {
+  for (const name of ['dance', 'bath', 'roam', 'doors', 'rocket', 'dig']) {
+    await p.evaluate(() => { document.getElementById('homeScroll').scrollTop = 0; window.scrollTo(0, 0); }); await p.waitForTimeout(300);
     const ok = await p.evaluate(n => window.__show(n), name);
     await p.waitForTimeout(name === 'rocket' ? 1500 : 1200);
     const props = await p.$$eval('.antics .prop', e => e.map(x => x.textContent).join(''));
     console.log(name, '| started:', ok, '| props now:', props, '| says:', await p.$eval('.antics .say', e => e.textContent).catch(() => '-'));
+    const out = await p.evaluate(() => { const lim = document.getElementById('courseTabs').getBoundingClientRect().top, st = document.querySelector('.antics'); if (!st) return 'no stage'; const clip = getComputedStyle(st).clipPath; let over = 0; st.querySelectorAll('.prop, .actor, .say').forEach(e => { const r = e.getBoundingClientRect(); if (r.top > lim) over++; }); return 'clip ' + (clip !== 'none') + ', items below banner ' + over; });
+    console.log('   ', out);
     await p.screenshot({ path: 'iso/S-' + name + '.png' });
     await p.waitForTimeout(4200);
     console.log('   ended cleanly:', !(await p.$('.antics')), '| robot visible again:', await p.$eval('#buddy', e => e.style.visibility !== 'hidden'));
   }
   await p.click('#home [data-nav="me"]'); await p.check('#setAntics'); await p.click('#me [data-nav="home"]'); await p.waitForTimeout(300);
+  await p.evaluate(() => { document.getElementById('homeScroll').scrollTop = 0; }); await p.waitForTimeout(300);
   // they happen by themselves too: watch 25 s of idle Home
   const seen = new Set(); const t0 = Date.now();
   while (Date.now() - t0 < 25000) { const s = await p.evaluate(() => document.querySelector('.antics') ? 'show' : document.getElementById('buddy').classList.contains('sleeping') ? 'nap' : (document.getElementById('homeLumi')._act ? 'trick' : '')); if (s) seen.add(s); await p.waitForTimeout(400); }
