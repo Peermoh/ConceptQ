@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Number Town and Story Library</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,6 +98,17 @@ td code { color: var(--mint); }
 .card { background: var(--sheet); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .card .n { font-size: 12px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .card h4 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 18px; line-height: 1.2; }
+
+.ctop { display: flex; align-items: center; gap: 10px; }
+.num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--amber); color: #2A1A05; display: grid; place-items: center; font-family: var(--font-display); font-size: 17px; }
+.card.ch .num { background: var(--mint); color: #08281C; }
+.vis { background: var(--chalk); color: #F4F7EE; border-radius: 12px; padding: 10px 12px; font-size: 19px; font-weight: 800; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.street { display: flex; gap: 6px; overflow-x: auto; padding: 14px 12px 10px; border-radius: 16px; scrollbar-width: thin;
+  background: linear-gradient(180deg, #3B2A5C 0%, #4A3468 55%, #5A4A3C 55%, #5A4A3C 70%, #3F5A3A 70%); }
+.spot { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 52px; }
+.spot .ic { font-size: 32px; line-height: 1.1; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.35)); }
+.spot .sn { font-size: 11px; font-weight: 900; color: #FFF1E2; background: rgba(0,0,0,0.35); border-radius: 999px; padding: 0 7px; }
+.spot.last .ic { font-size: 40px; } .spot.last .sn { background: #6EE7B7; color: #08281C; }
 .card .build { font-size: 14px; } .card .build b { color: var(--mint); }
 .card .life { font-size: 14px; color: var(--muted); }
 .card .q { font-size: 13.5px; background: var(--chalk); border-radius: 10px; padding: 7px 9px; color: #E8F1E3; }
@@ -156,6 +168,17 @@ td code { color: var(--mint); }
 var MAP_M = [['2', 'Market Street'], ['3', 'Park and Playground'], ['4', 'Railway Station'], ['5', 'Farm and Dairy'], ['6', 'Town Hall and Map Room'], ['7', 'Bank and Bazaar'], ['8', 'Science Museum'], ['9', 'Bridge and River Works'], ['10', 'Hilltop Observatory']];
 var MAP_E = [['2', 'Picture-book Corner'], ['3', 'Poem Garden'], ['4', 'Story Wing'], ['5', 'Treehouse Reading Room'], ['6', 'Newsroom'], ['7', 'Post Office'], ['8', 'Debate Hall'], ['9', 'Theatre Stage'], ['10', 'Writers\' Studio']];
 // [title, NCERT chapter it follows, what it builds, everyday example, a sample question]
+// what each lesson looks like (a picture with numbers) and the icon of what it builds, in lesson order
+var VIS = {
+ M2: [['🐚🐚 🐚🐚 🐚🐚 → 3 groups of 2 = 6', '🍎'], ['⚽ sphere · 🎲 cube · 🥫 cylinder · 🍦 cone', '🧱'], ['47 = 4 tens + 7 ones', '🏠'], ['● circle · ▲ triangle · ■ square · ▬ rectangle', '🪧'], ['| standing · — sleeping · / slanting · ⌒ curved', '🛣️'], ['36 💡 − 9 broken = 27 💡', '✨'], ['🎀 = 5 hand spans = 12 cm', '🧵'], ['🍬🍬🍬🍬 | 🍬🍬🍬🍬 | 🍬🍬🍬🍬 → 12 ÷ 3 = 4', '🍬'], ['🕗 8 o’clock · ☀️ summer · 🌧️ monsoon · ❄️ winter', '🕰️'], ['₹10 + ₹5 + ₹2 + ₹2 + ₹1 = ₹20', '🪙'], ['🍎 |||| || = 7 · 🍌 ||| = 3', '📊'], ['🏪 count · share · add · give change', '🎪']],
+ M3: [['M-E-E-R-A → 5 letters |||| |', '🪧'], ['📦 cube: 6 faces, 12 edges, 8 corners', '🧸'], ['10, 20, 30 … 190, 200', '🪑'], ['🏠 → 2 left → 3 up → 🌳', '🗺️'], ['▲ + ▲ = ■', '🧩'], ['352 = 3 hundreds + 5 tens + 2 ones', '🎟️'], ['5 rows × 6 = 30 🎗️', '🎗️'], ['🫓 = ½ + ½ = ¼ + ¼ + ¼ + ¼', '🧺'], ['245 + 132 = 377', '🔢'], ['🔴🔵🔵 🔴🔵🔵 🔴 ? ?', '🎉'], ['🥛 1 L · 🍚 5 kg · 🪣 holds more than ☕', '⛲'], ['₹50 − ₹32 = ₹18 change', '🛒'], ['🕟 half past 4 · 7 days in a week', '☀️'], ['🎡 tickets + tallies + change + times', '🎡']],
+ M4: [['🚉 ■ ▲ ● ▬ all around the station', '🚉'], ['🥫 from the top: ● · from the front: ▬', '📡'], ['5, 10, 15, 20, ?', '🔷'], ['1,250 = 1 thousand + 2 hundreds + 5 tens', '🪧'], ['🍕 ¼ ¼ ¼ ¼ · ½ is bigger than ¼', '🍕'], ['100 cm = 1 m · 1,000 m = 1 km', '📏'], ['1,345 + 2,210 = 3,555', '🧹'], ['🧳 15 kg · 1 kg = 1,000 g', '⚖️'], ['12 carriages × 24 seats = 288', '🚃'], ['96 parcels ÷ 4 vans = 24 each', '📦'], ['🦋 fold it: both halves match', '🕐'], ['🚆 14:30 + 3 hours = 17:30', '📅'], ['Mon ▮▮▮ 3 · Tue ▮▮▮▮▮ 5 · Wed ▮▮ 2', '📊'], ['🚂 fares + times + distances', '🚂']],
+ M5: [['1,00,000 = one lakh', '🪧'], ['½ + ¼ = ¾ 🥭', '🥭'], ['↻ ¼ turn = 90° · full turn = 360°', '🌬️'], ['23,450 + 12,300 = 35,750', '📖'], ['8 km 200 m = 8,200 m', '🚐'], ['25 cows × 10 L = 250 L 🥛', '🥛'], ['⬛⬜⬛⬜⬛⬜ the pattern repeats', '🏠'], ['2 kg 500 g = 2,500 g', '⚖️'], ['144 🥥 ÷ 12 = 12 crates', '🥥'], ['rangoli: left side = right side ✓', '🌸'], ['4 × 3 bed → area 12 squares, perimeter 14', '🥕'], ['90 seconds = 1 min 30 s', '⏱️'], ['🐸 3, 6, 9, 12 … is 24 on the path? ✓', '🐸'], ['🧭 N ↑ · the barn is north of the pond', '🗺️'], ['🛒 charts + money + weights + times', '🏡']],
+ E2: [['s 🐍 sss · a 🐜 ah · t 🚰 tuh', '🎏'], ['m 🗺️ mmm · d 🐶 duh · c 🐱 kuh', '🧱'], ['h 🎩 hhh · u ☂️ uh · b 🦇 buh', '🔤'], ['c · a · t → cat 🐱', '📚'], ['sh 🚢 · ch 🍟 · th 👍 · ng 💍', '🟫'], ['cap 🧢 + magic e → cape 🦸', '🪟'], ['the · said · was · they · come', '🧾'], ['dog 🐶 = naming · runs 🏃 = doing', '🧸'], ['a big red ball ⚽ · an apple 🍎', '🛋️'], ['1 cat 🐱 → 2 cats 🐱🐱 · 1 box → 2 boxes', '🧺'], ['cat · hat · mat rhyme · Capital … full stop.', '🎶'], ['🖼️ Who? What? Where? What next?', '🪑'], ['🎭 read · sound out · answer', '🎭']],
+ E3: [['a e i o u = vowels · the rest = consonants', '🪨'], ['city → Delhi · girl → Meera', '🌷'], ['Meera → she · Ravi and Anu → they', '👣'], ['I am · she is · they are', '🪑'], ['he has 🪁 · we have 🪁🪁', '🪴'], ['The bird is singing 🐦🎵', '🎠'], ['play → played · go → went', '📔'], ['hot ↔ cold · big = large', '💧'], ['Where is my hat? · What a lovely day!', '🪧'], ['👏 clap the beat · find the rhymes', '⛲'], ['5 sentences about my friend 👫', '🌳'], ['🎤 read · rhyme · write a line', '🎤']],
+ E4: [['a book (any) · the moon (that one)', '🏷️'], ['king 👑 / queen · 1 mouse → 2 mice', '🃏'], ['walked slowly 🐢 · shouted loudly 📢', '💡'], ['The cat is under the table.', '📚'], ['and · but · or · because', '📘'], ['played · play · will play', '🖼️'], ['Who? What? Where? When? Why? How?', '📮'], ['see 👀 / sea 🌊 · write / right', '🧩'], ['1 topic sentence + 3 details + 1 ending', '✍️'], ['Dear Ria, … Love, Anu ✉️', '📬'], ['🦊 Why did the fox run away?', '🗺️'], ['📖 read · fix · write', '🎙️']],
+ E5: [['The monkey 🐒 | climbed the tree.', '🪜'], ['. telling · ? asking · ! exclaiming · Sit down. (command)', '🪧'], ['I was reading 📖 when it rained 🌧️.', '🕰️'], ['tall · taller · tallest 📏', '📏'], ['un + happy · care + ful', '🧱'], ['Ravi’s bag · pens, pencils and paper', '🫙'], ['"Let’s go," said Meera. 💬', '💬'], ['NOTICE · date · what · when · where', '📌'], ['Dear Diary, today I …', '📓'], ['beginning → middle → end', '🏮'], ['as brave as a lion 🦁', '🪟'], ['😟 clues → Raju was worried', '🕵️'], ['📰 notice + story + report', '📰']]
+};
 var M = {
  2: ['Market Street', 'Joyful Mathematics', [
   ['Counting in groups', 'Ch 1, A Day at the Beach', 'fruit crates at the stall', 'Count shells in twos, fives and tens instead of one by one.', '4 bags with 5 mangoes each. How many mangoes?'],
@@ -296,11 +319,16 @@ function render(subj) {
     var sec = el('div', 'grade'); sec.id = subj + gr;
     var n = list.length;
     sec.appendChild(el('div', 'ghead', '<h3>Grade ' + gr + ': ' + esc(data[0]) + '</h3><p>' + (subj === 'M' ? 'Follows NCERT ' + esc(data[1]) + ' · ' : '') + (n - 1) + ' lessons + a challenge</p>'));
+    var st = el('div', 'street'); st.setAttribute('aria-label', 'What Grade ' + gr + ' builds, in order');
+    (VIS[subj + gr] || []).forEach(function (v, i) { var last = i === list.length - 1, b = el('div', 'spot' + (last ? ' last' : ''), '<span class="ic" aria-hidden="true">' + v[1] + '</span><span class="sn">' + (last ? '★' : i + 1) + '</span>'); b.title = list[i] ? list[i][2] : ''; st.appendChild(b); });
+    sec.appendChild(st);
     var grid = el('div', 'lessons');
     list.forEach(function (L, i) {
-      var c = el('div', 'card' + (L[5] ? ' ch' : ''));
-      c.appendChild(el('span', 'n', L[5] ? 'Master Builder challenge' : 'Lesson ' + (i + 1) + ' · ' + esc(L[1])));
+      var c = el('div', 'card' + (L[5] ? ' ch' : '')), V = (VIS[subj + gr] || [])[i] || ['', ''];
+      var top = el('div', 'ctop'); top.appendChild(el('span', 'num', L[5] ? '★' : String(i + 1)));
+      top.appendChild(el('span', 'n', L[5] ? 'Master Builder challenge' : esc(L[1]))); c.appendChild(top);
       c.appendChild(el('h4', null, esc(L[0])));
+      if (V[0]) c.appendChild(el('div', 'vis', esc(V[0])));
       c.appendChild(el('div', 'build', 'Builds <b>' + esc(L[2]) + '</b>'));
       c.appendChild(el('div', 'life', esc(L[3])));
       if (L[4]) c.appendChild(el('div', 'q', 'Sample question: ' + esc(L[4])));
