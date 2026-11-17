@@ -4,16 +4,17 @@
 // Python's progress and house are untouched and that switching back works.
 const { chromium, devices } = require('playwright');
 const course = process.argv[2], idx = +process.argv[3], desk = process.argv[4] === 'desktop';
+const pickCourse = async (p, name) => { const sw = await p.$('#courseTabs .cn-sw'); if (!sw) return; await sw.click(); await p.waitForTimeout(150); const it = await p.$('#courseTabs .cn-menu button:has-text("' + name + '")'); if (it) await it.click(); else await p.click('body'); };
 (async () => {
   const b = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] }); const errs = [], bad = [];
   const ctx = await b.newContext(desk ? { viewport: { width: 1366, height: 800 }, deviceScaleFactor: 1 } : { ...devices['iPhone 13'], deviceScaleFactor: 1 });
   await ctx.addInitScript((a) => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1);
     localStorage.setItem('cq-progress', JSON.stringify({ v: 2, current: 12, embers: 0, streak: 1, day: '' })); localStorage.setItem('cq-house-seen', '12');
-    localStorage.setItem('cq-courses', JSON.stringify({ course: 'py', maths: a[0] === 'maths' ? a[1] : 0, english: a[0] === 'english' ? a[1] : 0 })); } }, [course, idx]);
+    localStorage.setItem('cq-courses', JSON.stringify({ course: 'py', maths: a[0] === 'maths' ? a[1] : 0, english: a[0] === 'english' ? a[1] : 0 })); localStorage.setItem('cq-profile', JSON.stringify({ name: 'Mia', age: 9, courses: ['py', a[0]] })); } }, [course, idx]);
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); }); p.on('response', r => { if (r.status() >= 400) bad.push(r.url()); });
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(800);
   console.log('tabs:', (await p.textContent('#courseTabs')).replace(/\s+/g, ' '), '| python card:', await p.textContent('#cardTitle'));
-  await p.click('#courseTabs button:nth-child(' + (course === 'maths' ? 2 : 3) + ')'); await p.waitForTimeout(500);
+  await pickCourse(p, course === 'maths' ? 'Maths' : 'English'); await p.waitForTimeout(500);
   console.log('card:', await p.textContent('#cardEyebrow'), '|', await p.textContent('#cardTitle'), '|', await p.textContent('#ctaText'), '| path:', await p.textContent('#pathTitle'), await p.textContent('#pathCount'), '| topics', await p.$$eval('#topics .topic', e => e.length), '| tile:', await p.textContent('#pyLevel'), '| nav:', (await p.textContent('#home [data-navbar]')).replace(/\s+/g, ' '));
   await p.screenshot({ path: 'iso/C-' + course + idx + '-home.png' });
   await p.click('#startBtn'); await p.waitForTimeout(600);
@@ -32,9 +33,9 @@ const course = process.argv[2], idx = +process.argv[3], desk = process.argv[4] =
     for (let k = 0; k < info.opts.length; k++) { await p.click('#opt-' + q + '-' + k); await p.waitForTimeout(90); if (await p.$('.sheet.is-right')) break; await p.evaluate((qq) => window.__undo(qq), q); await p.waitForTimeout(50); }
     await p.click('#sheetBtn'); await p.waitForTimeout(160);
   }
-  console.log('done:', await p.textContent('#doneTitle'), '|', await p.textContent('#doneText'), '| earned:', (await p.textContent('#doneEarned')).replace(/\s+/g, ' '), '| cards +' + await p.textContent('#dCards'));
+  console.log('cta:', await p.textContent('#doneHouse'), '| done:', await p.textContent('#doneTitle'), '|', await p.textContent('#doneText'), '| earned:', (await p.textContent('#doneEarned')).replace(/\s+/g, ' '), '| cards +' + await p.textContent('#dCards'));
   await p.screenshot({ path: 'iso/C-' + course + idx + '-done.png' });
-  await p.click('#doneHouse'); await p.waitForTimeout(2600);
+  await p.click('#doneHouse'); await p.waitForTimeout(2600); { const f0 = p.frames().find(f => /world/.test(f.url())); if (f0 && await f0.$('.pz-skip')) { console.log('puzzle shown:', await f0.textContent('.pz h2'), await f0.$$eval('.pz-piece', e => e.length), 'pieces'); await f0.click('.pz-skip'); await p.waitForTimeout(1500); } }
   const fr = p.frames().find(f => /world\.html/.test(f.url()));
   console.log('world:', fr ? fr.url().split('/').pop() : 'NO WORLD FRAME', '|', fr && await fr.textContent('#count'), '|', fr && await fr.textContent('#toast'));
   await p.screenshot({ path: 'iso/C-' + course + idx + '-world.png' });
@@ -43,7 +44,7 @@ const course = process.argv[2], idx = +process.argv[3], desk = process.argv[4] =
   console.log('saved:', saved.join(' || '));
   // back to Python: its card, path and house are as they were
   await p.click('#house [data-nav="home"]').catch(() => p.click('[data-nav="home"]'));
-  await p.waitForTimeout(400); await p.click('#courseTabs button:nth-child(1)'); await p.waitForTimeout(500);
+  await p.waitForTimeout(400); await pickCourse(p, 'Python'); await p.waitForTimeout(500);
   console.log('python again:', await p.textContent('#cardEyebrow'), '|', await p.textContent('#cardTitle'), '| tabs:', (await p.textContent('#courseTabs')).replace(/\s+/g, ' '));
   await p.click('[data-nav="house"]'); await p.waitForTimeout(1500);
   console.log('house frame:', p.frames().map(f => f.url().split('/').pop()).filter(u => /house|world/.test(u)).join(','));
