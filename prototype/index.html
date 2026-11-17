@@ -249,6 +249,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .done { align-items: center; justify-content: center; text-align: center; gap: 18px; }
 .big-lantern { width: 170px; height: 200px; filter: drop-shadow(0 0 40px rgba(255,181,71,0.7)); animation: bob 3.4s ease-in-out infinite; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; }
+.earned { width: 100%; background: linear-gradient(135deg, rgba(110,231,183,0.16), rgba(255,255,255,0.05)); border: 1px solid rgba(110,231,183,0.4); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.earned[hidden] { display: none; }
+.earned .eh { font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--mint); }
+.earned .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.earned .item { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); border-radius: 12px; padding: 6px 12px 6px 6px; font-weight: 800; }
+.earned .item .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--cream); font-size: 20px; }
+.earned .built { color: var(--muted); font-weight: 700; font-size: 14px; }
 .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 12px 6px; display: flex; flex-direction: column; gap: 4px; }
 .stat b { font-family: var(--font-display); font-weight: 400; font-size: 24px; font-variant-numeric: tabular-nums; }
 .stat span { color: var(--muted); font-size: 12px; }
@@ -1016,6 +1023,7 @@ button.deck.locked { cursor: default; }
       <div class="stat"><b id="dEmbers">+30</b><span>embers</span></div>
       <div class="stat"><b id="dCards">3</b><span>new cards</span></div>
     </div>
+    <div class="earned" id="doneEarned" aria-label="What you earned"></div>
     <button class="jar-line" id="doneJar" type="button"></button>
     <button class="cta mint" style="width:100%" id="doneHouse">Place it in My House</button>
     <button class="cta" style="width:100%" id="backHome">Back to learning</button>
@@ -2841,6 +2849,8 @@ button.deck.locked { cursor: default; }
     setTimeout(function () { b.remove(); }, 900);
   }
 
+  // the house items each lesson earns (names match the house); lessons with none build part of the house instead
+  var EARNS = {"0": [["Poster", "🖼️"]], "1": [["Desk", "🗄️"]], "2": [["Sofa", "🛋️"]], "3": [["Bookshelf", "📚"], ["Plant", "🪴"]], "5": [["Lamp × 2", "💡"]], "9": [["Wardrobe", "👕"]], "10": [["Shoe rack", "👟"]], "11": [["Glass cabinet", "🏺"]], "12": [["Toy box", "🧸"]], "13": [["Key rack", "🔑"]], "14": [["Notice board", "📌"]], "15": [["Kettle", "☕"]], "16": [["Toaster", "🍞"]], "17": [["Smoke alarm", "🚨"]], "18": [["Filing cabinet", "🗃️"]], "19": [["Toolbox", "🧰"]], "21": [["Workbench", "🛠️"]], "22": [["Harness hook", "⛑️"]], "23": [["Parcel sorter", "📦"]], "24": [["Blueprint printer", "🖨️"]], "25": [["Room badges", "📛"]], "26": [["X-ray scanner", "🔦"]], "27": [["Bunk bed", "🛏️"], ["Portrait wall", "🖼️"]], "28": [["Sorting conveyor", "🏭"]], "29": [["Robot vacuum", "🤖"]], "30": [["Archive cabinet", "🗄️"]], "31": [["Inspector's clipboard", "📋"]], "32": [["Shared blueprint table", "📐"]], "33": [["Control panel", "🎛️"]], "35": [["Water tap", "🚰"]], "36": [["Rain barrel", "🛢️"]], "37": [["Light switch box", "💡"]], "38": [["Self-closing gate", "🚪"]], "39": [["Label printer", "🏷️"]], "40": [["Smart meter", "📟"]], "41": [["Sprinkler hub", "💦"]], "42": [["Antenna", "📡"]], "43": [["Tool wall", "🔧"]], "44": [["Seed sieve", "🌱"]]};
   function finish() {
     state.embers += earned;
     state.current = Math.max(state.current, openLessonIdx + 1);
@@ -2851,6 +2861,15 @@ button.deck.locked { cursor: default; }
     document.getElementById('dRight').textContent = firstTry + '/' + Q.length;
     document.getElementById('dEmbers').textContent = '+' + earned;
     document.getElementById('dCards').textContent = ensureCards();
+    // what this lesson earned: its house item(s), and the part of the house it built
+    var ern = EARNS[openLessonIdx] || [], de = document.getElementById('doneEarned'), part = lessons[openLessonIdx] && lessons[openLessonIdx].part;
+    de.innerHTML = '';
+    var eh = document.createElement('div'); eh.className = 'eh'; eh.textContent = ern.length ? 'You earned' : 'You built'; de.appendChild(eh);
+    if (ern.length) { var row = document.createElement('div'); row.className = 'row';
+      ern.forEach(function (it) { var b = document.createElement('div'); b.className = 'item'; var ic = document.createElement('span'); ic.className = 'ic'; ic.textContent = it[1]; ic.setAttribute('aria-hidden', 'true'); b.appendChild(ic); b.appendChild(document.createTextNode(it[0])); row.appendChild(b); });
+      de.appendChild(row); }
+    if (part) { var bt2 = document.createElement('div'); bt2.className = 'built'; bt2.textContent = (ern.length ? 'and built: ' : '') + part.charAt(0).toUpperCase() + part.slice(1); de.appendChild(bt2); }
+    de.hidden = !ern.length && !part;
     var dj = document.getElementById('doneJar'), sr = spinsReady();
     dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
     dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;

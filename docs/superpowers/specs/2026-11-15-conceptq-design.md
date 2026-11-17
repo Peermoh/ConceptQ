@@ -280,3 +280,5 @@ quiz built fresh every time (hand-written questions + generators checked against
 - Phones (portrait, and landscape when the screen is short): the caption sits at the top of the board as a two-line
   subtitle bar that scrolls with the word being said; the chalk lines start below it. Desktop keeps it under the
   controls (2026-11-17).
+- The finished-topic screen has a "You earned" panel: the lesson's house item(s) with an icon, and the part of the
+  house it built ("You built" for lessons with no item, like the stairs) (2026-11-17).
