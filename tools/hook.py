@@ -11,3 +11,8 @@ s=open(p).read()
 s=s.replace("    setTimeout(startTour, 700);","    if (/[?&]tour\\b/.test(location.search)) setTimeout(startTour, 700);",1)
 s=s.replace("if (!profile.toured && !/[?&]notour\\b/.test(location.search)) setTimeout(startTour, 1200);","if (!profile.toured && /[?&]tour\\b/.test(location.search)) setTimeout(startTour, 1200);",1)
 open(p,'w').write(s)
+# start one of the robot's shows by name (test copy only)
+s=open(p).read()
+k="  function playShow() {"
+s=s.replace(k,"  window.__show = function (n) { return stageShow(SHOWS[n]); }; // test copy only\n"+k,1)
+open(p,'w').write(s)
