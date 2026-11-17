@@ -2,7 +2,8 @@
 // After a lesson, the new part of the house / town is cut into square pieces of the scene around it;
 // the learner drags (or taps) each piece into its place, and then the page plays its normal build moment.
 //   CQPuzzle.start({ svg: rootSvg, parts: [elements], title: 'Build the fruit stall!', onDone: fn })
-// Pieces: 4 for age 8 and under, 6 up to 11, 9 from 12 (age from the app's cq-profile).
+// Pieces: 9 for age 8 and under, 12 up to 11, 16 from 12 (age from the app's cq-profile).
+// Inside the app, 10 embers place one piece for you (the app checks and spends them).
 (function () {
   var NS = 'http://www.w3.org/2000/svg';
   function css() {
@@ -28,6 +29,8 @@
       '.pz-board.done{border-color:#7CF5C8;box-shadow:0 0 0 6px rgba(124,245,200,.35),0 10px 30px rgba(0,0,0,.4)}' +
       '.pz-board.done .pz-placed{outline:none}' +
       '.pz-back{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));width:42px;height:42px;border-radius:12px;border:1.5px solid rgba(255,246,236,.35);background:rgba(255,255,255,.08);color:#FFF6EC;font-size:22px;font-weight:900;cursor:pointer}' +
+      '.pz-help{border:0;border-radius:999px;padding:10px 16px;background:#FFB547;color:#2A1330;font:inherit;font-weight:900;font-size:14px;cursor:pointer}' +
+      '.pz-help:disabled{opacity:.45;cursor:default}' +
       '.pz-skip{background:none;border:0;color:#FFF6EC;opacity:.7;font:inherit;font-weight:800;font-size:14px;text-decoration:underline;cursor:pointer;padding:8px}' +
       '.pz-cheer{font-size:26px;font-weight:900;color:#7CF5C8;min-height:34px;text-align:center}' +
       '@media (prefers-reduced-motion:reduce){.pz,.pz-placed,.pz-piece.shake{animation:none}}';
@@ -35,7 +38,7 @@
   }
   function grid() {
     var age = 9; try { var p = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (p && typeof p.age === 'number') age = p.age; } catch (e) {}
-    return age <= 8 ? [2, 2] : age <= 11 ? [3, 2] : [3, 3];
+    return age <= 8 ? [3, 3] : age <= 11 ? [4, 3] : [4, 4];
   }
   // the part's box in the root svg's own units
   function regionOf(svg, parts, cols, rows) {
@@ -72,7 +75,7 @@
     var maxW = Math.min(window.innerWidth - 32, 420), maxH = Math.min(window.innerHeight * 0.42, 360);
     var bw = Math.min(maxW, maxH * cols / rows), bh = bw * rows / cols, pw = bw / cols, ph = bh / rows;
     var ov = document.createElement('div'); ov.className = 'pz'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', o.title || 'Build it');
-    ov.innerHTML = '<button class="pz-back" type="button" aria-label="Back to lessons">'+'\u2190'+'</button><h2></h2><p>Drag each piece into its place. You can also tap a piece, then tap its spot.</p><div class="pz-main"><div class="pz-board"></div><div class="pz-tray"></div></div><div class="pz-cheer" aria-live="polite"></div><button class="pz-skip" type="button">Let Nibb build it</button>';
+    ov.innerHTML = '<button class="pz-back" type="button" aria-label="Back to lessons">'+'\u2190'+'</button><h2></h2><p>Drag each piece into its place. You can also tap a piece, then tap its spot.</p><div class="pz-main"><div class="pz-board"></div><div class="pz-tray"></div></div><div class="pz-cheer" aria-live="polite"></div><button class="pz-help" type="button" hidden>✨ Place a piece · 10 🔥</button><button class="pz-skip" type="button">Let Nibb build it</button>';
     ov.querySelector('h2').textContent = o.title || 'Build it!';
     document.body.appendChild(ov);
     var board = ov.querySelector('.pz-board'), tray = ov.querySelector('.pz-tray'), cheer = ov.querySelector('.pz-cheer');
@@ -97,6 +100,7 @@
       b.appendChild(pic(src, [R.x + c2 * tw, R.y + r2 * th, tw, th]));
       tray.appendChild(b); drag(b);
     });
+    tray.style.minHeight = tray.offsetHeight + 'px';
     function tryPlace(b, slot) {
       var k = +b.dataset.k;
       if (slot !== k) { b.classList.remove('drag', 'sel'); b.style.left = b.style.top = ''; b.classList.add('shake'); setTimeout(function () { b.classList.remove('shake'); }, 400); sel = null; hint(-1);
@@ -119,6 +123,7 @@
       b.addEventListener('pointermove', function (e) {
         if (sx == null) return;
         if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 6) return;
+        if (!moved && !b._ph) { b._ph = document.createElement('span'); b._ph.style.cssText = 'flex:0 0 auto;visibility:hidden;width:' + ts + 'px;height:' + tsh + 'px'; b.parentNode.insertBefore(b._ph, b); }
         moved = true; b.classList.add('drag'); b.style.width = pw + 'px'; b.style.height = ph + 'px';
         b.style.left = (e.clientX - ox * pw / ts) + 'px'; b.style.top = (e.clientY - oy * ph / tsh) + 'px';
       });
@@ -129,6 +134,7 @@
           sel = b; b.classList.add('sel'); return;
         }
         var br = board.getBoundingClientRect(), r1 = b.getBoundingClientRect(), cx = r1.left + r1.width / 2 - br.left, cy = r1.top + r1.height / 2 - br.top;
+        if (b._ph) { b._ph.remove(); b._ph = null; }
         b.style.width = ts + 'px'; b.style.height = tsh + 'px';
         if (cx < 0 || cy < 0 || cx > bw || cy > bh) { b.classList.remove('drag'); b.style.left = b.style.top = ''; return; }
         tryPlace(b, Math.floor(cy / ph) * cols + Math.floor(cx / pw));
@@ -139,10 +145,27 @@
       if (solved) { board.classList.add('done'); cheer.textContent = 'You built it!'; }
       setTimeout(function () {
         ov.style.transition = 'opacity .35s'; ov.style.opacity = 0;
-        setTimeout(function () { ov.remove(); parts.forEach(function (el) { el.style.visibility = ''; }); done(solved); }, 350);
+        setTimeout(function () { ov.remove(); window.removeEventListener('message', onMsg); parts.forEach(function (el) { el.style.visibility = ''; }); done(solved); }, 350);
       }, solved ? 1100 : 0);
     }
     ov.querySelector('.pz-skip').addEventListener('click', function () { finish(false); });
+    // spend 10 embers to place one piece (only inside the app, which holds the embers)
+    var help = ov.querySelector('.pz-help'), COST = 10, embers = 0, waiting = null;
+    function onMsg(e) {
+      if (e.source !== window.parent || !e.data) return;
+      if (e.data.cq === 'embers' || e.data.cq === 'spent') { embers = e.data.n; help.hidden = false; help.disabled = embers < COST || placed >= total; help.title = 'You have ' + embers + ' embers'; }
+      if (e.data.cq === 'spent' && e.data.id === waiting) {
+        waiting = null;
+        if (!e.data.ok) { cheer.textContent = 'Not enough embers yet. Finish lessons to earn more!'; return; }
+        var left = [].slice.call(tray.querySelectorAll('.pz-piece')); if (!left.length) return;
+        var pc = left[Math.floor(Math.random() * left.length)]; tryPlace(pc, +pc.dataset.k); cheer.textContent = '✨ Placed for ' + COST + ' embers!';
+      }
+    }
+    if (window.parent !== window) {
+      window.addEventListener('message', onMsg);
+      window.parent.postMessage({ cq: 'embers?' }, '*');
+      help.addEventListener('click', function () { if (waiting || placed >= total) return; waiting = 'p' + Date.now(); help.disabled = true; window.parent.postMessage({ cq: 'spend', n: COST, id: waiting }, '*'); });
+    }
     ov.querySelector('.pz-back').addEventListener('click', function () { finish(false); if (window.parent !== window) window.parent.postMessage({ cq: 'home' }, '*'); });
     if (window.parent === window) ov.querySelector('.pz-back').hidden = true;
   }

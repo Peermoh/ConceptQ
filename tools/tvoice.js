@@ -1,0 +1,12 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const ctx = await b.newContext({ ...devices['iPhone 13'], deviceScaleFactor: 1 });
+  await ctx.addInitScript(() => { window.__said = []; const S = window.speechSynthesis; if (S) { S.speak = function (u) { window.__said.push(u.text + ' @' + u.rate + ' ' + u.lang + (u.voice ? ' [' + u.voice.name + ']' : '')); }; S.cancel = function () {}; } });
+  await ctx.addInitScript(() => { localStorage.setItem('cq-progress', JSON.stringify({ v: 2, current: 3, embers: 0, streak: 1, day: '' })); localStorage.setItem('cq-courses', JSON.stringify({ course: 'maths', maths: 9, english: 0 })); localStorage.setItem('cq-profile', JSON.stringify({ name: 'Mia', age: 9, toured: true, courses: ['maths'], antics: false, narrator: 'prabhat' })); });
+  const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
+  await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(600);
+  console.log('speechSynthesis:', await p.evaluate(() => 'speechSynthesis' in window), '| voices:', await p.evaluate(() => speechSynthesis.getVoices().length));
+  await p.click('#startBtn'); await p.waitForTimeout(300); await p.click('#toQuiz'); await p.waitForTimeout(300);
+  console.log('Q:', await p.textContent('#qText'), '| hear visible:', await p.isVisible('#qHear'), await p.textContent('#qHear'));
+  await p.click('#qHear'); await p.waitForTimeout(300);
+  console.log((await p.evaluate(() => window.__said)).join('\n'));
+  await b.close(); })();

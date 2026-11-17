@@ -51,6 +51,10 @@ js = (START +
       '  // a question can show a picture (pic) and play sounds (snd: clips from the phonics sound sheet)\n'
       '  function mq(text, pic, pairs) { var q = mk(text, \'\', pairs); if (q && pic) q.pic = pic; return q; }\n'
       '  function an(w) { return (/^[aeiou]/i.test(w) ? \'an \' : \'a \') + w; }\n' +
+      '  // question levels: makeQuiz sets QLEVEL (0 easy, 1 medium, 2 hard) before calling a generator; lv / rl pick by it\n'
+      '  var QLEVEL = 1, LVUSED = false;\n'
+      '  function lv(e, m, h) { LVUSED = true; return QLEVEL === 0 ? e : QLEVEL === 2 ? h : m; }\n'
+      '  function rl(e, m, h) { var r = lv(e, m, h); return ri(r[0], r[1]); }\n' +
       '  // pictures that show what the words say: groups in their basket / box / bundle, loose things in rows, coins as chips\n'
       '  function rpt(t, n) { return new Array(n + 1).join(t); }\n'
       '  function grp(n, k, item, box) { var s = \'\'; for (var i = 0; i < n; i++) s += \'<span class="qg">\' + (box ? \'<i>\' + box + \'</i>\' : \'\') + (k <= 6 ? rpt(item, k) : k <= 10 ? \'<span class="qgrid">\' + rpt(\'<span>\' + item + \'</span>\', k) + \'</span>\' : item + \'<b class="qn">×\' + k + \'</b>\') + \'</span>\'; return s; }\n'

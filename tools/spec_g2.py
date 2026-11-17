@@ -25,11 +25,11 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('Each bunch has 10 bananas. How many bananas?', G(3, 10, '🍌'), 2, ('30', '10, 20, 30.'), ('3', '3 is how many bunches, not bananas.'), ('13', 'Count in tens: 10, 20, 30.')),
         Q('3 plates with 4 laddoos on each. How many laddoos?', G(3, 4, '🟡', '🍽️'), 3, ('12', '4, 8, 12: three groups of 4 make 12.'), ('7', 'That adds 3 and 4. We need 3 groups of 4.'), ('10', 'Count again in fours: 4, 8, 12.')),
         Q('What comes next? 10, 20, 30, 40, __', '', 4, ('50', 'Every jump is 10, so 40 + 10 = 50.'), ('41', 'The jump is 10, not 1.'), ('45', 'That jump is 5. Here every jump is 10.'))],
-  gen=[("""function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 6), seq = [a, a + s, a + 2 * s, a + 3 * s];
+  gen=[("""function () { var s = pickOne([2, 5, 10]), a = s * rl([1, 3], [1, 6], [4, 12]), seq = [a, a + s, a + 2 * s, a + 3 * s];
         return mq('What comes next? ' + seq.join(', ') + ', __', '', [[a + 4 * s, 'Every jump is ' + s + ', so ' + seq[3] + ' + ' + s + ' = ' + (a + 4 * s) + '.'], [seq[3] + 1, 'The jump is ' + s + ', not 1.'], [a + 5 * s, 'That jumps twice. Add ' + s + ' once.']]); }""", 4),
-       ("""function () { var g = ri(2, 5), k = ri(2, 5), f = pickOne(['🥭', '🍎', '🍊', '🍋']);
+       ("""function () { var g = rl([2, 3], [2, 4], [4, 6]), k = rl([2, 3], [3, 5], [4, 6]), f = pickOne(['🥭', '🍎', '🍊', '🍋']);
         return mq(g + ' baskets with ' + k + ' fruits each. How many fruits?', grp(g, k, f, '🧺'), [[g * k, 'Count in ' + k + 's ' + g + ' times: ' + g + ' groups of ' + k + ' make ' + g * k + '.'], [g + k, 'That adds ' + g + ' and ' + k + '. Count every fruit in every basket.'], [g * k + k, 'That counts one basket too many.']]); }""", 3),
-       ("""function () { var n = ri(2, 9);
+       ("""function () { var n = rl([2, 4], [3, 7], [6, 9]);
         return mq('Each bundle has 10 sticks. How many sticks in ' + n + ' bundles?', grp(n, 10, '🥢', '🪢'), [[n * 10, 'Count in tens: ' + n + ' tens make ' + n * 10 + '.'], [n, n + ' is how many bundles, not sticks.'], [n + 10, 'Count in tens, not ones.']]); }""", 2)],
   cards=[('How do you count in twos?', '2, 4, 6, 8, 10: jump 2 each time.'), ('Count in fives', '5, 10, 15, 20, 25'), ('4 groups of 3 makes how many?', '12: 3, 6, 9, 12.')]),
 
@@ -58,7 +58,7 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('How many tens make 100?', '', 4, ('10', '10 tens are 100.'), ('100', '100 ones make 100, but we need tens: 10 of them.'), ('5', '5 tens are only 50.'))],
   gen=[("""function () { var t = ri(1, 9), o = ri(1, 9), n = t * 10 + o, askT = pickOne([true, false]);
         return mq('How many ' + (askT ? 'tens' : 'ones') + ' are in ' + n + '?', new Array(t + 1).join('▮') + ' ' + new Array(o + 1).join('•'), [[askT ? t : o, n + ' is ' + t + ' tens and ' + o + ' ones.'], [askT ? o : t, askT ? o + ' is the ones digit.' : t + ' is the tens digit.'], [n, n + ' is the whole number.']]); }""", 0),
-       ("""function () { var n = ri(12, 98), after = pickOne([true, false]);
+       ("""function () { var n = rl([12, 40], [20, 90], [50, 98]), after = pickOne([true, false]);
         return mq('What comes just ' + (after ? 'after ' : 'before ') + n + '?', '', [[after ? n + 1 : n - 1, after ? n + ' + 1 = ' + (n + 1) + '.' : n + ' − 1 = ' + (n - 1) + '.'], [after ? n - 1 : n + 1, after ? 'That comes before ' + n + '.' : 'That comes after ' + n + '.'], [after ? n + 10 : n - 10, 'That jumps a whole ten.']]); }""", 2),
        ("""function () { var a = ri(1, 9), b = ri(1, 9); if (a === b) return null; var x = a * 10 + b, y = b * 10 + a, big = Math.max(x, y), small = Math.min(x, y), lo = small - ri(1, 5);
         return mq('Which number is the biggest?', '', [[big, big + ' has the most tens.'], [small, small + ' has fewer tens than ' + big + '.'], [lo, lo + ' is smaller still.']]); }""", 3)],
@@ -103,11 +103,11 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('36 lights, 9 break. How many still shine?', '💡', 2, ('27', '36 − 9 = 27.'), ('45', 'That adds. Broken lights are taken away.'), ('33', 'Take away 9, not 3.')),
         Q('50 − 20 = ?', '', 3, ('30', '5 tens − 2 tens = 3 tens = 30.'), ('70', 'That adds the tens.'), ('48', 'Take away 2 tens, not 2 ones.')),
         Q('27 + 9 = 36. So 36 − 9 = ?', '', 4, ('27', 'Adding back checks it: 27 + 9 = 36.'), ('45', '36 + 9 is 45. We take away.'), ('9', '9 is the part we take away.'))],
-  gen=[("""function () { var a = ri(1, 4) * 10 + ri(1, 4), b = ri(1, 4) * 10 + ri(1, 5), r = a + b;
+  gen=[("""function () { var a = rl([1, 2], [1, 3], [2, 4]) * 10 + ri(1, 4), b = rl([1, 1], [1, 3], [2, 4]) * 10 + ri(1, 5), r = a + b;
         return mq(a + ' + ' + b + ' = ?', '', [[r, 'Ones: ' + a % 10 + ' + ' + b % 10 + ' = ' + (a % 10 + b % 10) + '. Tens: ' + Math.floor(a / 10) + ' + ' + Math.floor(b / 10) + ' = ' + Math.floor(r / 10) + '.'], [r + 10, 'Check the tens again.'], [r - 1, 'Check the ones again.']]); }""", 0),
-       ("""function () { var ao = ri(5, 9), bo = ri(10 - ao, 9), a = ri(1, 4) * 10 + ao, b = ri(1, 4) * 10 + bo, r = a + b;
+       ("""function () { var ao = ri(5, 9), bo = ri(10 - ao, 9), a = rl([1, 1], [1, 3], [2, 4]) * 10 + ao, b = rl([1, 1], [1, 3], [2, 4]) * 10 + bo, r = a + b;
         return mq(a + ' + ' + b + ' = ?', '', [[r, ao + ' + ' + bo + ' = ' + (ao + bo) + ': write ' + (ao + bo - 10) + ', carry 1 ten.'], [r - 10, 'You forgot to carry the ten.'], [r + 1, 'Check the ones: ' + ao + ' + ' + bo + ' = ' + (ao + bo) + '.']]); }""", 1),
-       ("""function () { var b = ri(3, 9), a = ri(2, 6) * 10 + ri(0, b - 1), r = a - b, f = pickOne([['💡', 'lights', 'break'], ['🎈', 'balloons', 'pop'], ['🪔', 'lamps', 'go out']]);
+       ("""function () { var b = rl([3, 5], [3, 9], [6, 9]), a = rl([2, 3], [2, 6], [5, 9]) * 10 + ri(0, b - 1), r = a - b, f = pickOne([['💡', 'lights', 'break'], ['🎈', 'balloons', 'pop'], ['🪔', 'lamps', 'go out']]);
         return mq(a + ' ' + f[1] + ', ' + b + ' ' + f[2] + '. How many are left?', f[0], [[r, a + ' − ' + b + ' = ' + r + '.'], [a + b, 'That adds. We take away.'], [r + 10, 'You need to break a ten: ' + a + ' − ' + b + ' = ' + r + '.']]); }""", 2),
        ("""function () { var a = ri(4, 9), b = ri(1, a - 1);
         return mq(a * 10 + ' − ' + b * 10 + ' = ?', '', [[(a - b) * 10, a + ' tens − ' + b + ' tens = ' + (a - b) + ' tens.'], [(a + b) * 10, 'That adds the tens.'], [a * 10 - b, 'Take away ' + b + ' tens, not ' + b + ' ones.']]); }""", 3)],
@@ -121,7 +121,7 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('Which is heavier?', '', 3, ('🍉 watermelon', 'A watermelon is much heavier than a feather.'), ('🪶 feather', 'A feather is very light.'), ('They are the same', 'A watermelon is far heavier.')),
         Q('On a balance, which side goes down?', '⚖️', 4, ('The heavier side', 'The heavier thing pulls its side down.'), ('The lighter side', 'The lighter side goes up.'), ('Both sides', 'Only the heavier side goes down.')),
         Q('A table is 5 hand spans long. You measure 1 more span. How many spans now?', '✋✋✋✋✋', 1, ('6', '5 + 1 = 6 spans.'), ('5', 'You added one more span.'), ('4', 'That takes one away.'))],
-  gen=[("""function () { var a = ri(8, 25), b = ri(3, a - 2), t = pickOne([['✏️', 'pencil', 'crayon'], ['🎀', 'red ribbon', 'blue ribbon'], ['🥢', 'stick', 'straw']]);
+  gen=[("""function () { var a = rl([6, 12], [8, 25], [20, 60]), b = ri(3, a - 2), t = pickOne([['✏️', 'pencil', 'crayon'], ['🎀', 'red ribbon', 'blue ribbon'], ['🥢', 'stick', 'straw']]);
         return mq('The ' + t[1] + ' is ' + a + ' cm. The ' + t[2] + ' is ' + b + ' cm. How much longer is the ' + t[1] + '?', t[0], [[(a - b) + ' cm', a + ' − ' + b + ' = ' + (a - b) + '.'], [(a + b) + ' cm', 'That adds them. We want the difference.'], [a + ' cm', 'That is the whole ' + t[1] + '.']]); }""", 2),
        ("""function () { var P = [['🍉 watermelon', '🍓 strawberry'], ['🐘 elephant', '🐭 mouse'], ['🎒 school bag', '✏️ pencil'], ['🧱 brick', '🪶 feather'], ['🎃 pumpkin', '🥜 peanut']], x = pickOne(P);
         return mq(an(x[0].split(' ').slice(1).join(' ')).replace(/^./, function (c) { return c.toUpperCase(); }) + ' and ' + an(x[1].split(' ').slice(1).join(' ')) + ' are on a balance. Which side goes down?', '⚖️', [[x[0], 'The ' + x[0].split(' ').slice(1).join(' ') + ' is heavier, so its side goes down.'], [x[1], 'The ' + x[1].split(' ').slice(1).join(' ') + ' is lighter, so its side goes up.'], ['They stay level', 'They only stay level when both weigh the same.']]); }""", 4)],
@@ -135,9 +135,9 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('12 sweets shared equally by 3 friends. How many each?', MANY(12, '🍬') + KIDS(3), 2, ('4', '12 ÷ 3 = 4: each friend gets 4.'), ('9', 'That takes 3 away. We share.'), ('3', '3 is how many friends.')),
         Q('3 × 4 = 12. So 12 ÷ 3 = ?', '', 3, ('4', 'Times and sharing are partners.'), ('12', '12 is how many sweets in all.'), ('36', 'That multiplies again.')),
         Q('7 sweets shared by 2 friends. How many are left over?', MANY(7, '🍬') + KIDS(2), 4, ('1', 'Each gets 3, which uses 6. One is left.'), ('0', '7 does not share evenly by 2.'), ('3', '3 is how many each friend gets.'))],
-  gen=[("""function () { var a = ri(2, 5), b = ri(2, 5);
+  gen=[("""function () { var a = rl([2, 3], [2, 5], [4, 6]), b = rl([2, 3], [2, 5], [4, 6]);
         return mq(a + ' × ' + b + ' = ?', grp(a, b, '🍬', '📦'), [[a * b, a + ' groups of ' + b + ' make ' + a * b + '.'], [a + b, 'That adds. × means groups of.'], [a * b + b, 'Count the groups again: there are ' + a + '.']]); }""", 1),
-       ("""function () { var k = ri(2, 5), e = ri(2, 6), n = k * e, f = pickOne([['🍬', 'sweets'], ['🍪', 'biscuits'], ['🟡', 'laddoos']]);
+       ("""function () { var k = rl([2, 3], [2, 5], [4, 6]), e = rl([2, 3], [2, 6], [4, 9]), n = k * e, f = pickOne([['🍬', 'sweets'], ['🍪', 'biscuits'], ['🟡', 'laddoos']]);
         return mq(n + ' ' + f[1] + ' shared equally by ' + k + ' friends. How many each?', many(n, f[0]) + kids(k), [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many friends.']]); }""", 2),
        ("""function () { var k = pickOne([2, 3]), n = ri(5, 14); if (n % k === 0) return null;
         return mq(n + ' sweets shared by ' + k + ' friends. How many are left over?', many(n, '🍬') + kids(k), [[n % k, 'Each gets ' + Math.floor(n / k) + ', which uses ' + (Math.floor(n / k) * k) + '. ' + (n % k) + ' left.'], [0, n + ' does not share evenly by ' + k + '.'], [Math.floor(n / k), 'That is how many each friend gets.']]); }""", 4)],
@@ -151,7 +151,7 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('What time is it?', '🕗', 2, ("8 o'clock", 'The long hand is on 12, the short hand on 8.'), ('half past 8', 'For half past, the long hand points to 6.'), ("12 o'clock", 'The short hand shows the hour: 8.')),
         Q('The long hand points to 6. It is…', '🕣', 3, ('half past', 'Long hand on 6 means half past.'), ("o'clock", "For o'clock, the long hand is on 12."), ('midnight', 'Look at where the hands point.')),
         Q('When do mangoes grow?', '🥭', 4, ('summer', 'Mangoes come in the hot summer.'), ('winter', 'Winter is cold. Mangoes come in summer.'), ('monsoon', 'The monsoon brings rain. Mangoes come before it, in summer.'))],
-  gen=[("""function () { var h = ri(1, 12), half = pickOne([true, false]), cp = String.fromCodePoint(0x1F54F + h + (half ? 12 : 0)), right = half ? 'half past ' + h : h + " o'clock", h2 = h % 12 + 1;
+  gen=[("""function () { var h = ri(1, 12), half = lv(false, pickOne([true, false]), true), cp = String.fromCodePoint(0x1F54F + h + (half ? 12 : 0)), right = half ? 'half past ' + h : h + " o'clock", h2 = h % 12 + 1;
         return mq('What time is it?', cp, [[right, half ? 'The long hand is on 6, so it is half past ' + h + '.' : 'The long hand is on 12 and the short hand on ' + h + '.'], [half ? h + " o'clock" : 'half past ' + h, half ? "For o'clock the long hand is on 12." : 'For half past the long hand is on 6.'], [h2 + " o'clock", 'The short hand shows the hour: ' + h + '.']]); }""", 2),
        ("""function () { var D = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], i = ri(0, 6), after = pickOne([true, false]);
         return mq('What day comes ' + (after ? 'after ' : 'before ') + D[i] + '?', '📅', [[D[(i + (after ? 1 : 6)) % 7], 'The week goes Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.'], [D[(i + (after ? 6 : 1)) % 7], after ? 'That comes before ' + D[i] + '.' : 'That comes after ' + D[i] + '.'], [D[(i + 3) % 7], 'That is further away in the week.']]); }""", 0),
@@ -169,9 +169,9 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('You have ₹20. A toy costs ₹25. Can you buy it?', '🧸', 2, ('No, you need ₹5 more', '25 is more than 20.'), ('Yes, with ₹5 left', '25 is more than 20, so there is not enough.'), ('Yes, exactly', '₹20 is not the same as ₹25.'))],
   gen=[("""function () { var c = [pickOne([1, 2, 5, 10]), pickOne([1, 2, 5, 10]), pickOne([1, 2, 5])], t = c[0] + c[1] + c[2];
         return mq(c.map(function (x) { return '₹' + x; }).join(' + ') + ' = ?', coins(c), [['₹' + t, c.join(' + ') + ' = ' + t + '.'], ['₹' + (t - c[2]), 'Add all three coins.'], ['₹' + (t + 1), 'Add again carefully.']]); }""", 1),
-       ("""function () { var pay = pickOne([20, 50]), p = ri(pay - 18, pay - 2), t = pickOne([['🎈', 'A balloon'], ['🍦', 'An ice cream'], ['🪀', 'A yo-yo'], ['📒', 'A notebook']]);
+       ("""function () { var pay = lv(20, pickOne([20, 50]), 50), p = ri(pay - 18, pay - 2), t = pickOne([['🎈', 'A balloon'], ['🍦', 'An ice cream'], ['🪀', 'A yo-yo'], ['📒', 'A notebook']]);
         return mq(t[1] + ' costs ₹' + p + '. You pay ₹' + pay + '. How much change?', t[0] + ' ' + coins([pay]), [['₹' + (pay - p), '₹' + pay + ' − ₹' + p + ' = ₹' + (pay - p) + '.'], ['₹' + (pay + p), 'That adds. Change is what is left.'], ['₹' + p, 'That is the price.']]); }""", 3),
-       ("""function () { var a = ri(5, 25), b = ri(3, 20), t = shuffled([['🪁', 'kite'], ['⚽', 'ball'], ['🍫', 'chocolate'], ['🧃', 'juice']]).slice(0, 2);
+       ("""function () { var a = rl([3, 10], [5, 25], [15, 45]), b = rl([2, 9], [3, 20], [11, 35]), t = shuffled([['🪁', 'kite'], ['⚽', 'ball'], ['🍫', 'chocolate'], ['🧃', 'juice']]).slice(0, 2);
         return mq('A ' + t[0][1] + ' costs ₹' + a + ' and a ' + t[1][1] + ' ₹' + b + '. How much for both?', t[0][0] + ' ' + t[1][0], [['₹' + (a + b), a + ' + ' + b + ' = ' + (a + b) + '.'], ['₹' + Math.abs(a - b), 'That takes away. For both, we add.'], ['₹' + a, 'That is only the ' + t[0][1] + '.']]); }""", 4)],
   cards=[('₹10 + ₹5 + ₹5 = ?', '₹20'), ('How do you work out change?', 'Take the price away from what you pay: ₹20 − ₹15 = ₹5.'), ('Name three coins.', '₹1, ₹2, ₹5 (and ₹10).')]),
 
@@ -183,7 +183,7 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('🍎 7 · 🍌 3 · 🍊 5. Which fruit has the most?', '', 2, ('🍎 apples', '7 is the biggest number.'), ('🍌 bananas', '3 is the least.'), ('🍊 oranges', '5 is less than 7.')),
         Q('🍎 7 · 🍌 3. How many more apples than bananas?', '', 4, ('4', '7 − 3 = 4.'), ('10', 'That adds them. We want how many more.'), ('3', '3 is the bananas.')),
         Q('In a picture chart, each 🍌 is one banana. How many?', '🍌🍌🍌', 3, ('3', 'Count the pictures: 3.'), ('1', 'Each picture is one. There are 3 pictures.'), ('5', 'Count the pictures again.'))],
-  gen=[("""function () { var n = ri(3, 14), g = Math.floor(n / 5), r = n % 5, s = new Array(g + 1).join('<s>||||</s> ') + new Array(r + 1).join('|');
+  gen=[("""function () { var n = rl([3, 7], [5, 14], [11, 24]), g = Math.floor(n / 5), r = n % 5, s = new Array(g + 1).join('<s>||||</s> ') + new Array(r + 1).join('|');
         return mq('How many tally marks?', s.trim(), [[n, g ? g + ' crossed group' + (g > 1 ? 's' : '') + ' of 5' + (r ? ' and ' + r + ' more' : '') + ': ' + n + '.' : 'Count each mark: ' + n + '.'], [n + 1, 'A crossed group is 5 marks, not 6.'], [g + r, 'Each crossed group is 5, not 1.']]); }""", 1),
        ("""function () { var F = shuffled([['🍎', 'apples'], ['🍌', 'bananas'], ['🍊', 'oranges'], ['🍇', 'grapes']]).slice(0, 3), c = shuffled([ri(1, 3), ri(4, 5), ri(6, 8)]), most = pickOne([true, false]);
         var ix = c.indexOf(most ? Math.max.apply(null, c) : Math.min.apply(null, c));
@@ -200,11 +200,11 @@ MATHS = dict(id='maths', name='Maths', place='Number Town', grade='Grade 2', ico
         Q('₹25 + ₹14 = ?', '', 3, ('₹39', '25 + 14 = 39.'), ('₹11', 'That takes away. We add.'), ('₹29', 'Check the tens: 2 + 1 = 3.')),
         Q('A customer pays ₹50 for ₹39. How much change?', '💵', 4, ('₹11', '50 − 39 = 11.'), ('₹89', 'That adds. Change is what is left.'), ('₹21', 'Check: 39 + 11 = 50.')),
         Q('Which shape is the mango crate?', '📦', 0, ('cuboid', 'A crate is a box: a cuboid.'), ('sphere', 'A sphere is round like a ball.'), ('cone', 'A cone has a point.'))],
-  gen=[("""function () { var c = ri(2, 6), k = pickOne([5, 10]);
+  gen=[("""function () { var c = rl([2, 3], [2, 6], [5, 9]), k = lv(5, pickOne([5, 10]), 10);
         return mq(c + ' crates with ' + k + ' fruits each. How many fruits?', grp(c, k, pickOne(['🍎', '🥭', '🍊']), '📦'), [[c * k, 'Count in ' + k + 's: ' + c + ' groups of ' + k + ' make ' + c * k + '.'], [c + k, 'That adds ' + c + ' and ' + k + '.'], [c * k + k, 'That counts one crate too many.']]); }""", 1),
-       ("""function () { var k = ri(2, 5), e = ri(2, 6), n = k * e;
+       ("""function () { var k = rl([2, 3], [2, 5], [4, 6]), e = rl([2, 3], [2, 6], [4, 9]), n = k * e;
         return mq(n + ' mangoes into ' + k + ' bags equally. How many in each bag?', many(n, '🥭') + '<span class="qg">' + rpt('🛍️', k) + '</span>', [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many bags.']]); }""", 2),
-       ("""function () { var p = ri(21, 48);
+       ("""function () { var p = rl([35, 48], [21, 48], [11, 39]);
         return mq('A customer pays ₹50 for ₹' + p + '. How much change?', coins([50]), [['₹' + (50 - p), '₹50 − ₹' + p + ' = ₹' + (50 - p) + '.'], ['₹' + (50 + p), 'That adds. Change is what is left.'], ['₹' + (60 - p), 'Check by adding back: ' + p + ' + ' + (50 - p) + ' = 50.']]); }""", 4)],
   cards=[('Market Day: 4 crates of 5. How many?', '20'), ('Market Day: ₹50 for ₹39. Change?', '₹11'), ('How do you check change?', 'Add it back to the price: ₹39 + ₹11 = ₹50.')]),
 ])
@@ -452,11 +452,11 @@ ENGLISH = dict(id='english', name='English', place='Story Library', grade='Grade
 _N = "['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']"
 EXTRA = {
  'm2_groups': [
-  ("""function () { var n = ri(2, 6), who = pickOne(%s);
+  ("""function () { var n = rl([2, 4], [3, 6], [6, 10]), who = pickOne(%s);
         return mq(who + ' has ' + n + ' pairs of socks. How many socks?', grp(n, 2, '🧦'), [[n * 2, 'Count in twos: ' + n + ' pairs make ' + n * 2 + '.'], [n, n + ' is the number of pairs.'], [n + 2, 'Each pair has 2 socks. Count in twos.']]); }""" % _N, 0),
-  ("""function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 5), seq = [a, a + s, a + 2 * s, a + 3 * s], gap = ri(1, 2), right = seq[gap];
+  ("""function () { var s = pickOne([2, 5, 10]), a = s * rl([1, 3], [1, 5], [3, 10]), seq = [a, a + s, a + 2 * s, a + 3 * s], gap = ri(1, 2), right = seq[gap];
         seq[gap] = '__'; return mq('Which number is missing? ' + seq.join(', '), '', [[right, 'The jump is ' + s + ' each time.'], [right + 1, 'The jump is ' + s + ', not 1.'], [right + s, 'That skips one jump too many.']]); }""", 4),
-  ("""function () { var n = ri(2, 6);
+  ("""function () { var n = rl([2, 3], [3, 5], [5, 8]);
         return mq(n + ' children each hold up one hand. How many fingers?', grp(n, 1, '✋'), [[n * 5, 'Count in fives: ' + n + ' hands make ' + n * 5 + ' fingers.'], [n, n + ' is the number of hands.'], [n * 5 + 5, 'Count the hands again: ' + n + '.']]); }""", 1)],
  'm2_shapes': [
   ("""function () { var roll = pickOne([true, false]), R = ['⚽ ball', '🍊 orange', '🥫 tin', '🌍 globe'], N = ['🎲 dice', '📦 box', '🧱 brick', '📕 book'], r = pickOne(roll ? R : N), w = shuffled(roll ? N : R).slice(0, 2);
@@ -468,7 +468,7 @@ EXTRA = {
         return mq(t + ' tens and ' + o + ' ones make which number?', rpt('▮', t) + ' ' + rpt('•', o), [[t * 10 + o, t + ' tens is ' + t * 10 + ', and ' + o + ' more is ' + (t * 10 + o) + '.'], [o * 10 + t, 'The tens come first: ' + t + ', then the ones: ' + o + '.'], [t + o, 'Tens are worth 10 each.']]); }""", 0),
   ("""function () { var W = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'], O = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'], t = ri(2, 9), o = ri(1, 9), n = t * 10 + o;
         return mq('Which number is ' + W[t - 2] + '-' + O[o] + '?', '', [[n, W[t - 2] + ' is ' + t + ' tens, ' + O[o] + ' is ' + o + ' ones.'], [o * 10 + t, 'The tens digit comes first.'], [t * 100 + o, 'Two digits are enough: ' + n + '.']]); }""", 1),
-  ("""function () { var a = ri(11, 96);
+  ("""function () { var a = rl([11, 40], [30, 80], [60, 96]);
         return mq('Which number comes between ' + a + ' and ' + (a + 2) + '?', '', [[a + 1, a + ', ' + (a + 1) + ', ' + (a + 2) + '.'], [a + 3, 'That comes after ' + (a + 2) + '.'], [a - 1, 'That comes before ' + a + '.']]); }""", 2)],
  'm2_flat': [
   ("""function () { var S = [['▲', 'triangle', 3], ['■', 'square', 4], ['▬', 'rectangle', 4]], x = pickOne(S);
@@ -480,9 +480,9 @@ EXTRA = {
         var right = pickOne(C.filter(function (c) { return c[1] === want; })), w = shuffled(C.filter(function (c) { return c[1] !== want; })).slice(0, 2);
         return mq('Which one has a ' + want + ' line?', '', [[right[0], 'A ' + right[0].split(' ').slice(1).join(' ') + ' is ' + want + '.']].concat(w.map(function (c) { return [c[0], 'A ' + c[0].split(' ').slice(1).join(' ') + ' is ' + c[1] + '.']; }))); }""", 4)],
  'm2_addsub': [
-  ("""function () { var who = pickOne(%s), it = pickOne([['🔵', 'marbles'], ['🌸', 'flowers'], ['🖍️', 'crayons'], ['⭐', 'stickers']]), a = ri(12, 45), b = ri(11, 40);
+  ("""function () { var who = pickOne(%s), it = pickOne([['🔵', 'marbles'], ['🌸', 'flowers'], ['🖍️', 'crayons'], ['⭐', 'stickers']]), a = rl([10, 25], [12, 45], [35, 59]), b = rl([10, 20], [11, 40], [25, 40]);
         return mq(who + ' has ' + a + ' ' + it[1] + ' and gets ' + b + ' more. How many now?', it[0], [[a + b, a + ' + ' + b + ' = ' + (a + b) + '.'], [Math.abs(a - b), 'Gets more means add.'], [a + b + 10, 'Add the tens again.']]); }""" % _N, 1),
-  ("""function () { var who = pickOne(%s), it = pickOne([['🎈', 'balloons', 'fly away'], ['🍪', 'biscuits', 'are eaten'], ['🐦', 'birds', 'fly off']]), a = ri(25, 60), b = ri(11, 20);
+  ("""function () { var who = pickOne(%s), it = pickOne([['🎈', 'balloons', 'fly away'], ['🍪', 'biscuits', 'are eaten'], ['🐦', 'birds', 'fly off']]), a = rl([20, 40], [25, 60], [50, 95]), b = rl([5, 12], [11, 20], [18, 39]);
         return mq(who + ' has ' + a + ' ' + it[1] + '. ' + b + ' ' + it[2] + '. How many are left?', it[0], [[a - b, a + ' − ' + b + ' = ' + (a - b) + '.'], [a + b, 'Some went away, so take away.'], [a - b + 10, 'Check the tens: ' + a + ' − ' + b + ' = ' + (a - b) + '.']]); }""" % _N, 2)],
  'm2_measure': [
   ("""function () { var a = ri(5, 40), b = ri(5, 40); if (a === b) return null; var t = pickOne(['ribbon', 'rope', 'stick', 'string']);

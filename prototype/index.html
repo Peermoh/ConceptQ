@@ -2573,7 +2573,16 @@ button.deck.locked { cursor: default; }
   });
   document.getElementById('toQuiz').addEventListener('click', function () { startQuiz(); });
   // the house, town and library pages ask to go back to the lessons
-  window.addEventListener('message', function (e) { var f = document.getElementById('houseFrame'); if (f && e.source === f.contentWindow && e.data && e.data.cq === 'home') show('home'); });
+  window.addEventListener('message', function (e) {
+    var f = document.getElementById('houseFrame'); if (!f || e.source !== f.contentWindow || !e.data) return;
+    if (e.data.cq === 'home') show('home');
+    // the puzzle asks how many embers there are, and spends some to place a piece
+    if (e.data.cq === 'embers?') f.contentWindow.postMessage({ cq: 'embers', n: state.embers }, '*');
+    if (e.data.cq === 'spend' && typeof e.data.n === 'number' && e.data.n > 0 && e.data.n <= 100) {
+      var ok = state.embers >= e.data.n; if (ok) { state.embers -= e.data.n; saveProgress(); }
+      f.contentWindow.postMessage({ cq: 'spent', ok: ok, n: state.embers, id: e.data.id }, '*');
+    }
+  });
   document.getElementById('doneHouse').addEventListener('click', function () { pendingBuild = openLessonIdx; show('house'); });
   document.getElementById('backHome').addEventListener('click', function () { show('home'); });
 
@@ -2700,13 +2709,15 @@ button.deck.locked { cursor: default; }
   function closeWheel() { document.getElementById('wheelDlg').hidden = true; renderPrizeTile(); }
   document.getElementById('wheelSpin').addEventListener('click', function () {
     if (spinning || !spinsReady()) return;
-    var list = prizeList(), n = list.length, pick = Math.floor(Math.random() * n), seg = 360 / n;
+    // a fair, lively spin: the prize, the spot inside its slice, the number of turns and the time all vary (crypto random when the browser has it)
+    function rnd() { try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; } catch (e) { return Math.random(); } }
+    var list = prizeList(), n = list.length, pick = Math.floor(rnd() * n), seg = 360 / n, turns = 4 + Math.floor(rnd() * 4), secs = 3.5 + rnd() * 1.5;
     // turn at least five times, then stop with the picked slice under the pointer at the top
     var target = (360 - (pick + 0.5) * seg + 360) % 360, base = wheelAngle - (wheelAngle % 360);
-    wheelAngle = base + 360 * 5 + target + (Math.random() - 0.5) * seg * 0.6;
+    wheelAngle = base + 360 * turns + target + (rnd() - 0.5) * seg * 0.84;
     spinning = true; document.getElementById('wheelSpin').disabled = true;
     var g = document.getElementById('wheelG');
-    g.style.transition = still ? 'none' : 'transform 4s cubic-bezier(.15,.75,.15,1)';
+    g.style.transition = still ? 'none' : 'transform ' + secs.toFixed(2) + 's cubic-bezier(.15,.75,.15,1)';
     g.style.transform = 'rotate(' + wheelAngle + 'deg)';
     // ticks that slow down with the wheel
     if (!still) { var tk = 0; (function tick(d) { if (tk++ > 40 || d > 600) return; SFX.play('tick'); setTimeout(function () { tick(d * 1.09); }, d); })(45); }
@@ -2721,7 +2732,7 @@ button.deck.locked { cursor: default; }
       document.getElementById('wheelSpin').hidden = !left;
       document.getElementById('wheelInfo').textContent = left ? 'You have ' + left + ' more ' + (left === 1 ? 'spin' : 'spins') + '!' : 'Next spin in ' + (rewards.per - jarFill()) + ' embers.';
       burst(document.getElementById('wheelPrize'));
-    }, still ? 50 : 4100);
+    }, still ? 50 : secs * 1000 + 100);
   });
   document.getElementById('wheelClose').addEventListener('click', closeWheel);
   document.getElementById('wheelDlg').addEventListener('click', function (e) { if (e.target.id === 'wheelDlg' && !spinning) closeWheel(); });
@@ -3302,6 +3313,10 @@ button.deck.locked { cursor: default; }
   // a question can show a picture (pic) and play sounds (snd: clips from the phonics sound sheet)
   function mq(text, pic, pairs) { var q = mk(text, '', pairs); if (q && pic) q.pic = pic; return q; }
   function an(w) { return (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w; }
+  // question levels: makeQuiz sets QLEVEL (0 easy, 1 medium, 2 hard) before calling a generator; lv / rl pick by it
+  var QLEVEL = 1, LVUSED = false;
+  function lv(e, m, h) { LVUSED = true; return QLEVEL === 0 ? e : QLEVEL === 2 ? h : m; }
+  function rl(e, m, h) { var r = lv(e, m, h); return ri(r[0], r[1]); }
   // pictures that show what the words say: groups in their basket / box / bundle, loose things in rows, coins as chips
   function rpt(t, n) { return new Array(n + 1).join(t); }
   function grp(n, k, item, box) { var s = ''; for (var i = 0; i < n; i++) s += '<span class="qg">' + (box ? '<i>' + box + '</i>' : '') + (k <= 6 ? rpt(item, k) : k <= 10 ? '<span class="qgrid">' + rpt('<span>' + item + '</span>', k) + '</span>' : item + '<b class="qn">×' + k + '</b>') + '</span>'; return s; }
@@ -3647,17 +3662,17 @@ button.deck.locked { cursor: default; }
          doneText: "You finished the Picture-book Corner! The puppet theatre is ready for Story Time. Come and see." }
     } };
   GEN.m2_groups = [
-    function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 6), seq = [a, a + s, a + 2 * s, a + 3 * s];
+    function () { var s = pickOne([2, 5, 10]), a = s * rl([1, 3], [1, 6], [4, 12]), seq = [a, a + s, a + 2 * s, a + 3 * s];
         return mq('What comes next? ' + seq.join(', ') + ', __', '', [[a + 4 * s, 'Every jump is ' + s + ', so ' + seq[3] + ' + ' + s + ' = ' + (a + 4 * s) + '.'], [seq[3] + 1, 'The jump is ' + s + ', not 1.'], [a + 5 * s, 'That jumps twice. Add ' + s + ' once.']]); },
-    function () { var g = ri(2, 5), k = ri(2, 5), f = pickOne(['🥭', '🍎', '🍊', '🍋']);
+    function () { var g = rl([2, 3], [2, 4], [4, 6]), k = rl([2, 3], [3, 5], [4, 6]), f = pickOne(['🥭', '🍎', '🍊', '🍋']);
         return mq(g + ' baskets with ' + k + ' fruits each. How many fruits?', grp(g, k, f, '🧺'), [[g * k, 'Count in ' + k + 's ' + g + ' times: ' + g + ' groups of ' + k + ' make ' + g * k + '.'], [g + k, 'That adds ' + g + ' and ' + k + '. Count every fruit in every basket.'], [g * k + k, 'That counts one basket too many.']]); },
-    function () { var n = ri(2, 9);
+    function () { var n = rl([2, 4], [3, 7], [6, 9]);
         return mq('Each bundle has 10 sticks. How many sticks in ' + n + ' bundles?', grp(n, 10, '🥢', '🪢'), [[n * 10, 'Count in tens: ' + n + ' tens make ' + n * 10 + '.'], [n, n + ' is how many bundles, not sticks.'], [n + 10, 'Count in tens, not ones.']]); },
-    function () { var n = ri(2, 6), who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']);
+    function () { var n = rl([2, 4], [3, 6], [6, 10]), who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']);
         return mq(who + ' has ' + n + ' pairs of socks. How many socks?', grp(n, 2, '🧦'), [[n * 2, 'Count in twos: ' + n + ' pairs make ' + n * 2 + '.'], [n, n + ' is the number of pairs.'], [n + 2, 'Each pair has 2 socks. Count in twos.']]); },
-    function () { var s = pickOne([2, 5, 10]), a = s * ri(1, 5), seq = [a, a + s, a + 2 * s, a + 3 * s], gap = ri(1, 2), right = seq[gap];
+    function () { var s = pickOne([2, 5, 10]), a = s * rl([1, 3], [1, 5], [3, 10]), seq = [a, a + s, a + 2 * s, a + 3 * s], gap = ri(1, 2), right = seq[gap];
         seq[gap] = '__'; return mq('Which number is missing? ' + seq.join(', '), '', [[right, 'The jump is ' + s + ' each time.'], [right + 1, 'The jump is ' + s + ', not 1.'], [right + s, 'That skips one jump too many.']]); },
-    function () { var n = ri(2, 6);
+    function () { var n = rl([2, 3], [3, 5], [5, 8]);
         return mq(n + ' children each hold up one hand. How many fingers?', grp(n, 1, '✋'), [[n * 5, 'Count in fives: ' + n + ' hands make ' + n * 5 + ' fingers.'], [n, n + ' is the number of hands.'], [n * 5 + 5, 'Count the hands again: ' + n + '.']]); }
   ];
   GEN.m2_shapes = [
@@ -3674,7 +3689,7 @@ button.deck.locked { cursor: default; }
   GEN.m2_numbers = [
     function () { var t = ri(1, 9), o = ri(1, 9), n = t * 10 + o, askT = pickOne([true, false]);
         return mq('How many ' + (askT ? 'tens' : 'ones') + ' are in ' + n + '?', new Array(t + 1).join('▮') + ' ' + new Array(o + 1).join('•'), [[askT ? t : o, n + ' is ' + t + ' tens and ' + o + ' ones.'], [askT ? o : t, askT ? o + ' is the ones digit.' : t + ' is the tens digit.'], [n, n + ' is the whole number.']]); },
-    function () { var n = ri(12, 98), after = pickOne([true, false]);
+    function () { var n = rl([12, 40], [20, 90], [50, 98]), after = pickOne([true, false]);
         return mq('What comes just ' + (after ? 'after ' : 'before ') + n + '?', '', [[after ? n + 1 : n - 1, after ? n + ' + 1 = ' + (n + 1) + '.' : n + ' − 1 = ' + (n - 1) + '.'], [after ? n - 1 : n + 1, after ? 'That comes before ' + n + '.' : 'That comes after ' + n + '.'], [after ? n + 10 : n - 10, 'That jumps a whole ten.']]); },
     function () { var a = ri(1, 9), b = ri(1, 9); if (a === b) return null; var x = a * 10 + b, y = b * 10 + a, big = Math.max(x, y), small = Math.min(x, y), lo = small - ri(1, 5);
         return mq('Which number is the biggest?', '', [[big, big + ' has the most tens.'], [small, small + ' has fewer tens than ' + big + '.'], [lo, lo + ' is smaller still.']]); },
@@ -3682,7 +3697,7 @@ button.deck.locked { cursor: default; }
         return mq(t + ' tens and ' + o + ' ones make which number?', rpt('▮', t) + ' ' + rpt('•', o), [[t * 10 + o, t + ' tens is ' + t * 10 + ', and ' + o + ' more is ' + (t * 10 + o) + '.'], [o * 10 + t, 'The tens come first: ' + t + ', then the ones: ' + o + '.'], [t + o, 'Tens are worth 10 each.']]); },
     function () { var W = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'], O = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'], t = ri(2, 9), o = ri(1, 9), n = t * 10 + o;
         return mq('Which number is ' + W[t - 2] + '-' + O[o] + '?', '', [[n, W[t - 2] + ' is ' + t + ' tens, ' + O[o] + ' is ' + o + ' ones.'], [o * 10 + t, 'The tens digit comes first.'], [t * 100 + o, 'Two digits are enough: ' + n + '.']]); },
-    function () { var a = ri(11, 96);
+    function () { var a = rl([11, 40], [30, 80], [60, 96]);
         return mq('Which number comes between ' + a + ' and ' + (a + 2) + '?', '', [[a + 1, a + ', ' + (a + 1) + ', ' + (a + 2) + '.'], [a + 3, 'That comes after ' + (a + 2) + '.'], [a - 1, 'That comes before ' + a + '.']]); }
   ];
   GEN.m2_flat = [
@@ -3708,21 +3723,21 @@ button.deck.locked { cursor: default; }
         return mq('Which one has a ' + want + ' line?', '', [[right[0], 'A ' + right[0].split(' ').slice(1).join(' ') + ' is ' + want + '.']].concat(w.map(function (c) { return [c[0], 'A ' + c[0].split(' ').slice(1).join(' ') + ' is ' + c[1] + '.']; }))); }
   ];
   GEN.m2_addsub = [
-    function () { var a = ri(1, 4) * 10 + ri(1, 4), b = ri(1, 4) * 10 + ri(1, 5), r = a + b;
+    function () { var a = rl([1, 2], [1, 3], [2, 4]) * 10 + ri(1, 4), b = rl([1, 1], [1, 3], [2, 4]) * 10 + ri(1, 5), r = a + b;
         return mq(a + ' + ' + b + ' = ?', '', [[r, 'Ones: ' + a % 10 + ' + ' + b % 10 + ' = ' + (a % 10 + b % 10) + '. Tens: ' + Math.floor(a / 10) + ' + ' + Math.floor(b / 10) + ' = ' + Math.floor(r / 10) + '.'], [r + 10, 'Check the tens again.'], [r - 1, 'Check the ones again.']]); },
-    function () { var ao = ri(5, 9), bo = ri(10 - ao, 9), a = ri(1, 4) * 10 + ao, b = ri(1, 4) * 10 + bo, r = a + b;
+    function () { var ao = ri(5, 9), bo = ri(10 - ao, 9), a = rl([1, 1], [1, 3], [2, 4]) * 10 + ao, b = rl([1, 1], [1, 3], [2, 4]) * 10 + bo, r = a + b;
         return mq(a + ' + ' + b + ' = ?', '', [[r, ao + ' + ' + bo + ' = ' + (ao + bo) + ': write ' + (ao + bo - 10) + ', carry 1 ten.'], [r - 10, 'You forgot to carry the ten.'], [r + 1, 'Check the ones: ' + ao + ' + ' + bo + ' = ' + (ao + bo) + '.']]); },
-    function () { var b = ri(3, 9), a = ri(2, 6) * 10 + ri(0, b - 1), r = a - b, f = pickOne([['💡', 'lights', 'break'], ['🎈', 'balloons', 'pop'], ['🪔', 'lamps', 'go out']]);
+    function () { var b = rl([3, 5], [3, 9], [6, 9]), a = rl([2, 3], [2, 6], [5, 9]) * 10 + ri(0, b - 1), r = a - b, f = pickOne([['💡', 'lights', 'break'], ['🎈', 'balloons', 'pop'], ['🪔', 'lamps', 'go out']]);
         return mq(a + ' ' + f[1] + ', ' + b + ' ' + f[2] + '. How many are left?', f[0], [[r, a + ' − ' + b + ' = ' + r + '.'], [a + b, 'That adds. We take away.'], [r + 10, 'You need to break a ten: ' + a + ' − ' + b + ' = ' + r + '.']]); },
     function () { var a = ri(4, 9), b = ri(1, a - 1);
         return mq(a * 10 + ' − ' + b * 10 + ' = ?', '', [[(a - b) * 10, a + ' tens − ' + b + ' tens = ' + (a - b) + ' tens.'], [(a + b) * 10, 'That adds the tens.'], [a * 10 - b, 'Take away ' + b + ' tens, not ' + b + ' ones.']]); },
-    function () { var who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']), it = pickOne([['🔵', 'marbles'], ['🌸', 'flowers'], ['🖍️', 'crayons'], ['⭐', 'stickers']]), a = ri(12, 45), b = ri(11, 40);
+    function () { var who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']), it = pickOne([['🔵', 'marbles'], ['🌸', 'flowers'], ['🖍️', 'crayons'], ['⭐', 'stickers']]), a = rl([10, 25], [12, 45], [35, 59]), b = rl([10, 20], [11, 40], [25, 40]);
         return mq(who + ' has ' + a + ' ' + it[1] + ' and gets ' + b + ' more. How many now?', it[0], [[a + b, a + ' + ' + b + ' = ' + (a + b) + '.'], [Math.abs(a - b), 'Gets more means add.'], [a + b + 10, 'Add the tens again.']]); },
-    function () { var who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']), it = pickOne([['🎈', 'balloons', 'fly away'], ['🍪', 'biscuits', 'are eaten'], ['🐦', 'birds', 'fly off']]), a = ri(25, 60), b = ri(11, 20);
+    function () { var who = pickOne(['Ravi', 'Mina', 'Anu', 'Sam', 'Zara', 'Kabir', 'Meera', 'Arjun']), it = pickOne([['🎈', 'balloons', 'fly away'], ['🍪', 'biscuits', 'are eaten'], ['🐦', 'birds', 'fly off']]), a = rl([20, 40], [25, 60], [50, 95]), b = rl([5, 12], [11, 20], [18, 39]);
         return mq(who + ' has ' + a + ' ' + it[1] + '. ' + b + ' ' + it[2] + '. How many are left?', it[0], [[a - b, a + ' − ' + b + ' = ' + (a - b) + '.'], [a + b, 'Some went away, so take away.'], [a - b + 10, 'Check the tens: ' + a + ' − ' + b + ' = ' + (a - b) + '.']]); }
   ];
   GEN.m2_measure = [
-    function () { var a = ri(8, 25), b = ri(3, a - 2), t = pickOne([['✏️', 'pencil', 'crayon'], ['🎀', 'red ribbon', 'blue ribbon'], ['🥢', 'stick', 'straw']]);
+    function () { var a = rl([6, 12], [8, 25], [20, 60]), b = ri(3, a - 2), t = pickOne([['✏️', 'pencil', 'crayon'], ['🎀', 'red ribbon', 'blue ribbon'], ['🥢', 'stick', 'straw']]);
         return mq('The ' + t[1] + ' is ' + a + ' cm. The ' + t[2] + ' is ' + b + ' cm. How much longer is the ' + t[1] + '?', t[0], [[(a - b) + ' cm', a + ' − ' + b + ' = ' + (a - b) + '.'], [(a + b) + ' cm', 'That adds them. We want the difference.'], [a + ' cm', 'That is the whole ' + t[1] + '.']]); },
     function () { var P = [['🍉 watermelon', '🍓 strawberry'], ['🐘 elephant', '🐭 mouse'], ['🎒 school bag', '✏️ pencil'], ['🧱 brick', '🪶 feather'], ['🎃 pumpkin', '🥜 peanut']], x = pickOne(P);
         return mq(an(x[0].split(' ').slice(1).join(' ')).replace(/^./, function (c) { return c.toUpperCase(); }) + ' and ' + an(x[1].split(' ').slice(1).join(' ')) + ' are on a balance. Which side goes down?', '⚖️', [[x[0], 'The ' + x[0].split(' ').slice(1).join(' ') + ' is heavier, so its side goes down.'], [x[1], 'The ' + x[1].split(' ').slice(1).join(' ') + ' is lighter, so its side goes up.'], ['They stay level', 'They only stay level when both weigh the same.']]); },
@@ -3732,9 +3747,9 @@ button.deck.locked { cursor: default; }
         return mq(who + "'s table is " + n + ' hand spans long. The bench is ' + m + ' spans shorter. How long is the bench?', rpt('✋', n), [[n - m, n + ' − ' + m + ' = ' + (n - m) + ' spans.'], [n + m, 'Shorter means take away.'], [m, m + ' is how much shorter.']]); }
   ];
   GEN.m2_share = [
-    function () { var a = ri(2, 5), b = ri(2, 5);
+    function () { var a = rl([2, 3], [2, 5], [4, 6]), b = rl([2, 3], [2, 5], [4, 6]);
         return mq(a + ' × ' + b + ' = ?', grp(a, b, '🍬', '📦'), [[a * b, a + ' groups of ' + b + ' make ' + a * b + '.'], [a + b, 'That adds. × means groups of.'], [a * b + b, 'Count the groups again: there are ' + a + '.']]); },
-    function () { var k = ri(2, 5), e = ri(2, 6), n = k * e, f = pickOne([['🍬', 'sweets'], ['🍪', 'biscuits'], ['🟡', 'laddoos']]);
+    function () { var k = rl([2, 3], [2, 5], [4, 6]), e = rl([2, 3], [2, 6], [4, 9]), n = k * e, f = pickOne([['🍬', 'sweets'], ['🍪', 'biscuits'], ['🟡', 'laddoos']]);
         return mq(n + ' ' + f[1] + ' shared equally by ' + k + ' friends. How many each?', many(n, f[0]) + kids(k), [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many friends.']]); },
     function () { var k = pickOne([2, 3]), n = ri(5, 14); if (n % k === 0) return null;
         return mq(n + ' sweets shared by ' + k + ' friends. How many are left over?', many(n, '🍬') + kids(k), [[n % k, 'Each gets ' + Math.floor(n / k) + ', which uses ' + (Math.floor(n / k) * k) + '. ' + (n % k) + ' left.'], [0, n + ' does not share evenly by ' + k + '.'], [Math.floor(n / k), 'That is how many each friend gets.']]); },
@@ -3744,7 +3759,7 @@ button.deck.locked { cursor: default; }
         return mq(a + ' × ' + b + ' = ' + a * b + '. So ' + a * b + ' ÷ ' + a + ' = ?', '', [[b, 'Times and sharing are partners.'], [a * b, a * b + ' is the total.'], [a, a + ' is how many groups.']]); }
   ];
   GEN.m2_time = [
-    function () { var h = ri(1, 12), half = pickOne([true, false]), cp = String.fromCodePoint(0x1F54F + h + (half ? 12 : 0)), right = half ? 'half past ' + h : h + " o'clock", h2 = h % 12 + 1;
+    function () { var h = ri(1, 12), half = lv(false, pickOne([true, false]), true), cp = String.fromCodePoint(0x1F54F + h + (half ? 12 : 0)), right = half ? 'half past ' + h : h + " o'clock", h2 = h % 12 + 1;
         return mq('What time is it?', cp, [[right, half ? 'The long hand is on 6, so it is half past ' + h + '.' : 'The long hand is on 12 and the short hand on ' + h + '.'], [half ? h + " o'clock" : 'half past ' + h, half ? "For o'clock the long hand is on 12." : 'For half past the long hand is on 6.'], [h2 + " o'clock", 'The short hand shows the hour: ' + h + '.']]); },
     function () { var D = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], i = ri(0, 6), after = pickOne([true, false]);
         return mq('What day comes ' + (after ? 'after ' : 'before ') + D[i] + '?', '📅', [[D[(i + (after ? 1 : 6)) % 7], 'The week goes Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.'], [D[(i + (after ? 6 : 1)) % 7], after ? 'That comes before ' + D[i] + '.' : 'That comes after ' + D[i] + '.'], [D[(i + 3) % 7], 'That is further away in the week.']]); },
@@ -3758,9 +3773,9 @@ button.deck.locked { cursor: default; }
   GEN.m2_money = [
     function () { var c = [pickOne([1, 2, 5, 10]), pickOne([1, 2, 5, 10]), pickOne([1, 2, 5])], t = c[0] + c[1] + c[2];
         return mq(c.map(function (x) { return '₹' + x; }).join(' + ') + ' = ?', coins(c), [['₹' + t, c.join(' + ') + ' = ' + t + '.'], ['₹' + (t - c[2]), 'Add all three coins.'], ['₹' + (t + 1), 'Add again carefully.']]); },
-    function () { var pay = pickOne([20, 50]), p = ri(pay - 18, pay - 2), t = pickOne([['🎈', 'A balloon'], ['🍦', 'An ice cream'], ['🪀', 'A yo-yo'], ['📒', 'A notebook']]);
+    function () { var pay = lv(20, pickOne([20, 50]), 50), p = ri(pay - 18, pay - 2), t = pickOne([['🎈', 'A balloon'], ['🍦', 'An ice cream'], ['🪀', 'A yo-yo'], ['📒', 'A notebook']]);
         return mq(t[1] + ' costs ₹' + p + '. You pay ₹' + pay + '. How much change?', t[0] + ' ' + coins([pay]), [['₹' + (pay - p), '₹' + pay + ' − ₹' + p + ' = ₹' + (pay - p) + '.'], ['₹' + (pay + p), 'That adds. Change is what is left.'], ['₹' + p, 'That is the price.']]); },
-    function () { var a = ri(5, 25), b = ri(3, 20), t = shuffled([['🪁', 'kite'], ['⚽', 'ball'], ['🍫', 'chocolate'], ['🧃', 'juice']]).slice(0, 2);
+    function () { var a = rl([3, 10], [5, 25], [15, 45]), b = rl([2, 9], [3, 20], [11, 35]), t = shuffled([['🪁', 'kite'], ['⚽', 'ball'], ['🍫', 'chocolate'], ['🧃', 'juice']]).slice(0, 2);
         return mq('A ' + t[0][1] + ' costs ₹' + a + ' and a ' + t[1][1] + ' ₹' + b + '. How much for both?', t[0][0] + ' ' + t[1][0], [['₹' + (a + b), a + ' + ' + b + ' = ' + (a + b) + '.'], ['₹' + Math.abs(a - b), 'That takes away. For both, we add.'], ['₹' + a, 'That is only the ' + t[0][1] + '.']]); },
     function () { var a = ri(5, 95), b = ri(5, 95); if (a === b) return null;
         return mq('Which is more money?', '', [['₹' + Math.max(a, b), Math.max(a, b) + ' is more than ' + Math.min(a, b) + '.'], ['₹' + Math.min(a, b), Math.min(a, b) + ' is less.'], ['They are the same', 'They are different amounts.']]); },
@@ -3768,7 +3783,7 @@ button.deck.locked { cursor: default; }
         return mq('Which coins make ₹' + T[0] + '?', '🪙', [[T[1].map(function (v) { return '₹' + v; }).join(' + '), T[1].join(' + ') + ' = ' + T[0] + '.'], [T[2].map(function (v) { return '₹' + v; }).join(' + '), 'That makes ₹' + T[2].reduce(function (p, q) { return p + q; }) + '.'], [T[3].map(function (v) { return '₹' + v; }).join(' + '), 'That makes ₹' + T[3].reduce(function (p, q) { return p + q; }) + '.']]); }
   ];
   GEN.m2_data = [
-    function () { var n = ri(3, 14), g = Math.floor(n / 5), r = n % 5, s = new Array(g + 1).join('<s>||||</s> ') + new Array(r + 1).join('|');
+    function () { var n = rl([3, 7], [5, 14], [11, 24]), g = Math.floor(n / 5), r = n % 5, s = new Array(g + 1).join('<s>||||</s> ') + new Array(r + 1).join('|');
         return mq('How many tally marks?', s.trim(), [[n, g ? g + ' crossed group' + (g > 1 ? 's' : '') + ' of 5' + (r ? ' and ' + r + ' more' : '') + ': ' + n + '.' : 'Count each mark: ' + n + '.'], [n + 1, 'A crossed group is 5 marks, not 6.'], [g + r, 'Each crossed group is 5, not 1.']]); },
     function () { var F = shuffled([['🍎', 'apples'], ['🍌', 'bananas'], ['🍊', 'oranges'], ['🍇', 'grapes']]).slice(0, 3), c = shuffled([ri(1, 3), ri(4, 5), ri(6, 8)]), most = pickOne([true, false]);
         var ix = c.indexOf(most ? Math.max.apply(null, c) : Math.min.apply(null, c));
@@ -3781,11 +3796,11 @@ button.deck.locked { cursor: default; }
         return mq('Make the tally for ' + (5 + n) + '. What do you draw?', '', [['<s>||||</s> ' + rpt('|', n), 'A crossed group of 5 and ' + n + ' more.'], [rpt('|', 5 + n), 'After 4 marks, cross them to make the 5th.'], ['<s>||||</s> <s>||||</s>', 'That is 10.']]); }
   ];
   GEN.m2_challenge = [
-    function () { var c = ri(2, 6), k = pickOne([5, 10]);
+    function () { var c = rl([2, 3], [2, 6], [5, 9]), k = lv(5, pickOne([5, 10]), 10);
         return mq(c + ' crates with ' + k + ' fruits each. How many fruits?', grp(c, k, pickOne(['🍎', '🥭', '🍊']), '📦'), [[c * k, 'Count in ' + k + 's: ' + c + ' groups of ' + k + ' make ' + c * k + '.'], [c + k, 'That adds ' + c + ' and ' + k + '.'], [c * k + k, 'That counts one crate too many.']]); },
-    function () { var k = ri(2, 5), e = ri(2, 6), n = k * e;
+    function () { var k = rl([2, 3], [2, 5], [4, 6]), e = rl([2, 3], [2, 6], [4, 9]), n = k * e;
         return mq(n + ' mangoes into ' + k + ' bags equally. How many in each bag?', many(n, '🥭') + '<span class="qg">' + rpt('🛍️', k) + '</span>', [[e, n + ' ÷ ' + k + ' = ' + e + '.'], [n - k, 'That takes ' + k + ' away. We share.'], [k, k + ' is how many bags.']]); },
-    function () { var p = ri(21, 48);
+    function () { var p = rl([35, 48], [21, 48], [11, 39]);
         return mq('A customer pays ₹50 for ₹' + p + '. How much change?', coins([50]), [['₹' + (50 - p), '₹50 − ₹' + p + ' = ₹' + (50 - p) + '.'], ['₹' + (50 + p), 'That adds. Change is what is left.'], ['₹' + (60 - p), 'Check by adding back: ' + p + ' + ' + (50 - p) + ' = 50.']]); },
     function () { var a = ri(11, 35), b = ri(10, 30), t = shuffled([['🥭', 'mangoes'], ['🍌', 'bananas'], ['🍉', 'a melon'], ['🍇', 'grapes']]).slice(0, 2);
         return mq('A customer buys ' + t[0][1] + ' for ₹' + a + ' and ' + t[1][1] + ' for ₹' + b + '. How much in all?', t[0][0] + ' ' + t[1][0], [['₹' + (a + b), a + ' + ' + b + ' = ' + (a + b) + '.'], ['₹' + Math.abs(a - b), 'In all means add.'], ['₹' + (a + b + 10), 'Check the tens.']]); },
@@ -3962,7 +3977,48 @@ button.deck.locked { cursor: default; }
     { id: 'e2_challenge_3', c: 'g2e', l: 12, cr: 'english', f: "What do good readers do with new words?", b: "Sound them out." }
   );
   // ==== END COURSE PACKS ====
+  // ---- Maths and English: 4 fresh questions (easy, medium, hard and one more) + 1 hand-written, chosen so a question
+  // does not come back for about five tries. Recently asked questions are remembered per lesson in cq-qhist.
+  function qHist(key, add) {
+    var h = {}; try { h = JSON.parse(localStorage.getItem('cq-qhist') || '{}') || {}; } catch (e) {}
+    if (!Array.isArray(h[key])) h[key] = [];
+    if (add) { h[key] = h[key].concat(add).slice(-30); try { localStorage.setItem('cq-qhist', JSON.stringify(h)); } catch (e) {} }
+    return h[key];
+  }
+  function qid(q) { return q.text + '|' + q.options[0]; }
+  function makeCourseQuiz(ld) {
+    var hist = qHist(ld.key), gens = GEN[ld.key] || [], made = [], usedGen = [], ids = {}, n = ld.size || 5, nFresh = Math.min(n - 1, gens.length ? 4 : 0);
+    var levels = shuffled([0, 1, 2, Math.floor(Math.random() * 3)]);
+    for (var k = 0; k < nFresh; k++) {
+      var best = null, bestScore = -1;
+      // try every generator in a fresh order: prefer one not used yet in this quiz, and a question not asked recently
+      var order = shuffled(gens.slice());
+      for (var t = 0; t < 30; t++) {
+        var g = order[t % order.length]; QLEVEL = levels[k]; LVUSED = false;
+        var q = null; try { q = g(); } catch (e) { q = null; }
+        if (!q || ids[qid(q)]) continue;
+        var score = (usedGen.indexOf(g) < 0 ? 2 : 0) + (hist.indexOf(qid(q)) < 0 ? 3 : 0);
+        if (score > bestScore) { best = q; best._g = g; best.level = LVUSED ? levels[k] : null; bestScore = score; }
+        if (score === 5) break;
+      }
+      if (!best) continue;
+      if (typeof best.step !== 'number') best.step = (GEN_STEPS[ld.key] || [])[gens.indexOf(best._g)];
+      made.push(best); usedGen.push(best._g); ids[qid(best)] = 1;
+    }
+    QLEVEL = 1;
+    // the hand-written ones: whichever was asked longest ago (never asked counts as oldest)
+    var hand = ld.quiz.map(function (q, i) { var at = hist.lastIndexOf(qid(q)); return { q: q, at: at < 0 ? -1 - Math.random() : at, i: i }; })
+      .sort(function (a, b) { return a.at - b.at; }).slice(0, n - made.length).map(function (x) { return x.q; });
+    var all = shuffled(made.concat(hand));
+    qHist(ld.key, all.map(qid));
+    return all.map(function (q) {
+      var order = shuffled(q.options.map(function (o, i) { return i; }));
+      var st = typeof q.step === 'number' ? q.step : (Q_STEPS[ld.key] || [])[ld.quiz.indexOf(q)];
+      return { text: q.text, code: q.code, pic: q.pic, snd: q.snd, gap: q.gap, level: q.level, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
+    });
+  }
   function makeQuiz(ld) {
+    if (ld.fresh) return makeCourseQuiz(ld);
     var n = ld.size || ld.quiz.length, gens = shuffled(GEN[ld.key] || []), made = []; // Maths and English: 5 questions, 3 of them made fresh
     // one question per idea: two pop() questions, or two len() questions, in one quiz feels repetitive
     var TOPIC = [/\.pop\(/, /\.append\(/, /\[-1\]/, /\[\d:\d\]/, /len\(/, /\s%\s/, /\/\//, /\*\*/, /\+=/, /range\(\d+, \d+, \d+\)/, /break/, /elif/, / and /, / - /, /sqrt\(/, /ceil\(|floor\(/, /\.get\(/, /\.split\(/, /\.join\(/, /\.replace\(/, /\.count\(/, /\.sort\(|sorted\(/, /\[::/];
@@ -4003,18 +4059,38 @@ button.deck.locked { cursor: default; }
       })();
     }).catch(function () {});
   }
+  // the clearest voice on this device: the narrator's own (Microsoft Prabhat / Ryan, on Edge and Windows), else another
+  // natural Indian or British English voice, else any English voice
+  function pickVoice() {
+    if (!hasTTS) return null;
+    var vs = speechSynthesis.getVoices() || [], want = profile.narrator === 'ryan' ? 'ryan' : 'prabhat', lang = want === 'ryan' ? 'en-GB' : 'en-IN';
+    function f(test) { for (var i = 0; i < vs.length; i++) if (test(vs[i])) return vs[i]; return null; }
+    return f(function (v) { return v.name.toLowerCase().indexOf(want) >= 0; }) ||
+      f(function (v) { return v.lang.replace('_', '-') === lang && /natural|online|neural/i.test(v.name); }) ||
+      f(function (v) { return v.lang.replace('_', '-') === lang && /google/i.test(v.name); }) ||
+      f(function (v) { return v.lang.replace('_', '-') === lang; }) ||
+      f(function (v) { return /^en[-_](IN|GB)/.test(v.lang) && /natural|online|google/i.test(v.name); }) ||
+      f(function (v) { return /^en/.test(v.lang); });
+  }
+  function speakText(t) { return t.replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu, '').replace(/_+/g, ' blank ').replace(/₹\s?(\d+)/g, '$1 rupees').replace(/×/g, ' times ').replace(/÷/g, ' shared by ').replace(/−/g, ' minus ').replace(/\s+/g, ' ').trim(); }
   function hearQ(q) {
     if (q.snd) { playPhon(q.snd, q.gap); return; }
     if (!hasTTS) return;
-    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(q.text.replace(/_+/g, ' blank ') + ' ' + q.options.map(function (o) { return o.replace(/[\u{1F000}-\u{1FFFF}☀-➿️]/gu, ''); }).join(', or, '));
-      u.lang = profile.narrator === 'ryan' ? 'en-GB' : 'en-IN'; u.rate = 0.9; speechSynthesis.speak(u); } catch (e) {}
+    try {
+      speechSynthesis.cancel();
+      var v = pickVoice(), parts = [speakText(q.text)].concat(q.options.map(function (o, i) { return 'Option ' + 'ABCD'[i] + '. ' + speakText(o) + '.'; }));
+      parts.forEach(function (t) { // one sentence at a time, so each option gets its own clear pause
+        var u = new SpeechSynthesisUtterance(t); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = profile.narrator === 'ryan' ? 'en-GB' : 'en-IN';
+        u.rate = 0.86; u.pitch = 1; speechSynthesis.speak(u);
+      });
+    } catch (e) {}
   }
   document.getElementById('qHear').addEventListener('click', function () { if (Q && Q[qi]) hearQ(Q[qi]); });
   function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; show('quiz'); renderQ(); }
   function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderQ() {
     var q = Q[qi], done = answers[qi] !== undefined;
-    document.getElementById('qTag').textContent = 'Question ' + (qi + 1) + ' of ' + Q.length + (done ? ' · your answer' : '');
+    document.getElementById('qTag').textContent = 'Question ' + (qi + 1) + ' of ' + Q.length + (typeof q.level === 'number' ? ' · ' + ['⭐ Easy', '⭐⭐ Medium', '⭐⭐⭐ Hard'][q.level] : '') + (done ? ' · your answer' : '');
     document.getElementById('qText').textContent = q.text;
     document.getElementById('qCode').innerHTML = q.code; document.getElementById('qCode').hidden = !q.code;
     var qp = document.getElementById('qPic'); qp.innerHTML = q.pic || ''; qp.hidden = !q.pic; qp.classList.toggle('rich', !!q.pic && /class="q[gc]|class="qrow/.test(q.pic)); qp.classList.toggle('long', !!q.pic && !qp.classList.contains('rich') && q.pic.replace(/<[^>]+>/g, '').length > 14);
