@@ -28,6 +28,7 @@
     if (sub) { var bs = document.createElement('span'); bs.textContent = sub; ban.appendChild(bs); }
     root.appendChild(cv); root.appendChild(ban); document.body.appendChild(root);
     var life = big ? 3800 : 2800;
+    if (window.CQCheer) window.CQCheer(); // the fanfare and the firecrackers
     setTimeout(function () { root.remove(); }, life);
     if (still) return;
     var dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight, ctx = cv.getContext('2d');

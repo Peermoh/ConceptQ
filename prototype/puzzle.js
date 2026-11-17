@@ -239,6 +239,7 @@
     if (sub) { var bs = document.createElement('span'); bs.textContent = sub; ban.appendChild(bs); }
     root.appendChild(cv); root.appendChild(ban); document.body.appendChild(root);
     var life = big ? 3800 : 2800;
+    if (window.CQCheer) window.CQCheer(); // the fanfare and the firecrackers
     setTimeout(function () { root.remove(); }, life);
     if (still) return;
     var dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight, ctx = cv.getContext('2d');
@@ -273,4 +274,4 @@
 })();
 
 // in the house / town frame, the app plays the firework sounds (it holds the sound switch)
-if (window.parent !== window) window.CQBoom = function () { window.parent.postMessage({ cq: 'fire' }, '*'); };
+if (window.parent !== window) { window.CQBoom = function () { window.parent.postMessage({ cq: 'fire' }, '*'); }; window.CQCheer = function () { window.parent.postMessage({ cq: 'cheer' }, '*'); }; }
