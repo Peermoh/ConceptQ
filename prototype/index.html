@@ -505,7 +505,8 @@ body.windy .sway { animation-duration: 0.8s !important; }
   #learn .scroll > * { grid-column: 2; }
   #watchPane:not([hidden]) { display: contents !important; }
   #learn .board-wrap { grid-column: 1; grid-row: 1 / span 8; align-self: start; }
-  #learn .board { min-height: min(62vh, 520px); }
+  /* the height includes the caption bar's padding and the frame, so the whole board (and Nibb in its corner) fits on screen */
+  #learn .board { box-sizing: border-box; min-height: max(360px, min(calc(100vh - 240px), 640px)); }
   #readPane:not([hidden]) { grid-column: 1 / -1; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
   #readPane .learn-intro { grid-column: 1 / -1; }
   #learn > .pad:last-child { display: flex; justify-content: flex-end; }
@@ -526,7 +527,7 @@ body.windy .sway { animation-duration: 0.8s !important; }
 @media (max-height: 520px) and (min-aspect-ratio: 5/4) {
   .qhead { padding-block: 8px 4px; }
   #learn .title-xl, #learn h1 { font-size: 22px; }
-  #learn .board { min-height: calc(100vh - 150px); }
+  #learn .board { box-sizing: border-box; min-height: calc(100vh - 150px); }
   .home-hero { height: 150px; }
   .nav button { min-height: 40px; }
   .nav { padding-block: 2px calc(4px + env(safe-area-inset-bottom, 0px)); }
