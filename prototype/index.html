@@ -146,7 +146,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .home-body { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 14px; padding-block: 4px 12px; flex: 1; min-height: 0; overflow-y: auto; }
 .lesson-card { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 26px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 14px 30px rgba(0,0,0,0.35); }
 .eyebrow { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--amber); }
-.lesson-card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 27px; line-height: 1.05; text-wrap: balance; }
+.lesson-card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 21px; line-height: 1.05; text-wrap: balance; }
 .lesson-card p { margin: 0; color: var(--muted); line-height: 1.35; font-weight: 600; }
 .meta { display: flex; gap: 14px; color: var(--muted); font-size: 13px; }
 .meta span { display: flex; align-items: center; gap: 5px; }
@@ -3020,7 +3020,7 @@ button.deck.locked { cursor: default; }
     var bt = document.getElementById('bubbleTopic'); if (bt) bt.textContent = L.part;
     var cf = floorOf(ci), f0 = FLOOR_AT[cf - 1], f1 = FLOOR_AT[cf], boss = ci === f1 - 1;
     document.getElementById('cardEyebrow').textContent = FLOOR_NAMES[cf - 1] + ' · ' + (boss ? (COURSE === 'py' ? 'Master Builder' : 'Challenge') : (COURSE === 'py' ? 'Room ' : 'Lesson ') + (ci - f0 + 1) + ' of ' + (f1 - f0 - 1));
-    document.getElementById('ctaText').textContent = boss ? 'Take the challenge' : 'Start · builds the ' + L.part;
+    document.getElementById('ctaText').textContent = 'Start';
     document.getElementById('cardTitle').textContent = L.card;
     document.getElementById('cardText').textContent = L.text;
     document.getElementById('cardQs').textContent = LESSON_DATA[ci] ? LESSON_DATA[ci].quiz.length : 3;
