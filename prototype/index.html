@@ -1010,11 +1010,11 @@ button.deck.locked { cursor: default; }
       <div class="chips">
         <button class="chip" id="soundBtn" type="button" aria-pressed="true" aria-label="Sounds on. Tap to mute"><span id="soundIc" aria-hidden="true">🔊</span></button>
         <button class="chip scene-btn" id="sceneBtn" aria-label="Change world and weather"><svg id="sceneIcon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"></svg></button>
-        <span class="chip" title="Embers earned">
+        <span class="chip" title="Embers earned" id="emberChip" role="button" tabindex="0" style="cursor:pointer">
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3 4 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-6 0 2 1 3 2.5 3C10 8 11 5 12 2z" fill="#FFB547"/></svg>
           <span id="embers">120</span>
         </span>
-        <span class="chip" title="Days in a row">
+        <span class="chip" title="Days in a row" id="streakChipBtn" role="button" tabindex="0" style="cursor:pointer">
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="#FFE07A"/></svg>
           <span id="streakChip">1</span>
         </span>
@@ -2417,6 +2417,9 @@ button.deck.locked { cursor: default; }
       box.appendChild(el); requestAnimationFrame(function () { el.querySelector('.fill').style.width = Math.max(4, r.p) + '%'; });
     });
   }
+  ['emberChip', 'streakChipBtn'].forEach(function (id) { var c = document.getElementById(id); if (!c) return;
+    var go = function () { if (c.id === 'emberChip') { var pt = document.getElementById('prizeTile'); if (pt) pt.click(); } else { show('me'); openMePanel('statH', true); } };
+    c.addEventListener('click', go); c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); });
   function renderTimeChart() {
     var box = document.getElementById('meTime'); if (!box) return; box.innerHTML = '';
     var t = readTime(), days = [], now = new Date();
