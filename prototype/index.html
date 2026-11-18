@@ -2353,7 +2353,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('setCaptions').checked = profile.captions;
     document.getElementById('setAntics').checked = profile.antics;
     var placed = 0; try { var h = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (h && h.placed && typeof h.placed === 'object') Object.keys(h.placed).forEach(function (r) { if (Array.isArray(h.placed[r])) placed += h.placed[r].length; }); } catch (e) {}
-    var stats = [[Math.min(state.current, 9) + '/9', 'lessons finished'], [state.embers, 'embers'], [state.streak, state.streak === 1 ? 'day in a row' : 'days in a row'], [learnedCount() + '/' + Object.keys(cardState).length, 'cards learned'], [placed, 'items placed']];
+    var stats = [[Math.min(state.current, courseTotal(COURSE)) + '/' + courseTotal(COURSE), CQ_COURSES[COURSE].name + ' lessons finished'], [state.embers, 'embers'], [state.streak, state.streak === 1 ? 'day in a row' : 'days in a row'], [learnedCount() + '/' + Object.keys(cardState).length, 'cards learned'], [placed, 'items placed']];
     var g = document.getElementById('meStats'); g.innerHTML = '';
     stats.forEach(function (st) { var d = document.createElement('div'); d.className = 'mstat'; var b = document.createElement('b'); b.textContent = st[0]; var sp = document.createElement('span'); sp.textContent = st[1]; d.appendChild(b); d.appendChild(sp); g.appendChild(d); });
   }
