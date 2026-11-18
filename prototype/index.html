@@ -145,7 +145,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 /* ---------- home body ---------- */
 .home-body { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 14px; padding-block: 4px 12px; flex: 1; min-height: 0; overflow-y: auto; }
 .lesson-card { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 26px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 14px 30px rgba(0,0,0,0.35); }
-.eyebrow { font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--amber); }
+.eyebrow { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--amber); }
 .lesson-card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 27px; line-height: 1.05; text-wrap: balance; }
 .lesson-card p { margin: 0; color: var(--muted); line-height: 1.35; font-weight: 600; }
 .meta { display: flex; gap: 14px; color: var(--muted); font-size: 13px; }
@@ -1029,13 +1029,6 @@ button.deck.locked { cursor: default; }
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </article>
-      <nav class="home-icons" id="homeIcons" aria-label="Quick links">
-        <button class="hi" type="button" id="hiCourses" style="--i:0;--h1:#B9E6FF;--h2:#3D8BD9"><span class="ic"><span aria-hidden="true">📚</span></span><b>Courses</b><span class="n"></span></button>
-        <button class="hi shine" type="button" id="hiCards" style="--i:1;--h1:#FFD3EC;--h2:#C9559A"><span class="ic"><span aria-hidden="true">🃏</span></span><b>Flashcards</b><span class="n"></span></button>
-        <button class="hi spin" type="button" id="hiPrize" style="--i:2;--h1:#FFE9A8;--h2:#E08A1E"><span class="ic"><span aria-hidden="true">🎡</span></span><b>Prize spin</b><span class="n"></span></button>
-        <button class="hi shine" type="button" id="hiBadges" style="--i:3;--h1:#FFF1B8;--h2:#C98A12"><span class="ic"><span aria-hidden="true">🏅</span></span><b>Badges</b><span class="n"></span></button>
-        <button class="hi" type="button" id="hiPlace" style="--i:4;--h1:#C8F5D8;--h2:#2F9E62"><span class="ic"><span aria-hidden="true">🏠</span></span><b>House</b><span class="n"></span></button>
-      </nav>
 
       </div>
       <div class="home-right">
@@ -1049,6 +1042,12 @@ button.deck.locked { cursor: default; }
         </div>
       </section>
 
+      <nav class="home-icons" id="homeIcons" aria-label="Quick links">
+        <button class="hi shine" type="button" id="hiCards" style="--i:1;--h1:#FFD3EC;--h2:#C9559A"><span class="ic"><span aria-hidden="true">🃏</span></span><b>Flashcards</b><span class="n"></span></button>
+        <button class="hi spin" type="button" id="hiPrize" style="--i:2;--h1:#FFE9A8;--h2:#E08A1E"><span class="ic"><span aria-hidden="true">🎡</span></span><b>Prize spin</b><span class="n"></span></button>
+        <button class="hi shine" type="button" id="hiBadges" style="--i:3;--h1:#FFF1B8;--h2:#C98A12"><span class="ic"><span aria-hidden="true">🏅</span></span><b>Badges</b><span class="n"></span></button>
+        <button class="hi" type="button" id="hiPlace" style="--i:4;--h1:#C8F5D8;--h2:#2F9E62"><span class="ic"><span aria-hidden="true">🏠</span></span><b>House</b><span class="n"></span></button>
+      </nav>
       <div class="dash" aria-label="Your dashboard">
         <button class="tile dash-tile" id="coursesTile" aria-label="Courses. See all courses.">
           <span class="row"><b class="tile-t">Courses</b><span class="c-stack" aria-hidden="true" id="coursesIc"></span></span>
@@ -1788,7 +1787,7 @@ button.deck.locked { cursor: default; }
     var t = function (id) { var e = document.getElementById(id); return e ? e.textContent.trim() : ''; };
     var set = function (id, v) { var e = document.querySelector('#' + id + ' .n'); if (e) e.textContent = v; };
     var joined = (profile.courses || []).filter(function (c) { return typeof CQ_COURSES !== 'undefined' && CQ_COURSES[c]; }).length;
-    set('hiCourses', joined > 1 ? joined : '');
+
     var due = +t('cardsDue') || 0; set('hiCards', due ? due : '');
     var bn = parseInt(t('badgeTileN'), 10) || 0; set('hiBadges', bn ? bn : '');
     var pt = document.getElementById('prizeTile'), ready = pt && pt.classList.contains('ready');
@@ -1799,13 +1798,13 @@ button.deck.locked { cursor: default; }
     document.getElementById('hiCards').setAttribute('aria-label', 'Flashcards' + (due ? ', ' + due + ' due' : ''));
     document.getElementById('hiBadges').setAttribute('aria-label', 'Badges, ' + bn + ' earned');
     document.getElementById('hiPrize').setAttribute('aria-label', 'Prize wheel' + (ready ? ', a spin is ready' : ', ' + t('prizeLbl')));
-    document.getElementById('hiCourses').setAttribute('aria-label', 'All courses');
+
     pl.setAttribute('aria-label', 'Your ' + name.toLowerCase());
   }
   (function () {
     document.getElementById('tabLearn').addEventListener('click', function () { setHomeTab(false); });
     document.getElementById('tabAll').addEventListener('click', function () { setHomeTab(true); });
-    document.getElementById('hiCourses').addEventListener('click', function () { setHomeTab(true); var hs = document.getElementById('homeScroll'); var tb = document.querySelector('.home-tabs'); if (hs && tb) hs.scrollTo({ top: Math.max(0, tb.offsetTop - 80), behavior: 'smooth' }); });
+    document.getElementById('hiCourses') && document.getElementById('hiCourses').addEventListener('click', function () { setHomeTab(true); var hs = document.getElementById('homeScroll'); var tb = document.querySelector('.home-tabs'); if (hs && tb) hs.scrollTo({ top: Math.max(0, tb.offsetTop - 80), behavior: 'smooth' }); });
     document.getElementById('hiCards').addEventListener('click', function () { show('cards'); });
     document.getElementById('hiPrize').addEventListener('click', function () { document.getElementById('prizeTile').click(); });
     document.getElementById('hiBadges').addEventListener('click', function () { document.getElementById('badgeTile').click(); });
