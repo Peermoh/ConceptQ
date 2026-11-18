@@ -840,6 +840,7 @@ button.item { background: none; border: 0; padding: 0; font: inherit; color: var
     var t = sc && sc.time && sc.time !== 'auto' ? sc.time : null;
     if (!t) { var h = new Date().getHours(); t = h >= 5 && h < 9 ? 'morning' : h >= 9 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'sunset' : 'night'; }
     houseTime = { morning: 1, day: 1, sunset: 1, night: 1 }[t] ? t : 'day';
+    try { var pfd = JSON.parse(localStorage.getItem('cq-profile') || 'null'); if (pfd && pfd.plainDark) houseTime = 'night'; } catch (e) {} // plain dark background (Me > Make it easier)
     houseWeather = sc && { clear: 1, cloudy: 1, rain: 1, storm: 1, snow: 1, wind: 1 }[sc.weather] ? sc.weather : 'clear';
   }
   readScene();

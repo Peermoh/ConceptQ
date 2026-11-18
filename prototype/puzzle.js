@@ -143,6 +143,7 @@
     }
     function finish(solved) {
       if (solved) { board.classList.add('done'); cheer.textContent = 'You built it!'; if (window.CQCelebrate) CQCelebrate('Congratulations!', 'You built it, piece by piece!'); }
+      if (solved && window.parent !== window) window.parent.postMessage({ cq: 'solved' }, '*'); // counts towards the puzzle badges
       setTimeout(function () {
         ov.style.transition = 'opacity .35s'; ov.style.opacity = 0;
         setTimeout(function () { ov.remove(); window.removeEventListener('message', onMsg); parts.forEach(function (el) { el.style.visibility = ''; }); done(solved); }, 350);

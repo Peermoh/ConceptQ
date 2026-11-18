@@ -319,6 +319,20 @@ body.calm *, body.calm *::before, body.calm *::after { animation-duration: .001s
 @keyframes newsPulse { 50% { transform: scale(1.12); } }
 /* phones: a smaller sky, so the lesson card and its Start button are on the first screen */
 @media (max-width: 600px) and (min-height: 560px) { .home-hero { height: 124px; } }
+/* ---- badges: the trophy shelf ---- */
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.bdg { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 16px; background: rgba(255,255,255,.05); text-align: center; }
+.bdg .bi { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; background: radial-gradient(circle at 35% 30%, #FFE9A8, #FFB547 60%, #D9861A); box-shadow: 0 4px 10px rgba(0,0,0,.3), inset 0 -3px 0 rgba(0,0,0,.15); }
+.bdg b { font-size: 12px; line-height: 1.2; }
+.bdg small { font-size: 11px; opacity: .7; line-height: 1.2; }
+.bdg.locked .bi { background: rgba(255,255,255,.08); filter: grayscale(1); opacity: .45; box-shadow: none; }
+.bdg.locked b { opacity: .6; }
+.bdg.fresh .bi { animation: bdgNew 1.4s ease-in-out 3; }
+@keyframes bdgNew { 50% { transform: scale(1.15) rotate(-6deg); } }
+.badge-tile .bdg-row { display: flex; gap: 2px; font-size: 20px; }
+/* ---- plain dark background (Make it easier) ---- */
+body.plain-dark #home .scene, body.plain-dark #home .fx { display: none !important; }
+body.plain-dark, body.plain-dark #home, body.plain-dark .screen { background: #0E0814 !important; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -964,6 +978,11 @@ button.deck.locked { cursor: default; }
           <span class="row big"><span class="num" id="streakNum">1</span><span class="lbl" id="streakLbl">day in a row</span></span>
           <span class="lbl more" id="streakKey">6 more for a golden door key</span>
         </button>
+        <button class="tile dash-tile badge-tile" id="badgeTile" type="button" aria-label="Badges">
+          <span class="row"><b class="tile-t">Badges</b><span class="bdg-row" id="badgeTileIc" aria-hidden="true"></span></span>
+          <span class="lbl" id="badgeTileN">0 earned</span>
+          <span class="lbl more" id="badgeTileNext">Finish a lesson for your first badge</span>
+        </button>
         <button class="tile dash-tile prize-tile" id="prizeTile" aria-label="Prize wheel">
           <span class="row"><b class="tile-t">Prize wheel</b><svg class="mini-wheel" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FFB547"/><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" stroke="#2A1330" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="#2A1330"/></svg></span>
           <span class="lbl" id="prizeLbl">0 of 200 embers</span>
@@ -1088,6 +1107,11 @@ button.deck.locked { cursor: default; }
           <label class="field"><span>Your robot teacher's name</span><input id="meTeacher" maxlength="14" autocomplete="off" placeholder="Nibb"></label>
           <div class="field"><span id="colorLbl">Avatar colour</span><div class="swatches" id="meColors" role="radiogroup" aria-labelledby="colorLbl"></div></div>
         </section>
+        <section class="panel" aria-labelledby="badgeH" id="badgePanel">
+          <h2 class="sub-h" id="badgeH">My badges</h2>
+          <p class="muted small" id="badgeSum"></p>
+          <div class="badge-grid" id="badgeGrid"></div>
+        </section>
         <section class="panel" aria-labelledby="easyH">
           <h2 class="sub-h" id="easyH">Make it easier</h2>
           <span class="pe-lbl" id="ezSizeL">Text size</span>
@@ -1096,6 +1120,7 @@ button.deck.locked { cursor: default; }
           <div class="ez-row" role="group" aria-labelledby="ezRateL" id="ezRate"><button type="button" data-v="0.85">Slower</button><button type="button" data-v="1">Normal</button><button type="button" data-v="1.15">Faster</button></div>
           <label class="toggle"><input type="checkbox" id="ezFont"><span>Easy-read letters (clearer shapes, more space: helps with dyslexia)</span></label>
           <label class="toggle"><input type="checkbox" id="ezContrast"><span>High contrast (white text and outlines on dark)</span></label>
+          <label class="toggle"><input type="checkbox" id="ezDark"><span>Plain dark background on every page (no bright sky)</span></label>
           <label class="toggle"><input type="checkbox" id="ezCalm"><span>Less movement (no floating, flying or confetti)</span></label>
         </section>
         <section class="panel" aria-labelledby="backupH">
@@ -1937,6 +1962,7 @@ button.deck.locked { cursor: default; }
   }
   var reviewQueue = null, reviewDone = 0;
   function renderCards() {
+    if (typeof checkBadges === 'function' && PY_PACK) setTimeout(checkBadges, 300);
     ensureCards();
     var due = dueCards(), total = Object.keys(cardState).length;
     document.getElementById('cardsSummary').textContent = total
@@ -2037,7 +2063,7 @@ button.deck.locked { cursor: default; }
       if (typeof pf.autoRead === 'boolean') profile.autoRead = pf.autoRead;
       if (pf.ts === 1 || pf.ts === 2) profile.ts = pf.ts;
       if ([0.85, 1, 1.15].indexOf(pf.rate) >= 0) profile.rate = pf.rate;
-      ['easyFont', 'contrast', 'calm'].forEach(function (k) { if (typeof pf[k] === 'boolean') profile[k] = pf[k]; });
+      ['easyFont', 'contrast', 'calm', 'plainDark'].forEach(function (k) { if (typeof pf[k] === 'boolean') profile[k] = pf[k]; });
       if (pf.toured === true) profile.toured = true;
       if (typeof pf.teacher === 'string') { var tn = pf.teacher.replace(/[\u0000-\u001f<>&"\\]/g, '').trim().slice(0, 14); if (tn) profile.teacher = tn; }
     }
@@ -2158,7 +2184,7 @@ button.deck.locked { cursor: default; }
     var ci = document.getElementById('coursesIc'); if (ci && typeof CQ_COURSES !== 'undefined' && COURSE && CQ_COURSES[COURSE]) ci.textContent = CQ_COURSES[COURSE].emoji;
   }
   function renderMe() {
-    renderMyCourses();
+    renderMyCourses(); checkBadges(true); renderBadges();
     // when the last backup was made, and a nudge after a week
     var at = 0; try { at = +localStorage.getItem('cq-backup-at') || 0; } catch (e) {}
     var days = at ? Math.floor((Date.now() - at) / 86400000) : -1;
@@ -2456,20 +2482,99 @@ button.deck.locked { cursor: default; }
   function setSounds(onn) { profile.sounds = onn; saveProfile(); renderSoundBtn(); if (onn) { SFX.unlock(); SFX.play('pop'); } sceneSound(); }
   document.getElementById('soundBtn').addEventListener('click', function () { setSounds(profile.sounds === false); });
   document.getElementById('setSounds').addEventListener('change', function (e) { setSounds(e.target.checked); });
+  // ================= badges =================
+  // Each badge has a test on what the learner has done; cq-badges keeps when each was earned, plus a few counts
+  // (puzzles built, perfect quizzes) that are not kept anywhere else.
+  var BADGES = [];
+  function bdgStore() { var b = null; try { b = JSON.parse(localStorage.getItem('cq-badges') || 'null'); } catch (e) {} if (!b || typeof b !== 'object') b = {}; if (!b.got) b.got = {}; if (!b.n) b.n = {}; return b; }
+  function bdgSave(b) { try { localStorage.setItem('cq-badges', JSON.stringify(b)); } catch (e) {} }
+  function bdgCount(k) { var b = bdgStore(); b.n[k] = (b.n[k] || 0) + 1; bdgSave(b); checkBadges(); }
+  function totalLessons() { return ['py', 'maths', 'english'].reduce(function (t, c) { return t + Math.min(doneIn(c), courseTotal(c)); }, 0); }
+  function buildBadges() {
+    var n = function (k) { return bdgStore().n[k] || 0; };
+    BADGES = [
+      ['first', '🌱', 'First lesson', 'Finish any lesson', function () { return totalLessons() >= 1; }],
+      ['l5', '📗', 'Five lessons', 'Finish 5 lessons', function () { return totalLessons() >= 5; }],
+      ['l10', '📚', 'Ten lessons', 'Finish 10 lessons', function () { return totalLessons() >= 10; }],
+      ['l25', '🎓', 'Super learner', 'Finish 25 lessons', function () { return totalLessons() >= 25; }],
+      ['perfect', '🎯', 'Bullseye', 'Get every answer right first time', function () { return n('perfect') >= 1; }],
+      ['perfect5', '🏹', 'Sharp shooter', '5 perfect quizzes', function () { return n('perfect') >= 5; }],
+      ['puzzle', '🧩', 'Builder', 'Build your first puzzle', function () { return n('puzzle') >= 1; }],
+      ['puzzle5', '🏗️', 'Puzzle master', 'Build 5 puzzles', function () { return n('puzzle') >= 5; }],
+      ['s3', '⭐', 'On a roll', 'Learn 3 days in a row', function () { return (state.streak || 0) >= 3; }],
+      ['s7', '🌟', 'Week star', 'Learn 7 days in a row', function () { return (state.streak || 0) >= 7; }],
+      ['cards', '🃏', 'Memory champ', 'Learn 10 flashcards well', function () { return learnedCount() >= 10; }],
+      ['embers', '🔥', 'Ember collector', 'Collect 500 embers', function () { return state.embers >= 500; }],
+      ['prize', '🎁', 'Prize winner', 'Win a prize on the wheel', function () { return rewards && rewards.wins && rewards.wins.length >= 1; }],
+      ['explorer', '🧭', 'Explorer', 'Try two different courses', function () { return ['py', 'maths', 'english'].filter(function (c) { return doneIn(c) > 0; }).length >= 2; }]
+    ];
+    // one badge for each street or floor finished
+    [['maths', '🏙️'], ['english', '📚'], ['py', '🏠']].forEach(function (cc) {
+      var P = cc[0] === 'py' ? PY_PACK : COURSE_PACKS[cc[0]];
+      P.floorNames.forEach(function (nm, f) {
+        BADGES.push(['floor-' + cc[0] + '-' + f, cc[1], nm + ' done', 'Finish every lesson in ' + nm, function () { return doneIn(cc[0]) >= P.floorAt[f + 1]; }]);
+      });
+    });
+  }
+  var badgeQueue = [];
+  // award new badges; celebrate them one at a time (after any celebration already on screen)
+  function checkBadges(quiet) {
+    if (!BADGES.length) buildBadges();
+    var b = bdgStore(), fresh = [];
+    BADGES.forEach(function (bd) { if (!b.got[bd[0]]) { var ok = false; try { ok = bd[4](); } catch (e) {} if (ok) { b.got[bd[0]] = Date.now(); fresh.push(bd); } } });
+    if (!fresh.length) return;
+    bdgSave(b); renderBadgeTile();
+    if (quiet) return;
+    fresh.forEach(function (bd) { badgeQueue.push(bd); });
+    if (badgeQueue.length === fresh.length) setTimeout(nextBadge, document.querySelector('.cq-cel') ? 3300 : 300);
+  }
+  function nextBadge() {
+    var bd = badgeQueue.shift(); if (!bd) return;
+    if (document.querySelector('.cq-cel')) { badgeQueue.unshift(bd); setTimeout(nextBadge, 700); return; }
+    CQCelebrate('🏅 New badge!', bd[1] + ' ' + bd[2] + ': ' + bd[3].charAt(0).toLowerCase() + bd[3].slice(1));
+    if (badgeQueue.length) setTimeout(nextBadge, 3200);
+  }
+  function renderBadgeTile() {
+    if (!BADGES.length) buildBadges();
+    var got = bdgStore().got, earned = BADGES.filter(function (bd) { return got[bd[0]]; }).sort(function (a, c) { return got[c[0]] - got[a[0]]; });
+    var t = document.getElementById('badgeTileN'); if (!t) return;
+    t.textContent = earned.length + ' of ' + BADGES.length + ' earned';
+    document.getElementById('badgeTileIc').textContent = earned.slice(0, 3).map(function (bd) { return bd[1]; }).join('') || '🏅';
+    var next = BADGES.filter(function (bd) { return !got[bd[0]]; })[0];
+    document.getElementById('badgeTileNext').textContent = next ? 'Next: ' + next[3] : 'You have every badge!';
+  }
+  function renderBadges() {
+    if (!BADGES.length) buildBadges();
+    var got = bdgStore().got, grid = document.getElementById('badgeGrid'); grid.innerHTML = '';
+    var list = BADGES.filter(function (bd) { return got[bd[0]]; }).sort(function (a, c) { return got[c[0]] - got[a[0]]; }).concat(BADGES.filter(function (bd) { return !got[bd[0]]; }));
+    list.forEach(function (bd) {
+      var on = !!got[bd[0]], el = document.createElement('div'); el.className = 'bdg' + (on ? '' : ' locked') + (on && Date.now() - got[bd[0]] < 60000 ? ' fresh' : '');
+      el.innerHTML = '<span class="bi" aria-hidden="true"></span><b></b><small></small>';
+      el.querySelector('.bi').textContent = bd[1]; el.querySelector('b').textContent = bd[2];
+      el.querySelector('small').textContent = on ? new Date(got[bd[0]]).toLocaleDateString() : bd[3];
+      el.setAttribute('aria-label', bd[2] + (on ? ', earned' : ', not yet: ' + bd[3]));
+      grid.appendChild(el);
+    });
+    var nOn = BADGES.filter(function (bd) { return got[bd[0]]; }).length;
+    document.getElementById('badgeSum').textContent = nOn ? nOn + ' of ' + BADGES.length + ' badges. Keep going!' : 'Badges show here as you learn. Finish a lesson for your first one!';
+  }
+  document.getElementById('badgeTile').addEventListener('click', function () { show('me'); setTimeout(function () { document.getElementById('badgePanel').scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }); }, 80); });
+
   // ---- Make it easier ----
   function applyEasy() {
     var b = document.body;
     b.classList.toggle('ts-1', profile.ts === 1); b.classList.toggle('ts-2', profile.ts === 2);
+    b.classList.toggle('plain-dark', !!profile.plainDark);
     b.classList.toggle('easy-font', !!profile.easyFont); b.classList.toggle('hi-contrast', !!profile.contrast); b.classList.toggle('calm', !!profile.calm);
     if (profile.calm) still = true;
     try { voiceEl.playbackRate = profile.rate || 1; voiceEl.defaultPlaybackRate = profile.rate || 1; } catch (e) {}
     document.querySelectorAll('#ezSize button').forEach(function (x) { x.setAttribute('aria-pressed', String(+x.dataset.v === (profile.ts || 0))); });
     document.querySelectorAll('#ezRate button').forEach(function (x) { x.setAttribute('aria-pressed', String(+x.dataset.v === (profile.rate || 1))); });
-    document.getElementById('ezFont').checked = !!profile.easyFont; document.getElementById('ezContrast').checked = !!profile.contrast; document.getElementById('ezCalm').checked = !!profile.calm;
+    document.getElementById('ezFont').checked = !!profile.easyFont; document.getElementById('ezContrast').checked = !!profile.contrast; document.getElementById('ezCalm').checked = !!profile.calm; document.getElementById('ezDark').checked = !!profile.plainDark;
   }
   document.querySelectorAll('#ezSize button').forEach(function (x) { x.addEventListener('click', function () { profile.ts = +x.dataset.v; saveProfile(); applyEasy(); }); });
   document.querySelectorAll('#ezRate button').forEach(function (x) { x.addEventListener('click', function () { profile.rate = +x.dataset.v; saveProfile(); applyEasy(); }); });
-  [['ezFont', 'easyFont'], ['ezContrast', 'contrast'], ['ezCalm', 'calm']].forEach(function (p) {
+  [['ezFont', 'easyFont'], ['ezContrast', 'contrast'], ['ezCalm', 'calm'], ['ezDark', 'plainDark']].forEach(function (p) {
     document.getElementById(p[0]).addEventListener('change', function (e) { profile[p[1]] = e.target.checked; saveProfile(); applyEasy(); if (p[1] === 'calm' && !e.target.checked) location.reload(); });
   });
   function autoRead() { return typeof profile.autoRead === 'boolean' ? profile.autoRead : profile.age <= 8; }
@@ -2799,7 +2904,7 @@ button.deck.locked { cursor: default; }
     var nowTile = document.querySelector('#topics .topic.now'), trow = document.getElementById('topics'); if (nowTile) trow.scrollLeft += nowTile.getBoundingClientRect().left - trow.getBoundingClientRect().left - 16;
     if (nowTile) { var vr = trow.getBoundingClientRect(), tr = nowTile.getBoundingClientRect(); if (tr.bottom > vr.bottom || tr.top < vr.top) trow.scrollTop += tr.top - vr.top - 6; }
     if (window.topicArrows) setTimeout(window.topicArrows, 0);
-    renderHouseCard(); renderHomeTiles(); applyProfile(); if (typeof renderPrizeTile === 'function') renderPrizeTile();
+    renderHouseCard(); renderHomeTiles(); applyProfile(); if (typeof renderBadgeTile === 'function' && PY_PACK) { checkBadges(); renderBadgeTile(); } if (typeof renderPrizeTile === 'function') renderPrizeTile();
     setTimeout(watchSlots, 0); scheduleIdle();
     document.getElementById('pyBar').style.width = Math.round(Math.min(state.current, ALL_LESSONS) / ALL_LESSONS * 100) + '%';
     document.getElementById('pyLevel').textContent = courseName(COURSE) + ' · ' + Math.min(state.current, ALL_LESSONS) + ' of ' + ALL_LESSONS + ' lessons';
@@ -2879,6 +2984,7 @@ button.deck.locked { cursor: default; }
     var f = document.getElementById('houseFrame'); if (!f || e.source !== f.contentWindow || !e.data) return;
     if (e.data.cq === 'home') show('home');
     if (e.data.cq === 'fire') SFX.play('fire');
+    if (e.data.cq === 'solved') bdgCount('puzzle');
     if (e.data.cq === 'cheer') { SFX.play('fanfare'); SFX.play('crackers'); }
     // the puzzle asks how many embers there are, and spends some to place a piece
     if (e.data.cq === 'embers?') f.contentWindow.postMessage({ cq: 'embers', n: state.embers }, '*');
@@ -3028,7 +3134,7 @@ button.deck.locked { cursor: default; }
     setTimeout(function () {
       SFX.play('win');
       spinning = false; document.getElementById('wheelSpin').disabled = false;
-      rewards.used++; rewards.wins.push({ p: list[pick], t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards();
+      rewards.used++; rewards.wins.push({ p: list[pick], t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards(); setTimeout(checkBadges, 2500);
       var res = document.getElementById('wheelResult'); res.hidden = false;
       document.getElementById('wheelPrize').textContent = list[pick];
       document.getElementById('wheelClaim').textContent = prizeGroup() === 'adult' ? 'You earned it. Enjoy!' : 'Show this to a grown-up to claim your prize.';
@@ -4570,6 +4676,7 @@ button.deck.locked { cursor: default; }
     dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
     dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;
     show('done');
+    if (firstTry === Q.length) bdgCount('perfect'); else checkBadges();
     var endOfFloor = FLOOR_AT.indexOf(openLessonIdx + 1) > 0;
     setTimeout(function () {
       if (endOfFloor) CQCelebrate('Amazing!', 'You finished ' + FLOOR_NAMES[FLOOR_AT.indexOf(openLessonIdx + 1) - 1] + '!', true);
@@ -8660,6 +8767,7 @@ button.deck.locked { cursor: default; }
     profile.courses = ['py', 'maths', 'english'].filter(function (c) { return c === COURSE || doneIn(c) > 0; });
     saveProfile();
   }
+  try { if (!localStorage.getItem('cq-badges') && !FIRST_RUN) checkBadges(true); } catch (e) {}
   if (FIRST_RUN) startWelcome(); else { show('home'); if (!profile.toured && !/[?&]notour\b/.test(location.search)) setTimeout(startTour, 1200); }
 })();
 </script>
