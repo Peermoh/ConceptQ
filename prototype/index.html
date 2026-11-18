@@ -1060,7 +1060,7 @@ button.deck.locked { cursor: default; }
         <button class="hi shine" type="button" id="hiCards" style="--i:1;--h1:#FFD3EC;--h2:#C9559A"><span class="ic"><span aria-hidden="true">🃏</span></span><b>Flashcards</b><span class="n"></span></button>
         <button class="hi spin" type="button" id="hiPrize" style="--i:2;--h1:#FFE9A8;--h2:#E08A1E"><span class="ic"><span aria-hidden="true">🎡</span></span><b>Prize spin</b><span class="n"></span></button>
         <button class="hi shine" type="button" id="hiBadges" style="--i:3;--h1:#FFF1B8;--h2:#C98A12"><span class="ic"><span aria-hidden="true">🏅</span></span><b>Badges</b><span class="n"></span></button>
-        <button class="hi" type="button" id="hiPlace" style="--i:4;--h1:#C8F5D8;--h2:#2F9E62"><span class="ic"><span aria-hidden="true">🏠</span></span><b>House</b><span class="n"></span></button>
+        <button class="hi" type="button" id="hiProgress" style="--i:4;--h1:#D6F0FF;--h2:#3D8BD9"><span class="ic"><span aria-hidden="true">📈</span></span><b>Progress</b><span class="n"></span></button>
       </nav>
       <div class="dash" aria-label="Your dashboard">
         <button class="tile dash-tile" id="coursesTile" aria-label="Courses. See all courses.">
@@ -1810,14 +1810,12 @@ button.deck.locked { cursor: default; }
     var bn = parseInt(t('badgeTileN'), 10) || 0; set('hiBadges', bn ? bn : '');
     var pt = document.getElementById('prizeTile'), ready = pt && pt.classList.contains('ready');
     document.getElementById('hiPrize').classList.toggle('ready', !!ready); set('hiPrize', ready ? '!' : '');
-    var pl = document.getElementById('hiPlace'), name = typeof COURSE !== 'undefined' && COURSE === 'maths' ? 'Town' : COURSE === 'english' ? 'Library' : 'House';
-    pl.querySelector('b').textContent = name; pl.querySelector('.ic > span').textContent = name === 'Town' ? '🏘️' : name === 'Library' ? '📖' : '🏠';
-    var hn = document.querySelector('.nav [data-nav="house"].has-news'); set('hiPlace', hn ? '!' : '');
+    var pct = Math.round(Math.min(state.current, courseTotal(COURSE)) / courseTotal(COURSE) * 100); set('hiProgress', pct + '%');
+    document.getElementById('hiProgress').setAttribute('aria-label', 'My progress, ' + pct + '% of ' + CQ_COURSES[COURSE].name);
     document.getElementById('hiCards').setAttribute('aria-label', 'Flashcards' + (due ? ', ' + due + ' due' : ''));
     document.getElementById('hiBadges').setAttribute('aria-label', 'Badges, ' + bn + ' earned');
     document.getElementById('hiPrize').setAttribute('aria-label', 'Prize wheel' + (ready ? ', a spin is ready' : ', ' + t('prizeLbl')));
 
-    pl.setAttribute('aria-label', 'Your ' + name.toLowerCase());
   }
   (function () {
     document.getElementById('tabLearn').addEventListener('click', function () { setHomeTab(false); });
@@ -1826,7 +1824,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('hiCards').addEventListener('click', function () { show('cards'); });
     document.getElementById('hiPrize').addEventListener('click', function () { document.getElementById('prizeTile').click(); });
     document.getElementById('hiBadges').addEventListener('click', function () { document.getElementById('badgeTile').click(); });
-    document.getElementById('hiPlace').addEventListener('click', function () { show('house'); });
+    document.getElementById('hiProgress').addEventListener('click', function () { show('me'); setTimeout(function () { var h = document.getElementById('statH'); if (h) h.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120); });
     var dash = document.querySelector('.dash'), q = 0;
     var again = function () { if (q) return; q = setTimeout(function () { q = 0; try { renderHomeIcons(); } catch (e) {} }, 30); };
     if (dash && 'MutationObserver' in window) new MutationObserver(again).observe(dash, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
