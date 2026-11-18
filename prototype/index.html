@@ -409,6 +409,20 @@ body.calm #home .topic.now .ticon { animation: none; }
   #home .lumi-spot { width: 92px; height: 86px; top: 20px; }
 }
 @media (max-width: 430px) { .home-icons { flex-wrap: nowrap; justify-content: space-between; gap: 0; } .hi { width: 66px; font-size: 12px !important; } .hi .ic { width: 62px; height: 62px; font-size: 32px; } }
+/* ---- progress bars and time spent ---- */
+#meStats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pbars { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.pbar .top { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: 14px; margin-bottom: 5px; }
+.pbar .top span { font-size: 13px; opacity: .75; }
+.pbar .track { height: 14px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+.pbar .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c1, #FFC861), var(--c2, #FF7A6B)); width: 0; transition: width .8s ease; }
+.tchart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 130px; margin-top: 10px; }
+.tchart .d { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; font-size: 11px; font-weight: 800; }
+.tchart .col { width: 70%; min-height: 3px; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, #7CF5C8, #2F9E62); }
+.tchart .d.today .col { background: linear-gradient(180deg, #FFE07A, #FFB547); }
+.tchart .m { opacity: .85; } .tchart .w { opacity: .65; font-weight: 700; }
+.tsum { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 10px; opacity: .85; }
+.tsum b { font-size: 16px; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -1257,6 +1271,10 @@ button.deck.locked { cursor: default; }
         <section class="panel" aria-labelledby="statH">
           <h2 class="sub-h" id="statH">Your progress</h2>
           <div class="stat-grid" id="meStats"></div>
+          <div class="pbars" id="meBars"></div>
+          <h3 class="sub-h" style="margin-top:18px">Time spent learning</h3>
+          <div class="tchart" id="meTime" aria-label="Minutes spent each day this week"></div>
+          <div class="tsum" id="meTimeSum"></div>
         </section>
         <section class="panel" aria-labelledby="setH">
           <h2 class="sub-h" id="setH">Settings</h2>
@@ -2353,9 +2371,57 @@ button.deck.locked { cursor: default; }
     document.getElementById('setCaptions').checked = profile.captions;
     document.getElementById('setAntics').checked = profile.antics;
     var placed = 0; try { var h = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (h && h.placed && typeof h.placed === 'object') Object.keys(h.placed).forEach(function (r) { if (Array.isArray(h.placed[r])) placed += h.placed[r].length; }); } catch (e) {}
-    var stats = [[Math.min(state.current, courseTotal(COURSE)) + '/' + courseTotal(COURSE), CQ_COURSES[COURSE].name + ' lessons finished'], [state.embers, 'embers'], [state.streak, state.streak === 1 ? 'day in a row' : 'days in a row'], [learnedCount() + '/' + Object.keys(cardState).length, 'cards learned'], [placed, 'items placed']];
+    var stats = [[state.embers, 'embers'], [state.streak, state.streak === 1 ? 'day in a row' : 'days in a row'], [placed, 'items placed']];
     var g = document.getElementById('meStats'); g.innerHTML = '';
+    try { renderProgressBars(); renderTimeChart(); } catch (e) {}
     stats.forEach(function (st) { var d = document.createElement('div'); d.className = 'mstat'; var b = document.createElement('b'); b.textContent = st[0]; var sp = document.createElement('span'); sp.textContent = st[1]; d.appendChild(b); d.appendChild(sp); g.appendChild(d); });
+  }
+  // ---- time spent: counts only while the app is on screen and someone touched it in the last minute ----
+  var TIME_KEY = 'cq-time', lastAct = Date.now();
+  function dayKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function readTime() { try { var t = JSON.parse(localStorage.getItem(TIME_KEY) || '{}'); return t && typeof t === 'object' && !Array.isArray(t) ? t : {}; } catch (e) { return {}; } }
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true, capture: true }); });
+  setInterval(function () {
+    var playing = false; try { playing = !!document.querySelector('audio') && [].some.call(document.querySelectorAll('audio'), function (a) { return !a.paused; }); } catch (e) {}
+    if (document.hidden || (Date.now() - lastAct > 60000 && !playing)) return;
+    var t = readTime(), k = dayKey(new Date()); t[k] = (t[k] || 0) + 15;
+    var keys = Object.keys(t).sort(); while (keys.length > 120) delete t[keys.shift()]; // keep about 4 months
+    try { localStorage.setItem(TIME_KEY, JSON.stringify(t)); } catch (e) {}
+  }, 15000);
+  function fmtMin(sec) { var m = Math.round(sec / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function renderTimeChart() {
+    var box = document.getElementById('meTime'); if (!box) return; box.innerHTML = '';
+    var t = readTime(), days = [], now = new Date();
+    for (var i = 6; i >= 0; i--) { var d = new Date(now); d.setDate(now.getDate() - i); days.push([d, t[dayKey(d)] || 0]); }
+    var max = Math.max(600, Math.max.apply(null, days.map(function (x) { return x[1]; })));
+    days.forEach(function (x, i) {
+      var el = document.createElement('div'); el.className = 'd' + (i === 6 ? ' today' : '');
+      el.innerHTML = '<span class="m"></span><span class="col"></span><span class="w"></span>';
+      el.querySelector('.m').textContent = x[1] ? Math.round(x[1] / 60) + 'm' : '';
+      el.querySelector('.col').style.height = Math.round(x[1] / max * 90) + '%';
+      el.querySelector('.w').textContent = i === 6 ? 'Today' : x[0].toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + x[0].getDate();
+      el.setAttribute('aria-label', x[0].toDateString() + ': ' + fmtMin(x[1]));
+      box.appendChild(el);
+    });
+    var week = days.reduce(function (a, x) { return a + x[1]; }, 0), all = Object.keys(t).reduce(function (a, k) { return a + (+t[k] || 0); }, 0), on = days.filter(function (x) { return x[1] >= 60; }).length;
+    document.getElementById('meTimeSum').innerHTML = '<span>Today <b></b></span><span>This week <b></b></span><span>Days learned <b></b></span><span>All time <b></b></span>';
+    var bs = document.querySelectorAll('#meTimeSum b'); bs[0].textContent = fmtMin(days[6][1]); bs[1].textContent = fmtMin(week); bs[2].textContent = on + ' of 7'; bs[3].textContent = fmtMin(all);
+  }
+  function renderProgressBars() {
+    var box = document.getElementById('meBars'); if (!box) return; box.innerHTML = '';
+    function bar(title, done, total, c1, c2) {
+      var el = document.createElement('div'); el.className = 'pbar'; el.style.setProperty('--c1', c1); el.style.setProperty('--c2', c2);
+      var pct = total ? Math.round(done / total * 100) : 0;
+      el.innerHTML = '<div class="top"><b></b><span></span></div><div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div>';
+      el.querySelector('b').textContent = title; el.querySelector('span').textContent = done + ' of ' + total + ' · ' + pct + '%';
+      el.querySelector('.track').setAttribute('aria-valuenow', pct); el.querySelector('.track').setAttribute('aria-label', title + ' ' + pct + '%');
+      box.appendChild(el); requestAnimationFrame(function () { el.querySelector('.fill').style.width = pct + '%'; });
+    }
+    (profile.courses || [COURSE]).filter(function (c) { return CQ_COURSES[c]; }).forEach(function (c) {
+      var m = CQ_COURSES[c]; bar(m.emoji + ' ' + m.name + ' · ' + m.world, Math.min(doneIn(c), courseTotal(c)), courseTotal(c), m.c1, m.c2);
+    });
+    bar('🃏 Flashcards learned', learnedCount(), Object.keys(cardState).length, '#FFD3EC', '#C9559A');
+    if (typeof BADGES !== 'undefined') { var got = 0; try { got = Object.keys((JSON.parse(localStorage.getItem('cq-badges') || '{}').got) || {}).length; } catch (e) {} bar('🏅 Badges', got, BADGES.length, '#FFF1B8', '#C98A12'); }
   }
   document.getElementById('meNameInput').addEventListener('input', function (e) {
     var v = e.target.value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16); if (!v) return;
