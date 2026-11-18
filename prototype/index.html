@@ -1288,6 +1288,9 @@ button.deck.locked { cursor: default; }
           <h3 class="sub-h" style="margin-top:18px">Time spent learning</h3>
           <div class="tchart" id="meTime" aria-label="Minutes spent each day this week"></div>
           <div class="tsum" id="meTimeSum"></div>
+          <h3 class="sub-h" style="margin-top:18px">Lesson scores</h3>
+          <p class="small" id="meScoreNote" style="opacity:.8;margin:4px 0 8px">First-try score in each quiz. Below 80% means more practice will help.</p>
+          <div class="pbars" id="meScores"></div>
         </section>
         <section class="panel" aria-labelledby="setH">
           <h2 class="sub-h" id="setH">Settings</h2>
@@ -2384,7 +2387,7 @@ button.deck.locked { cursor: default; }
     var placed = 0; try { var h = JSON.parse(localStorage.getItem('cq-iso') || 'null'); if (h && h.placed && typeof h.placed === 'object') Object.keys(h.placed).forEach(function (r) { if (Array.isArray(h.placed[r])) placed += h.placed[r].length; }); } catch (e) {}
     var stats = [[state.embers, 'embers'], [state.streak, state.streak === 1 ? 'day in a row' : 'days in a row'], [placed, 'items placed']];
     var g = document.getElementById('meStats'); g.innerHTML = '';
-    try { renderProgressBars(); renderTimeChart(); } catch (e) {}
+    try { renderProgressBars(); renderTimeChart(); renderScores(); } catch (e) {}
     stats.forEach(function (st) { var d = document.createElement('div'); d.className = 'mstat'; var b = document.createElement('b'); b.textContent = st[0]; var sp = document.createElement('span'); sp.textContent = st[1]; d.appendChild(b); d.appendChild(sp); g.appendChild(d); });
   }
   // ---- time spent: counts only while the app is on screen and someone touched it in the last minute ----
@@ -2400,6 +2403,20 @@ button.deck.locked { cursor: default; }
     try { localStorage.setItem(TIME_KEY, JSON.stringify(t)); } catch (e) {}
   }, 15000);
   function fmtMin(sec) { var m = Math.round(sec / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function renderScores() {
+    var box = document.getElementById('meScores'); if (!box) return; box.innerHTML = '';
+    var sc = {}; try { sc = JSON.parse(localStorage.getItem('cq-scores') || '{}')[COURSE] || {}; } catch (e) {}
+    var rows = Object.keys(sc).map(function (k) { return sc[k]; }).sort(function (a, b) { return a.p - b.p; });
+    if (!rows.length) { box.textContent = 'Finish a lesson quiz to see scores here.'; return; }
+    rows.forEach(function (r) {
+      var el = document.createElement('div'), low = r.p < 80; el.className = 'pbar';
+      el.style.setProperty('--c1', low ? '#FFB36B' : '#7CF5C8'); el.style.setProperty('--c2', low ? '#FF7A6B' : '#2F9E62');
+      el.innerHTML = '<div class="top"><b></b><span></span></div><div class="track"><div class="fill"></div></div>';
+      el.querySelector('b').textContent = (low ? '🔁 ' : '✅ ') + r.t.charAt(0).toUpperCase() + r.t.slice(1);
+      el.querySelector('span').textContent = r.p + '%' + (low ? ' · practise again' : '');
+      box.appendChild(el); requestAnimationFrame(function () { el.querySelector('.fill').style.width = Math.max(4, r.p) + '%'; });
+    });
+  }
   function renderTimeChart() {
     var box = document.getElementById('meTime'); if (!box) return; box.innerHTML = '';
     var t = readTime(), days = [], now = new Date();
@@ -5169,6 +5186,7 @@ button.deck.locked { cursor: default; }
     dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
     dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;
     show('done');
+    try { var sc = JSON.parse(localStorage.getItem('cq-scores') || '{}'); sc[COURSE] = sc[COURSE] || {}; if (LD && LD.key) sc[COURSE][LD.key] = { p: Math.round(firstTry / Q.length * 100), t: LD.title || LD.key, d: Date.now() }; localStorage.setItem('cq-scores', JSON.stringify(sc)); } catch (e) {}
     try { var adv = JSON.parse(localStorage.getItem('cq-adapt') || '{}'); var arr = adv[COURSE] || []; arr.push(Math.round(firstTry / Q.length * 100) / 100); adv[COURSE] = arr.slice(-4); localStorage.setItem('cq-adapt', JSON.stringify(adv)); } catch (e) {}
     if (firstTry === Q.length) bdgCount('perfect'); else checkBadges();
     var endOfFloor = FLOOR_AT.indexOf(openLessonIdx + 1) > 0;
