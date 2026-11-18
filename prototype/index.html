@@ -4996,6 +4996,10 @@ button.deck.locked { cursor: default; }
   var qBud = document.getElementById('qBuddy'), qBudAt = -2;
   function qBuddyMood(m) { qBud.querySelector('svg').innerHTML = lumiSVG(m || 'happy'); }
   // -2: resting by the read button; -1: the question; 0, 1, 2…: that choice
+  // keep the quiz robot on its target when the screen turns (landscape) or the question scrolls
+  (function () { var t = 0; function again() { clearTimeout(t); t = setTimeout(function () { if (!qBud.hidden && typeof qBudAt === 'number') qPoint(qBudAt); }, 60); }
+    window.addEventListener('resize', again); window.addEventListener('orientationchange', again);
+    var qs = document.querySelector('#quiz .scroll'); if (qs) qs.addEventListener('scroll', again, { passive: true }); })();
   function qPoint(i) {
     if (document.getElementById('quiz').hidden || COURSE === 'py') { qBud.hidden = true; return; }
     qBud.hidden = false; qBudAt = i;
