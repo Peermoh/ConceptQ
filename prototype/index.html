@@ -1837,7 +1837,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('hiCards').addEventListener('click', function () { show('cards'); });
     document.getElementById('hiPrize').addEventListener('click', function () { document.getElementById('prizeTile').click(); });
     document.getElementById('hiBadges').addEventListener('click', function () { document.getElementById('badgeTile').click(); });
-    document.getElementById('hiProgress').addEventListener('click', function () { show('me'); openMePanel('statH'); });
+    document.getElementById('hiProgress').addEventListener('click', function () { show('me'); openMePanel('statH', true); });
     var dash = document.querySelector('.dash'), q = 0;
     var again = function () { if (q) return; q = setTimeout(function () { q = 0; try { renderHomeIcons(); } catch (e) {} }, 30); };
     if (dash && 'MutationObserver' in window) new MutationObserver(again).observe(dash, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
@@ -2441,7 +2441,9 @@ button.deck.locked { cursor: default; }
     g.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('open'); var h = p.querySelector('h2'); if (h) h.setAttribute('aria-expanded', 'false'); });
     document.getElementById('meBack').hidden = true; document.getElementById('meTitle').textContent = 'Me'; document.getElementById('meSub').hidden = false;
   }
-  function openMePanel(hid) {
+  var meFromHome = false;
+  function openMePanel(hid, fromHome) {
+    meFromHome = !!fromHome; document.getElementById('meBack').textContent = fromHome ? '← Home' : '← Me';
     var h = document.getElementById(hid), p = h && h.closest('.panel'), g = document.getElementById('meGrid'); if (!p) return;
     g.classList.remove('menu'); g.classList.add('one');
     g.querySelectorAll('.panel').forEach(function (x) { x.classList.toggle('open', x === p); });
@@ -2456,7 +2458,7 @@ button.deck.locked { cursor: default; }
       h.addEventListener('click', go);
       h.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
-    document.getElementById('meBack').addEventListener('click', meMenu);
+    document.getElementById('meBack').addEventListener('click', function () { if (meFromHome) { meFromHome = false; show('home'); } else meMenu(); });
   })();
   document.getElementById('meNameInput').addEventListener('input', function (e) {
     var v = e.target.value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16); if (!v) return;
@@ -2806,7 +2808,7 @@ button.deck.locked { cursor: default; }
     var nOn = BADGES.filter(function (bd) { return got[bd[0]]; }).length;
     document.getElementById('badgeSum').textContent = nOn ? nOn + ' of ' + BADGES.length + ' badges. Keep going!' : 'Badges show here as you learn. Finish a lesson for your first one!';
   }
-  document.getElementById('badgeTile').addEventListener('click', function () { show('me'); openMePanel('badgeH'); });
+  document.getElementById('badgeTile').addEventListener('click', function () { show('me'); openMePanel('badgeH', true); });
 
   // ---- Make it easier ----
   function applyEasy() {
@@ -3464,7 +3466,7 @@ button.deck.locked { cursor: default; }
   // from the wheel itself: go to Me, check it is a grown-up, then edit
   document.getElementById('wheelEdit').addEventListener('click', function () {
     document.getElementById('wheelDlg').hidden = true; show('me');
-    openMePanel('prizeH'); setTimeout(function () { grownUpCheck(openPrizeEditor); }, 60);
+    openMePanel('prizeH', true); setTimeout(function () { grownUpCheck(openPrizeEditor); }, 60);
   });
   document.getElementById('prizeSave').addEventListener('click', function () {
     var list = rowList().slice(0, 8);
