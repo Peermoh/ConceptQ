@@ -7,7 +7,7 @@
 <title>ConceptQ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Paytone+One&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>
 [hidden] { display: none !important; }
 /* Home: the live world fills the screen behind everything; the page scrolls over it.
@@ -298,6 +298,27 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .antics .prop.small { font-size: 26px; }
 .antics .boom { font-size: 120px; }
 .antics .say { position: absolute; max-width: 220px; padding: 8px 12px; border-radius: 14px; background: #FFF6EC; color: #2A1330; font-weight: 800; font-size: 14px; line-height: 1.3; box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+/* ---- Make it easier (Me): text size, easy-read font, high contrast, less movement ---- */
+body.ts-1 :is(.qtext, #qOptions .opt, .caption, #boardLines, .lesson-card, #readPane, .sheet, .tile, .course-now) { zoom: 1.12; }
+body.ts-2 :is(.qtext, #qOptions .opt, .caption, #boardLines, .lesson-card, #readPane, .sheet, .tile, .course-now) { zoom: 1.25; }
+body.easy-font, body.easy-font :is(button, input, select, textarea, p, span, b, h1, h2, h3, h4, li, label, div, small, strong) { font-family: 'Atkinson Hyperlegible', 'Lexend', 'Nunito', system-ui, sans-serif !important; letter-spacing: .02em; }
+body.easy-font :is(.code, code, .chalk.code, .title-xl, .tile-t) { letter-spacing: 0; }
+body.easy-font #board .chalk:not(.title) { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif !important; font-weight: 700; }
+body.hi-contrast { --muted: #FFFFFF; --line: rgba(255,255,255,.75); }
+body.hi-contrast :is(.tile, .lesson-card, .panel, .opt, .sheet, .course-now, .topic, .wheel-card, .tour-card) { border: 2px solid #FFFFFF !important; background-color: #120818 !important; }
+body.hi-contrast :is(.muted, .small, .lbl, .eyebrow, .meta, p) { color: #FFFFFF !important; opacity: 1 !important; }
+body.hi-contrast .cta { box-shadow: 0 0 0 3px #FFFFFF !important; }
+body.hi-contrast .bubble { background: #FFFFFF !important; color: #000000 !important; }
+body.calm *, body.calm *::before, body.calm *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; scroll-behavior: auto !important; }
+.ez-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.ez-row button { padding: 8px 14px; border-radius: 999px; border: 2px solid var(--line); background: transparent; color: inherit; font: inherit; font-weight: 800; cursor: pointer; }
+.ez-row button[aria-pressed="true"] { background: #FFB547; color: #2A1330; border-color: transparent; }
+/* ---- Home: a badge on the House / Town / Library tab when something new was built ---- */
+.nav button[data-nav="house"] { position: relative; }
+.nav button.has-news::after { content: 'New!'; position: absolute; top: 2px; left: 50%; margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: #7CF5C8; color: #2A1330; font-size: 10px; font-weight: 900; animation: newsPulse 1.6s ease-in-out infinite; }
+@keyframes newsPulse { 50% { transform: scale(1.12); } }
+/* phones: a smaller sky, so the lesson card and its Start button are on the first screen */
+@media (max-width: 600px) and (min-height: 560px) { .home-hero { height: 124px; } }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -876,8 +897,8 @@ button.deck.locked { cursor: default; }
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3 4 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-6 0 2 1 3 2.5 3C10 8 11 5 12 2z" fill="#FFB547"/></svg>
           <span id="embers">120</span>
         </span>
-        <span class="chip" title="Nights in a row">
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="#F2C6E0"/></svg>
+        <span class="chip" title="Days in a row">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="#FFE07A"/></svg>
           <span id="streakChip">1</span>
         </span>
       </div>
@@ -928,7 +949,7 @@ button.deck.locked { cursor: default; }
 
       <div class="dash" aria-label="Your dashboard">
         <button class="tile dash-tile" id="coursesTile" data-nav="courses" aria-label="Courses. See all courses.">
-          <span class="row"><b class="tile-t">Courses</b><span class="c-stack" aria-hidden="true"><i class="c-ic py">Py</i><i class="c-ic web">&lt;/&gt;</i><i class="c-ic math">÷</i></span></span>
+          <span class="row"><b class="tile-t">Courses</b><span class="c-stack" aria-hidden="true" id="coursesIc"></span></span>
           <span class="lbl" id="pyLevel">Python · beginner</span>
           <span class="bar"><i id="pyBar" style="width: 0%"></i></span>
           <span class="lbl more" id="coursesMore">See all courses</span>
@@ -1066,6 +1087,16 @@ button.deck.locked { cursor: default; }
           <label class="field"><span>Your age</span><select id="meAge"></select></label>
           <label class="field"><span>Your robot teacher's name</span><input id="meTeacher" maxlength="14" autocomplete="off" placeholder="Nibb"></label>
           <div class="field"><span id="colorLbl">Avatar colour</span><div class="swatches" id="meColors" role="radiogroup" aria-labelledby="colorLbl"></div></div>
+        </section>
+        <section class="panel" aria-labelledby="easyH">
+          <h2 class="sub-h" id="easyH">Make it easier</h2>
+          <span class="pe-lbl" id="ezSizeL">Text size</span>
+          <div class="ez-row" role="group" aria-labelledby="ezSizeL" id="ezSize"><button type="button" data-v="0">Normal</button><button type="button" data-v="1">Large</button><button type="button" data-v="2">Extra large</button></div>
+          <span class="pe-lbl" id="ezRateL">Teacher's voice speed</span>
+          <div class="ez-row" role="group" aria-labelledby="ezRateL" id="ezRate"><button type="button" data-v="0.85">Slower</button><button type="button" data-v="1">Normal</button><button type="button" data-v="1.15">Faster</button></div>
+          <label class="toggle"><input type="checkbox" id="ezFont"><span>Easy-read letters (clearer shapes, more space: helps with dyslexia)</span></label>
+          <label class="toggle"><input type="checkbox" id="ezContrast"><span>High contrast (white text and outlines on dark)</span></label>
+          <label class="toggle"><input type="checkbox" id="ezCalm"><span>Less movement (no floating, flying or confetti)</span></label>
         </section>
         <section class="panel" aria-labelledby="backupH">
           <h2 class="sub-h" id="backupH">Save my progress</h2>
@@ -1270,7 +1301,7 @@ button.deck.locked { cursor: default; }
   }
   window.CQCelebrate = function (title, sub, big) {
     css();
-    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var still = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || document.body.classList.contains('calm');
     var root = document.createElement('div'); root.className = 'cq-cel' + (big ? ' big' : ''); root.setAttribute('role', 'status');
     var cv = document.createElement('canvas'), ban = document.createElement('div'); ban.className = 'ban';
     var bt = document.createElement('b'); bt.textContent = title || 'Congratulations!'; ban.appendChild(bt);
@@ -1893,6 +1924,7 @@ button.deck.locked { cursor: default; }
     return added;
   }
   function dueCards() { var now = Date.now(); return CARDS.filter(function (c) { var r = cardState[c.id]; return r && r.due <= now; }); }
+  function usedCats() { var u = {}; CARDS.forEach(function (c) { if (cardState[c.id]) u[c.c] = 1; }); return Object.keys(u).length; }
   function learnedCount() { return CARDS.filter(function (c) { var r = cardState[c.id]; return r && r.box >= 3; }).length; }
   // card text: plain text with `code` parts, built as DOM nodes (never as HTML)
   function cardText(el, text) {
@@ -1908,7 +1940,7 @@ button.deck.locked { cursor: default; }
     ensureCards();
     var due = dueCards(), total = Object.keys(cardState).length;
     document.getElementById('cardsSummary').textContent = total
-      ? due.length + ' to review now · ' + learnedCount() + ' of ' + total + ' learned well · ' + CATS.length + ' categories'
+      ? due.length + ' to review now · ' + learnedCount() + ' of ' + total + ' learned well · ' + usedCats() + (usedCats() === 1 ? ' topic' : ' topics')
       : 'Finish your first lesson to get your first cards.';
     // filter chips: All, or one category (with how many are due in it)
     var chips = document.getElementById('catChips'); chips.innerHTML = '';
@@ -2003,6 +2035,9 @@ button.deck.locked { cursor: default; }
       if (typeof pf.sounds === 'boolean') profile.sounds = pf.sounds;
       if (typeof pf.music === 'boolean') profile.music = pf.music;
       if (typeof pf.autoRead === 'boolean') profile.autoRead = pf.autoRead;
+      if (pf.ts === 1 || pf.ts === 2) profile.ts = pf.ts;
+      if ([0.85, 1, 1.15].indexOf(pf.rate) >= 0) profile.rate = pf.rate;
+      ['easyFont', 'contrast', 'calm'].forEach(function (k) { if (typeof pf[k] === 'boolean') profile[k] = pf[k]; });
       if (pf.toured === true) profile.toured = true;
       if (typeof pf.teacher === 'string') { var tn = pf.teacher.replace(/[\u0000-\u001f<>&"\\]/g, '').trim().slice(0, 14); if (tn) profile.teacher = tn; }
     }
@@ -2119,8 +2154,8 @@ button.deck.locked { cursor: default; }
     document.title = tn + ' · ConceptQ';
     setLogo();
     ['meAvatar'].forEach(function (id) { var a = document.getElementById(id); a.textContent = profile.name.charAt(0).toUpperCase(); a.style.background = profile.color; });
-    var more = COURSES.filter(function (c) { return !c.live && profile.age >= c.minAge; }).length;
-    document.getElementById('coursesMore').textContent = more ? '+' + more + ' more to explore' : 'See all courses';
+    document.getElementById('coursesMore').textContent = 'See all courses';
+    var ci = document.getElementById('coursesIc'); if (ci && typeof CQ_COURSES !== 'undefined' && COURSE && CQ_COURSES[COURSE]) ci.textContent = CQ_COURSES[COURSE].emoji;
   }
   function renderMe() {
     renderMyCourses();
@@ -2299,7 +2334,7 @@ button.deck.locked { cursor: default; }
     var n = dueCards().length, tot = Object.keys(cardState).length;
     document.getElementById('cardsDue').textContent = n;
     document.getElementById('cardsDueLbl').textContent = !tot ? 'cards yet' : n ? 'due to review' : 'due. All bright!';
-    document.getElementById('cardsCats').textContent = !tot ? 'Each lesson adds 3' : learnedCount() + ' of ' + tot + ' learned · ' + CATS.length + ' categories';
+    document.getElementById('cardsCats').textContent = !tot ? 'Each lesson adds 3' : learnedCount() + ' of ' + tot + ' learned · ' + usedCats() + (usedCats() === 1 ? ' topic' : ' topics');
     var st = state.streak || 1, wk = ((st - 1) % 7) + 1;
     document.getElementById('streakNum').textContent = st;
     document.getElementById('streakChip').textContent = st;
@@ -2421,6 +2456,22 @@ button.deck.locked { cursor: default; }
   function setSounds(onn) { profile.sounds = onn; saveProfile(); renderSoundBtn(); if (onn) { SFX.unlock(); SFX.play('pop'); } sceneSound(); }
   document.getElementById('soundBtn').addEventListener('click', function () { setSounds(profile.sounds === false); });
   document.getElementById('setSounds').addEventListener('change', function (e) { setSounds(e.target.checked); });
+  // ---- Make it easier ----
+  function applyEasy() {
+    var b = document.body;
+    b.classList.toggle('ts-1', profile.ts === 1); b.classList.toggle('ts-2', profile.ts === 2);
+    b.classList.toggle('easy-font', !!profile.easyFont); b.classList.toggle('hi-contrast', !!profile.contrast); b.classList.toggle('calm', !!profile.calm);
+    if (profile.calm) still = true;
+    try { voiceEl.playbackRate = profile.rate || 1; voiceEl.defaultPlaybackRate = profile.rate || 1; } catch (e) {}
+    document.querySelectorAll('#ezSize button').forEach(function (x) { x.setAttribute('aria-pressed', String(+x.dataset.v === (profile.ts || 0))); });
+    document.querySelectorAll('#ezRate button').forEach(function (x) { x.setAttribute('aria-pressed', String(+x.dataset.v === (profile.rate || 1))); });
+    document.getElementById('ezFont').checked = !!profile.easyFont; document.getElementById('ezContrast').checked = !!profile.contrast; document.getElementById('ezCalm').checked = !!profile.calm;
+  }
+  document.querySelectorAll('#ezSize button').forEach(function (x) { x.addEventListener('click', function () { profile.ts = +x.dataset.v; saveProfile(); applyEasy(); }); });
+  document.querySelectorAll('#ezRate button').forEach(function (x) { x.addEventListener('click', function () { profile.rate = +x.dataset.v; saveProfile(); applyEasy(); }); });
+  [['ezFont', 'easyFont'], ['ezContrast', 'contrast'], ['ezCalm', 'calm']].forEach(function (p) {
+    document.getElementById(p[0]).addEventListener('change', function (e) { profile[p[1]] = e.target.checked; saveProfile(); applyEasy(); if (p[1] === 'calm' && !e.target.checked) location.reload(); });
+  });
   function autoRead() { return typeof profile.autoRead === 'boolean' ? profile.autoRead : profile.age <= 8; }
   document.getElementById('setAutoRead').addEventListener('change', function (e) { profile.autoRead = e.target.checked; saveProfile(); });
   document.getElementById('setMusic').addEventListener('change', function (e) { profile.music = e.target.checked; saveProfile(); sceneSound(); });
@@ -2429,6 +2480,7 @@ button.deck.locked { cursor: default; }
   // a soft tap on the main buttons
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.cta, [data-nav], .topic, .chip, .cq-card, .chip-btn'); if (b && b.id !== 'soundBtn') SFX.play('tap'); });
   renderSoundBtn();
+  applyEasy();
   window.CQBoom = function () { SFX.play('fire'); };
   window.CQCheer = function () { SFX.play('fanfare'); SFX.play('crackers'); };
 
@@ -2481,7 +2533,7 @@ button.deck.locked { cursor: default; }
   function chooseSlot() {
     if (document.getElementById('home').hidden) return;
     // something new in the house: fly down and point at the House button in the menu
-    if (houseNews()) { moveBuddy('nav'); return; }
+    document.querySelectorAll('.nav [data-nav="house"]').forEach(function (b) { b.classList.toggle('has-news', houseNews()); });
     moveBuddy(slotSeen.hero ? 'hero' : (slotSeen.topic && !slots.topic.hidden) ? 'topic' : 'park');
   }
   var buddyIO = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
@@ -2759,7 +2811,7 @@ button.deck.locked { cursor: default; }
   // Is there something new in the house since the learner last opened it? (a part built or an item earned)
   function seenKey() { return COURSE && COURSE !== 'py' ? 'cq-world-seen-' + COURSE : 'cq-house-seen'; }
   function houseSeen() { try { var v = parseInt(localStorage.getItem(seenKey()), 10); return isFinite(v) ? v : 0; } catch (e) { return 0; } }
-  function markHouseSeen() { try { localStorage.setItem(seenKey(), String(state.current)); } catch (e) {} newsDismissed = false; }
+  function markHouseSeen() { try { localStorage.setItem(seenKey(), String(state.current)); } catch (e) {} newsDismissed = false; document.querySelectorAll('.nav [data-nav="house"]').forEach(function (b) { b.classList.remove('has-news'); }); }
   var newsDismissed = false;
   function houseNews() { return !newsDismissed && state.current > houseSeen(); }
   function renderHouseCard() {
@@ -8085,6 +8137,7 @@ button.deck.locked { cursor: default; }
     return clipCache[url];
   }
   function applyNarrator() {
+    try { voiceEl.playbackRate = profile.rate || 1; voiceEl.defaultPlaybackRate = profile.rate || 1; } catch (e) {}
     var who = profile.narrator, T = LESSON_TIMES[LD.key] && LESSON_TIMES[LD.key][who];
     BOARD.forEach(function (st, i) { st.at = T && T[i] ? T[i].at : null; st.wt = T && T[i] ? T[i].wt : null; });
     var SG = AUDIO_SEG[LD.key] && AUDIO_SEG[LD.key][who], url = 'audio/' + who + '/' + LD.key + '.mp3';

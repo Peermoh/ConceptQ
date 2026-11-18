@@ -229,7 +229,7 @@
   }
   window.CQCelebrate = function (title, sub, big) {
     css();
-    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var still = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || document.body.classList.contains('calm');
     var root = document.createElement('div'); root.className = 'cq-cel' + (big ? ' big' : ''); root.setAttribute('role', 'status');
     var cv = document.createElement('canvas'), ban = document.createElement('div'); ban.className = 'ban';
     var bt = document.createElement('b'); bt.textContent = title || 'Congratulations!'; ban.appendChild(bt);
