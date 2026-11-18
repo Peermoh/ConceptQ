@@ -4888,7 +4888,10 @@ button.deck.locked { cursor: default; }
   function qid(q) { return q.text + '|' + q.options[0]; }
   function makeCourseQuiz(ld) {
     var hist = qHist(ld.key), gens = GEN[ld.key] || [], made = [], usedGen = [], ids = {}, n = ld.size || 5, nFresh = Math.min(n - 1, gens.length ? 4 : 0);
-    var levels = shuffled([0, 1, 2, Math.floor(Math.random() * 3)]);
+    // adaptive: recent first-try scores in this course move the mix easier or harder
+    var sk = 0; try { var ad = JSON.parse(localStorage.getItem('cq-adapt') || '{}')[COURSE] || []; if (ad.length) sk = ad.reduce(function (a, b) { return a + b; }, 0) / ad.length; else sk = .7; } catch (e) { sk = .7; }
+    var mix = sk >= .85 ? [1, 2, 2, 2] : sk >= .65 ? [0, 1, 2, Math.floor(Math.random() * 3)] : sk >= .45 ? [0, 0, 1, 1] : [0, 0, 0, 1];
+    var levels = shuffled(mix);
     for (var k = 0; k < nFresh; k++) {
       var best = null, bestScore = -1;
       // try every generator in a fresh order: prefer one not used yet in this quiz, and a question not asked recently
@@ -5166,6 +5169,7 @@ button.deck.locked { cursor: default; }
     dj.textContent = sr ? 'The prize jar is full: spin the prize wheel!' : 'Prize jar: ' + jarFill() + ' of ' + rewards.per + ' embers';
     dj.classList.toggle('ready', sr > 0); dj.disabled = !sr;
     show('done');
+    try { var adv = JSON.parse(localStorage.getItem('cq-adapt') || '{}'); var arr = adv[COURSE] || []; arr.push(Math.round(firstTry / Q.length * 100) / 100); adv[COURSE] = arr.slice(-4); localStorage.setItem('cq-adapt', JSON.stringify(adv)); } catch (e) {}
     if (firstTry === Q.length) bdgCount('perfect'); else checkBadges();
     var endOfFloor = FLOOR_AT.indexOf(openLessonIdx + 1) > 0;
     setTimeout(function () {
