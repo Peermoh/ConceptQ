@@ -423,6 +423,19 @@ body.calm #home .topic.now .ticon { animation: none; }
 .tchart .m { opacity: .85; } .tchart .w { opacity: .65; font-weight: 700; }
 .tsum { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-top: 10px; opacity: .85; }
 .tsum b { font-size: 16px; }
+/* ---- Me as a menu ---- */
+#me .me-grid.menu { display: flex; flex-direction: column; gap: 10px; }
+#me .me-grid.menu .panel { padding: 0; }
+#me .me-grid.menu .panel > :not(h2) { display: none !important; }
+#me .me-grid.menu .panel > h2 { margin: 0; padding: 16px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 19px; }
+#me .me-grid.menu .panel > h2::before { content: attr(data-ic); font-size: 24px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.08); flex: none; }
+#me .me-grid.menu .panel > h2::after { content: "›"; margin-left: auto; font-size: 26px; opacity: .6; }
+#me .me-grid.menu .panel > h2:focus-visible { outline: 3px solid var(--cream); outline-offset: -3px; border-radius: 16px; }
+#me .me-grid.one { display: block; }
+#me .me-grid.one .panel:not(.open) { display: none; }
+#me .me-grid.one .panel.open > h2 { display: none; }
+#meBack { align-self: flex-start; width: auto; border: 0; background: rgba(255,255,255,.1); color: var(--cream); font: inherit; font-weight: 800; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; margin-bottom: 8px; }
+#meBack[hidden] { display: none; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -1198,8 +1211,8 @@ button.deck.locked { cursor: default; }
 
   <section class="screen" id="me" aria-label="Me" hidden>
     <div class="scroll pad tab-wrap">
-      <header class="tab-head"><h1 class="title-xl">Me</h1><p>Your profile, settings and progress.</p></header>
-      <div class="me-grid">
+      <header class="tab-head"><button id="meBack" type="button" hidden>← Me</button><h1 class="title-xl" id="meTitle">Me</h1><p id="meSub">Your profile, settings and progress.</p></header>
+      <div class="me-grid menu" id="meGrid">
         <section class="panel" aria-labelledby="profH">
           <h2 class="sub-h" id="profH">Profile</h2>
           <div class="prof-row"><div class="avatar big" id="meAvatar" aria-hidden="true">N</div>
@@ -1824,7 +1837,7 @@ button.deck.locked { cursor: default; }
     document.getElementById('hiCards').addEventListener('click', function () { show('cards'); });
     document.getElementById('hiPrize').addEventListener('click', function () { document.getElementById('prizeTile').click(); });
     document.getElementById('hiBadges').addEventListener('click', function () { document.getElementById('badgeTile').click(); });
-    document.getElementById('hiProgress').addEventListener('click', function () { show('me'); setTimeout(function () { var h = document.getElementById('statH'); if (h) h.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120); });
+    document.getElementById('hiProgress').addEventListener('click', function () { show('me'); openMePanel('statH'); });
     var dash = document.querySelector('.dash'), q = 0;
     var again = function () { if (q) return; q = setTimeout(function () { q = 0; try { renderHomeIcons(); } catch (e) {} }, 30); };
     if (dash && 'MutationObserver' in window) new MutationObserver(again).observe(dash, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
@@ -2421,6 +2434,30 @@ button.deck.locked { cursor: default; }
     bar('🃏 Flashcards learned', learnedCount(), Object.keys(cardState).length, '#FFD3EC', '#C9559A');
     if (typeof BADGES !== 'undefined') { var got = 0; try { got = Object.keys((JSON.parse(localStorage.getItem('cq-badges') || '{}').got) || {}).length; } catch (e) {} bar('🏅 Badges', got, BADGES.length, '#FFF1B8', '#C98A12'); }
   }
+  // ---- Me menu ----
+  var ME_IC = { profH: '👤', badgeH: '🏅', easyH: '🪄', backupH: '💾', myCoursesH: '📚', prizeH: '🎁', statH: '📈', setH: '⚙️', resetH: '🗑️' };
+  function meMenu() {
+    var g = document.getElementById('meGrid'); g.classList.add('menu'); g.classList.remove('one');
+    g.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('open'); var h = p.querySelector('h2'); if (h) h.setAttribute('aria-expanded', 'false'); });
+    document.getElementById('meBack').hidden = true; document.getElementById('meTitle').textContent = 'Me'; document.getElementById('meSub').hidden = false;
+  }
+  function openMePanel(hid) {
+    var h = document.getElementById(hid), p = h && h.closest('.panel'), g = document.getElementById('meGrid'); if (!p) return;
+    g.classList.remove('menu'); g.classList.add('one');
+    g.querySelectorAll('.panel').forEach(function (x) { x.classList.toggle('open', x === p); });
+    h.setAttribute('aria-expanded', 'true');
+    document.getElementById('meTitle').textContent = h.textContent.trim(); document.getElementById('meSub').hidden = true; document.getElementById('meBack').hidden = false;
+    var sc = document.querySelector('#me .scroll'); if (sc) sc.scrollTop = 0;
+  }
+  (function () {
+    document.querySelectorAll('#meGrid .panel > h2').forEach(function (h) {
+      h.setAttribute('data-ic', ME_IC[h.id] || '•'); h.setAttribute('role', 'button'); h.tabIndex = 0; h.setAttribute('aria-expanded', 'false');
+      var go = function () { if (document.getElementById('meGrid').classList.contains('menu')) openMePanel(h.id); };
+      h.addEventListener('click', go);
+      h.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+    document.getElementById('meBack').addEventListener('click', meMenu);
+  })();
   document.getElementById('meNameInput').addEventListener('input', function (e) {
     var v = e.target.value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16); if (!v) return;
     profile.name = v; saveProfile(); applyProfile();
@@ -2769,7 +2806,7 @@ button.deck.locked { cursor: default; }
     var nOn = BADGES.filter(function (bd) { return got[bd[0]]; }).length;
     document.getElementById('badgeSum').textContent = nOn ? nOn + ' of ' + BADGES.length + ' badges. Keep going!' : 'Badges show here as you learn. Finish a lesson for your first one!';
   }
-  document.getElementById('badgeTile').addEventListener('click', function () { show('me'); setTimeout(function () { document.getElementById('badgePanel').scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }); }, 80); });
+  document.getElementById('badgeTile').addEventListener('click', function () { show('me'); openMePanel('badgeH'); });
 
   // ---- Make it easier ----
   function applyEasy() {
@@ -3171,7 +3208,7 @@ button.deck.locked { cursor: default; }
     if (id === 'home' || id === 'house' || id === 'cards' || id === 'me') renderNav(id);
     if (id === 'courses') { renderNav('home'); renderCourses(); }
     if (id === 'cards') renderCards();
-    if (id === 'me') renderMe();
+    if (id === 'me') { renderMe(); meMenu(); }
     // move keyboard / screen reader focus into the screen that just opened (bottom-nav presses keep focus on the nav)
     var scr = document.getElementById(id), keepNav = document.activeElement && document.activeElement.closest && document.activeElement.closest('#' + id + ' [data-navbar]');
     if (!keepNav) { var navBtn = document.querySelector('#' + id + ' [data-navbar] [data-nav="' + id + '"]'); if (navBtn && document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-navbar]')) navBtn.focus(); else { scr.setAttribute('tabindex', '-1'); scr.focus({ preventScroll: true }); } }
@@ -3427,7 +3464,7 @@ button.deck.locked { cursor: default; }
   // from the wheel itself: go to Me, check it is a grown-up, then edit
   document.getElementById('wheelEdit').addEventListener('click', function () {
     document.getElementById('wheelDlg').hidden = true; show('me');
-    setTimeout(function () { document.getElementById('prizeH').scrollIntoView({ block: 'start' }); grownUpCheck(openPrizeEditor); }, 60);
+    openMePanel('prizeH'); setTimeout(function () { grownUpCheck(openPrizeEditor); }, 60);
   });
   document.getElementById('prizeSave').addEventListener('click', function () {
     var list = rowList().slice(0, 8);
