@@ -2215,12 +2215,21 @@ button.deck.locked { cursor: default; }
     var code = document.getElementById('bkCode').value;
     navigator.share({ title: 'ConceptQ backup', text: 'My ConceptQ progress backup for ' + profile.name + ' (paste it in Me → Restore progress):\n' + code }).catch(function () {});
   });
+  // the backup file: inside the claude.ai viewer the page asks the viewer to confirm the save (downloads capability);
+  // on the app's own website it is an ordinary download
+  var dlCap = null; if (window.claude && claude.use) claude.use('downloads').then(function (d) { dlCap = d; }, function () {});
   document.getElementById('bkFile').addEventListener('click', function () {
     var code = document.getElementById('bkCode').value, msg = document.getElementById('bkOutMsg');
+    var name = 'conceptq-' + (profile.name.replace(/[^A-Za-z0-9]+/g, '') || 'learner') + '-' + new Date().toISOString().slice(0, 10) + '.conceptq.txt';
+    if (dlCap) {
+      dlCap.save({ filename: name, data: code }).then(function () { msg.textContent = 'File saved: ' + name; }, function (e) {
+        msg.textContent = e && e.code === 'declined' ? 'Not saved. You can still copy the code.' : e && e.code === 'rate_limited' ? 'One moment, then try again.' : 'Saving a file is not possible here: use Copy code instead.';
+      });
+      return;
+    }
     try {
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
-      a.download = 'conceptq-' + profile.name.replace(/[^A-Za-z0-9]+/g, '') + '-' + new Date().toISOString().slice(0, 10) + '.conceptq.txt';
-      document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'File saved to your downloads.';
+      a.download = name; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'File saved to your downloads.';
     } catch (e) { msg.textContent = 'This browser cannot save files here: use Copy code instead.'; }
   });
   document.getElementById('bkRestore').addEventListener('click', function () {
