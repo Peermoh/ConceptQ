@@ -456,6 +456,10 @@ body.calm #home .topic.now .ticon { animation: none; }
 .wl-nibb.talk { animation: wlTalk .5s ease-in-out 2; }
 @keyframes wlTalk { 50% { transform: translateY(-8px) scale(1.05); } }
 body.calm .wl-hand, body.calm .wl-nibb.talk { animation: none; }
+.dr-frame { position: relative; width: 56px; height: 80px; border-radius: 28px 28px 4px 4px; background: #6B4A2E; padding: 4px 4px 0; box-shadow: 0 6px 14px rgba(0,0,0,.35); }
+.dr-in { position: absolute; inset: 4px 4px 0; border-radius: 24px 24px 2px 2px; background: radial-gradient(circle at 50% 40%, #FFE9A8 0%, #3A2148 70%); }
+.dr-leaf { position: absolute; inset: 4px 4px 0; border-radius: 24px 24px 2px 2px; background: linear-gradient(90deg, #C88B5A, #A86E44); transform-origin: left center; box-shadow: inset 0 0 0 2px rgba(0,0,0,.18); }
+.dr-leaf i { position: absolute; right: 7px; top: 44px; width: 7px; height: 7px; border-radius: 50%; background: #FFD27A; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -3089,16 +3093,23 @@ button.deck.locked { cursor: default; }
     doors: function (k) {
       k.say(['Knock knock! Who\'s there? Me!', 'I know a shortcut...', 'Be right back!'][Math.floor(Math.random() * 3)]);
       var B = k.box, mid = (B.left + B.right) / 2, left = k.r.left + k.r.width / 2 > mid;
-      var d1x = left ? Math.max(B.left + 4, k.r.left - 80) : Math.min(B.right - 64, k.r.right + 16), d1y = Math.max(B.top, Math.min(B.bottom - 76, k.r.top));
-      var d2x = left ? B.left + 6 : B.right - 66, d2y = B.top + Math.random() * Math.max(0, B.bottom - B.top - 76);
-      var d1 = k.prop('🚪', d1x, d1y), d2 = k.prop('🚪', d2x, d2y); [d1, d2].forEach(function (d) { d.style.fontSize = '70px'; d.style.opacity = 0; });
-      anim(d1, [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 300);
-      var dx1 = d1x - k.r.left, dy1 = d1y - k.r.top, dx2 = d2x - k.r.left, dy2 = d2y - k.r.top;
-      anim(k.actor, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + dx1 + 'px,' + dy1 + 'px) scale(.55)', opacity: 1, offset: 0.25 }, { transform: 'translate(' + dx1 + 'px,' + dy1 + 'px) scale(.2)', opacity: 0, offset: 0.33 },
-        { transform: 'translate(' + dx2 + 'px,' + dy2 + 'px) scale(.2)', opacity: 0, offset: 0.55 }, { transform: 'translate(' + dx2 + 'px,' + dy2 + 'px) scale(.7)', opacity: 1, offset: 0.65 }, { transform: 'translate(0,0) scale(1)', opacity: 1 }], 4200);
-      setTimeout(function () { SFX.play('tick'); anim(d1, [{ opacity: 1 }, { opacity: 0, transform: 'scale(.4)' }], 300); anim(d2, [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 300); }, 1450);
-      setTimeout(function () { SFX.play('pop'); k.say('Ta-da! Out the other door!'); }, 2650);
-      setTimeout(function () { anim(d2, [{ opacity: 1 }, { opacity: 0, transform: 'scale(.4)' }], 300); }, 3200);
+      var d1x = left ? Math.max(B.left + 4, k.r.left - 80) : Math.min(B.right - 64, k.r.right + 16), d1y = Math.max(B.top, Math.min(B.bottom - 92, k.r.top));
+      var d2x = left ? B.left + 6 : B.right - 66, d2y = B.top + Math.random() * Math.max(0, B.bottom - B.top - 92);
+      // a drawn door: a dark doorway with a wooden door that swings open on its hinge (no rotation: it narrows like a door turning away)
+      function door(x, y) { var d = k.prop('', x, y); d.innerHTML = '<div class="dr-frame"><div class="dr-in"></div><div class="dr-leaf"><i></i></div></div>'; d.style.opacity = 0; return d; }
+      function swing(d, open, ms) { var lf = d.querySelector('.dr-leaf'); return lf.animate(open ? [{ transform: 'scaleX(1)', filter: 'brightness(1)' }, { transform: 'scaleX(.14)', filter: 'brightness(.6)' }] : [{ transform: 'scaleX(.14)', filter: 'brightness(.6)' }, { transform: 'scaleX(1)', filter: 'brightness(1)' }], { duration: ms, easing: open ? 'cubic-bezier(.3,.7,.4,1)' : 'cubic-bezier(.6,0,.8,.4)', fill: 'forwards' }); }
+      function fade(d, on) { return d.animate([{ opacity: on ? 0 : 1 }, { opacity: on ? 1 : 0 }], { duration: 260, fill: 'forwards' }); }
+      var d1 = door(d1x, d1y), d2 = door(d2x, d2y);
+      var dx1 = d1x + 8 - k.r.left, dy1 = d1y + 10 - k.r.top, dx2 = d2x + 8 - k.r.left, dy2 = d2y + 10 - k.r.top, still0 = 'translate(0,0) scale(1)';
+      fade(d1, true);
+      setTimeout(function () { SFX.play('tick'); swing(d1, true, 420); }, 350);                                   // door 1 creaks open
+      setTimeout(function () { anim(k.actor, [{ transform: still0, opacity: 1 }, { transform: 'translate(' + dx1 + 'px,' + dy1 + 'px) scale(.6)', opacity: 1, offset: .8 }, { transform: 'translate(' + dx1 + 'px,' + dy1 + 'px) scale(.5)', opacity: 0 }], 900); }, 750);  // walks in
+      setTimeout(function () { swing(d1, false, 280); }, 1700);                                                 // door 1 shuts
+      setTimeout(function () { SFX.play('pop'); fade(d2, true); }, 1980);
+      setTimeout(function () { fade(d1, false); SFX.play('tick'); swing(d2, true, 420); }, 2300);               // door 2 opens
+      setTimeout(function () { anim(k.actor, [{ transform: 'translate(' + dx2 + 'px,' + dy2 + 'px) scale(.5)', opacity: 0 }, { transform: 'translate(' + dx2 + 'px,' + dy2 + 'px) scale(.6)', opacity: 1, offset: .2 }, { transform: still0, opacity: 1 }], 1000); }, 2750);  // steps out and walks back
+      setTimeout(function () { k.say('Ta-da! Out the other door!'); swing(d2, false, 280); }, 3350);            // door 2 shuts behind
+      setTimeout(function () { SFX.play('pop'); fade(d2, false); }, 3700);
       setTimeout(k.done, 4300);
     },
     rocket: function (k) {
