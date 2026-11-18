@@ -8,7 +8,7 @@
 - Reveals ONE prize picked at random from the pot; the other pot prizes fly away with "maybe next time!".
 - Next to the spin button: "You have 1 spin. Save 3 for a bigger box!"
 
-## 2. Robot animations
+## 2. Robot animations — no-spin + welcome pointing DONE (v106); natural doors still to do
 - No spinning/rotating moves (dance spin, rocket roll, flight tilt); keep walking, floating, bobbing.
 - Doors: swing open on a hinge, robot steps through, door closes behind it.
 - Welcome screen: robot points at the field to fill (name, age, robot name) with cute beeps; cheers when each is filled.

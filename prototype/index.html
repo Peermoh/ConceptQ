@@ -450,6 +450,12 @@ body.calm #home .topic.now .ticon { animation: none; }
 .mbox .pot span { background: rgba(255,255,255,.12); padding: 4px 10px; border-radius: 999px; transition: transform .8s ease, opacity .8s; }
 .mbox .pot span.away { transform: translateY(-60px) rotate(-10deg); opacity: 0; }
 .mbox .knock { font-weight: 900; font-size: 16px; }
+.wl-hand { font-size: 30px; line-height: 1; margin-bottom: -8px; animation: wlHand .9s ease-in-out infinite; }
+.wl-hand.done { visibility: hidden; }
+@keyframes wlHand { 50% { transform: translateY(8px); } }
+.wl-nibb.talk { animation: wlTalk .5s ease-in-out 2; }
+@keyframes wlTalk { 50% { transform: translateY(-8px) scale(1.05); } }
+body.calm .wl-hand, body.calm .wl-nibb.talk { animation: none; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -1195,13 +1201,13 @@ button.deck.locked { cursor: default; }
       <div class="wl-step" id="wlName">
         <h1>Hi! I'm your robot teacher.</h1>
         <p>What's your name?</p>
-        <input id="wlNameIn" maxlength="16" autocomplete="nickname" placeholder="Type your name" aria-label="Your name">
+        <span class="wl-hand" aria-hidden="true">👇</span><input id="wlNameIn" maxlength="16" autocomplete="nickname" placeholder="Type your name" aria-label="Your name">
         <button class="cta" id="wlNameGo" type="button" disabled>Next</button>
       </div>
       <div class="wl-step" id="wlTeach" hidden>
         <h1 id="wlTeachH">Nice to meet you!</h1>
         <p>What would you like to call me? Pick one or make up your own.</p>
-        <input id="wlTeachIn" maxlength="14" autocomplete="off" aria-label="Your teacher's name" placeholder="Type a name">
+        <span class="wl-hand" aria-hidden="true">👇</span><input id="wlTeachIn" maxlength="14" autocomplete="off" aria-label="Your teacher's name" placeholder="Type a name">
         <div class="wl-names" id="wlNames"></div>
         <button class="chip-btn ghost" id="wlRoll" type="button">🎲 Surprise me</button>
         <button class="cta" id="wlTeachGo" type="button" disabled>Next</button>
@@ -1210,7 +1216,7 @@ button.deck.locked { cursor: default; }
       <div class="wl-step" id="wlAge" hidden>
         <h1 id="wlAgeH">How old are you?</h1>
         <p>So I can pick the right lessons for you.</p>
-        <div class="wl-ages" id="wlAges" role="group" aria-label="Your age"></div>
+        <span class="wl-hand" aria-hidden="true">👇</span><div class="wl-ages" id="wlAges" role="group" aria-label="Your age"></div>
         <button class="wl-back" type="button" data-wl="wlTeach">Back</button>
       </div>
       <div class="wl-step" id="wlPick" hidden>
@@ -2435,6 +2441,22 @@ button.deck.locked { cursor: default; }
   ['emberChip', 'streakChipBtn'].forEach(function (id) { var c = document.getElementById(id); if (!c) return;
     var go = function () { if (c.id === 'emberChip') { var pt = document.getElementById('prizeTile'); if (pt) pt.click(); } else { show('me'); openMePanel('statH', true); } };
     c.addEventListener('click', go); c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); });
+  (function () {
+    var nb = document.getElementById('wlNibb'), last = 0;
+    function talk() { if (!nb) return; nb.classList.remove('talk'); void nb.offsetWidth; nb.classList.add('talk'); }
+    ['wlNameIn', 'wlTeachIn'].forEach(function (id) {
+      var inp = document.getElementById(id); if (!inp) return; var hand = inp.previousElementSibling, was = false;
+      inp.addEventListener('focus', function () { talk(); SFX.play('pop'); });
+      inp.addEventListener('input', function () {
+        var now = Date.now(); if (now - last > 120) { SFX.play('tick'); last = now; }
+        var ok = inp.value.trim().length > 0; if (hand) hand.classList.toggle('done', ok);
+        if (ok && !was) { talk(); SFX.play('right'); } was = ok;
+      });
+    });
+    var ages = document.getElementById('wlAges');
+    if (ages) ages.addEventListener('click', function (e) { if (e.target.closest('button')) { var h = ages.previousElementSibling; if (h) h.classList.add('done'); talk(); SFX.play('right'); } });
+    if ('MutationObserver' in window) document.querySelectorAll('#welcome .wl-step').forEach(function (st) { new MutationObserver(function () { if (!st.hidden) { talk(); SFX.play('whoosh'); } }).observe(st, { attributes: true, attributeFilter: ['hidden'] }); });
+  })();
   function renderTimeChart() {
     var box = document.getElementById('meTime'); if (!box) return; box.innerHTML = '';
     var t = readTime(), days = [], now = new Date();
@@ -2912,12 +2934,12 @@ button.deck.locked { cursor: default; }
       var dx = from.left - to.left, dy = fromTop - to.top, sc = from.width / to.width;
       var lift = 24, tilt = dx > 0 ? -14 : 14, swing = dx > 0 ? -28 : 28;
       if (buddy._flight) buddy._flight.cancel();
-      buddy._flight = buddy.animate([
+      buddy._flight = buddy.animate(noRot([
         { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')' },
         { transform: 'translate(' + (dx * 0.45 + swing) + 'px,' + (dy * 0.45 - lift) + 'px) scale(' + ((sc + 1) / 2) + ') rotate(' + tilt + 'deg)', offset: 0.5 },
         { transform: 'translate(0,-6px) rotate(' + (-tilt / 3) + 'deg)', offset: 0.85 },
         { transform: 'none' }
-      ], { duration: 700, easing: 'cubic-bezier(.45,0,.25,1)' });
+      ]), { duration: 700, easing: 'cubic-bezier(.45,0,.25,1)' });
       buddy.classList.add('flying'); buddy._flight.onfinish = buddy._flight.oncancel = function () { buddy.classList.remove('flying'); };
     }
     buddy._placed = true;
@@ -3034,7 +3056,8 @@ button.deck.locked { cursor: default; }
     try { run({ st: st, actor: actor, r: r, prop: prop, done: done, say: say, box: mv, W: window.innerWidth, H: window.innerHeight }); } catch (e) { done(); }
     return true;
   }
-  function anim(el, frames, ms, ease) { return el.animate(frames, { duration: ms, easing: ease || 'ease-in-out', fill: 'forwards' }); }
+  function noRot(frames) { return frames.map(function (f) { var g = Object.assign({}, f); if (typeof g.transform === 'string') g.transform = g.transform.replace(/rotate[XYZ]?\([^)]*\)/g, '').trim() || 'none'; return g; }); }
+  function anim(el, frames, ms, ease) { frames = noRot(frames); return el.animate(frames, { duration: ms, easing: ease || 'ease-in-out', fill: 'forwards' }); }
   var SHOWS = {
     dance: function (k) {
       k.say(['Dance break!', 'Can\'t stop the beat!', 'Robot moves, activate!'][Math.floor(Math.random() * 3)]);
