@@ -10,11 +10,11 @@
     if (document.getElementById('pzCss')) return;
     var st = document.createElement('style'); st.id = 'pzCss';
     st.textContent =
-      '.pz{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));background:rgba(20,8,28,.9);color:#FFF6EC;font-family:Nunito,system-ui,sans-serif;overflow:auto;touch-action:none;animation:pzIn .3s ease-out}' +
+      '.pz{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));background:rgba(20,8,28,.98);color:#FFF6EC;font-family:Nunito,system-ui,sans-serif;overflow:auto;touch-action:none;animation:pzIn .3s ease-out}' +
       '@keyframes pzIn{from{opacity:0}}' +
       '.pz h2{margin:6px 0 0;font-size:21px;font-weight:900;text-align:center}' +
       '.pz p{margin:0;font-size:14px;font-weight:700;opacity:.8;text-align:center}' +
-      '.pz-main{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;flex:1;min-height:0}' +
+      '.pz-main{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;flex:1 0 auto}' +
       '.pz-board{position:relative;background:#2A1330;border:4px solid #FFB547;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}' +
       '.pz-ghost{position:absolute;inset:0;opacity:.16;filter:grayscale(1)}' +
       '.pz-slot{position:absolute;border:1.5px dashed rgba(255,246,236,.35);box-sizing:border-box;background:none;padding:0;cursor:pointer}' +
@@ -32,7 +32,7 @@
       '.pz-help{border:0;border-radius:999px;padding:10px 16px;background:#FFB547;color:#2A1330;font:inherit;font-weight:900;font-size:14px;cursor:pointer}' +
       '.pz-help:disabled{opacity:.45;cursor:default}' +
       '.pz-skip{background:none;border:0;color:#FFF6EC;opacity:.7;font:inherit;font-weight:800;font-size:14px;text-decoration:underline;cursor:pointer;padding:8px}' +
-      '.pz-cheer{font-size:26px;font-weight:900;color:#7CF5C8;min-height:34px;text-align:center}' +
+      '.pz-cheer{font-size:22px;font-weight:900;color:#7CF5C8;min-height:30px;text-align:center;flex:none}' +
       '@media (prefers-reduced-motion:reduce){.pz,.pz-placed,.pz-piece.shake{animation:none}}';
     document.head.appendChild(st);
   }
