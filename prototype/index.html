@@ -436,6 +436,20 @@ body.calm #home .topic.now .ticon { animation: none; }
 #me .me-grid.one .panel.open > h2 { display: none; }
 #meBack { align-self: flex-start; width: auto; border: 0; background: rgba(255,255,255,.1); color: var(--cream); font: inherit; font-weight: 800; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; margin-bottom: 8px; }
 #meBack[hidden] { display: none; }
+/* ---- prize mystery box ---- */
+.mbox { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px 0 4px; }
+.mbox[hidden] { display: none; }
+.mbox .gift { font-size: 96px; line-height: 1; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 8px 14px rgba(0,0,0,.4)); }
+.mbox .gift.k1 { animation: mbShake .35s; } .mbox .gift.k2 { animation: mbShake2 .35s; }
+.mbox .gift.crack { filter: drop-shadow(0 0 18px #FFE07A) drop-shadow(0 8px 14px rgba(0,0,0,.4)); }
+.mbox .gift.boom { animation: mbBoom .5s forwards; }
+@keyframes mbShake { 25% { transform: translateX(-6px) scale(1.04); } 75% { transform: translateX(6px) scale(1.04); } }
+@keyframes mbShake2 { 20% { transform: translateX(-12px) scale(1.1); } 60% { transform: translateX(12px) scale(1.1); } }
+@keyframes mbBoom { to { transform: scale(1.8); opacity: 0; } }
+.mbox .pot { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; font-size: 12px; font-weight: 800; }
+.mbox .pot span { background: rgba(255,255,255,.12); padding: 4px 10px; border-radius: 999px; transition: transform .8s ease, opacity .8s; }
+.mbox .pot span.away { transform: translateY(-60px) rotate(-10deg); opacity: 0; }
+.mbox .knock { font-weight: 900; font-size: 16px; }
 #houseFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: var(--deep); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -1381,6 +1395,7 @@ button.deck.locked { cursor: default; }
       <p class="wheel-info" id="wheelInfo"></p>
       <div class="wheel-box"><svg class="wheel-pointer" viewBox="0 0 30 26" aria-hidden="true"><path d="M15 26 L2 2 H28 Z" fill="#FFF1E2" stroke="#2A1330" stroke-width="2"/></svg>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><circle cx="150" cy="150" r="146" fill="#2A1330"/><g id="wheelG" style="transform-origin: 150px 150px"></g></svg></div>
+      <div class="mbox" id="mBox" hidden><p class="knock" id="mKnock" aria-live="polite"></p><button class="gift" id="mGift" type="button" aria-label="Knock on the mystery box">🎁</button><div class="pot" id="mPot"></div></div>
       <div class="wheel-result" id="wheelResult" aria-live="polite" hidden><span>You won</span><b id="wheelPrize"></b><small id="wheelClaim"></small></div>
       <button class="cta mint" style="width:100%" id="wheelSpin">Spin!</button>
       <button class="cta" style="width:100%" id="wheelClose">Close</button>
@@ -3385,10 +3400,50 @@ button.deck.locked { cursor: default; }
     document.getElementById('wheelResult').hidden = true;
     var ready = spinsReady();
     document.getElementById('wheelSpin').hidden = !ready;
-    document.getElementById('wheelInfo').textContent = ready ? (ready === 1 ? 'You have 1 spin!' : 'You have ' + ready + ' spins!') : 'Fill the prize jar to spin: ' + jarFill() + ' of ' + rewards.per + ' embers.';
+    document.querySelector('#wheelDlg .wheel-box').hidden = false;
+    document.getElementById('wheelInfo').textContent = ready ? (ready === 1 ? 'You have 1 spin. Save 3 for a bigger box!' : ready === 2 ? 'You have 2 spins. Save 3 for a bigger box!' : 'You have ' + ready + ' spins: a big mystery box!') : 'Fill the prize jar to spin: ' + jarFill() + ' of ' + rewards.per + ' embers.';
     dlg.hidden = false; (ready ? document.getElementById('wheelSpin') : document.getElementById('wheelClose')).focus();
   }
-  function closeWheel() { document.getElementById('wheelDlg').hidden = true; renderPrizeTile(); }
+  var mPot = [], mNeed = 0, mHits = 0, mOpen = false;
+  function openMBox() {
+    if (!mPot.length || mOpen) return; mOpen = true;
+    document.querySelector('#wheelDlg .wheel-box').hidden = true; document.getElementById('wheelResult').hidden = true; document.getElementById('wheelSpin').hidden = true;
+    var big = mPot.length >= 3; mNeed = big ? 3 + Math.floor(Math.random() * 4) : 2 + Math.floor(Math.random() * 2); mHits = 0;
+    var box = document.getElementById('mBox'); box.hidden = false;
+    document.getElementById('wheelH').textContent = 'Mystery box';
+    document.getElementById('wheelInfo').textContent = 'One of these prizes is inside!';
+    var pot = document.getElementById('mPot'); pot.innerHTML = ''; mPot.forEach(function (p) { var sp = document.createElement('span'); sp.textContent = p; pot.appendChild(sp); });
+    var g = document.getElementById('mGift'); g.className = 'gift'; g.textContent = big ? '🎁' : '🎁'; g.style.fontSize = big ? '112px' : '';
+    document.getElementById('mKnock').textContent = 'Knock to open! 👊'; g.focus();
+  }
+  document.getElementById('mGift').addEventListener('click', function () {
+    if (!mOpen || mHits >= mNeed) return;
+    mHits++; var g = document.getElementById('mGift'); SFX.play('pop'); if (mHits > 1) SFX.play('tick');
+    g.classList.remove('k1', 'k2'); void g.offsetWidth; g.classList.add(mHits > mNeed / 2 ? 'k2' : 'k1');
+    if (mHits >= mNeed - 1) g.classList.add('crack');
+    if (mHits < mNeed) { document.getElementById('mKnock').textContent = ['Knock knock! 👊', 'It moved! 👀', 'It is cracking! ✨', 'Almost! 💥', 'One more? 🤞'][Math.min(mHits - 1, 4)]; return; }
+    // burst: pick one prize, the rest fly away
+    var win = mPot[Math.floor(Math.random() * mPot.length)];
+    var spans = document.querySelectorAll('#mPot span'), used = false;
+    spans.forEach(function (sp) { if (sp.textContent === win && !used) { used = true; return; } sp.classList.add('away'); });
+    g.classList.add('boom'); SFX.play('whoosh'); if (window.CQCheer) CQCheer();
+    rewards.wins.push({ p: win, t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards(); setTimeout(checkBadges, 2500);
+    setTimeout(function () {
+      document.getElementById('mBox').hidden = true; mOpen = false; mPot = [];
+      var res = document.getElementById('wheelResult'); res.hidden = false; res.querySelector('span').textContent = 'You won';
+      document.getElementById('wheelPrize').textContent = win;
+      document.getElementById('wheelClaim').textContent = (spans.length > 1 ? 'The others flew away, maybe next time! ' : '') + (prizeGroup() === 'adult' ? 'You earned it. Enjoy!' : 'Show this to a grown-up to claim your prize.');
+      document.getElementById('wheelH').textContent = 'Prize wheel';
+      var left = spinsReady(); document.getElementById('wheelInfo').textContent = left ? 'You have ' + left + ' more ' + (left === 1 ? 'spin' : 'spins') + '!' : 'Next spin in ' + (rewards.per - jarFill()) + ' embers.';
+      burst(document.getElementById('wheelPrize'));
+    }, still ? 50 : 700);
+  });
+  function closeWheel() {
+    if (mPot.length && !mOpen) { openMBox(); return; } // spins in the pot: open the box before leaving
+    if (mOpen) return;
+    document.querySelector('#wheelDlg .wheel-box').hidden = false; document.getElementById('wheelH').textContent = 'Prize wheel';
+    document.getElementById('wheelDlg').hidden = true; renderPrizeTile();
+  }
   document.getElementById('wheelSpin').addEventListener('click', function () {
     if (spinning || !spinsReady()) return;
     // a fair, lively spin: the prize, the spot inside its slice, the number of turns and the time all vary (crypto random when the browser has it)
@@ -3406,14 +3461,16 @@ button.deck.locked { cursor: default; }
     setTimeout(function () {
       SFX.play('win');
       spinning = false; document.getElementById('wheelSpin').disabled = false;
-      rewards.used++; rewards.wins.push({ p: list[pick], t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards(); setTimeout(checkBadges, 2500);
+      rewards.used++; saveRewards(); mPot.push(list[pick]);
       var res = document.getElementById('wheelResult'); res.hidden = false;
+      res.querySelector('span').textContent = 'Into the mystery box:';
       document.getElementById('wheelPrize').textContent = list[pick];
-      document.getElementById('wheelClaim').textContent = prizeGroup() === 'adult' ? 'You earned it. Enjoy!' : 'Show this to a grown-up to claim your prize.';
+      document.getElementById('wheelClaim').textContent = mPot.length + (mPot.length === 1 ? ' prize' : ' prizes') + ' in the box';
       var left = spinsReady();
       document.getElementById('wheelSpin').hidden = !left;
-      document.getElementById('wheelInfo').textContent = left ? 'You have ' + left + ' more ' + (left === 1 ? 'spin' : 'spins') + '!' : 'Next spin in ' + (rewards.per - jarFill()) + ' embers.';
+      document.getElementById('wheelInfo').textContent = left ? 'You have ' + left + ' more ' + (left === 1 ? 'spin' : 'spins') + '! Spin again, or close to open the box.' : 'No spins left: time to open the box!';
       burst(document.getElementById('wheelPrize'));
+      if (!left) setTimeout(openMBox, still ? 50 : 1400);
     }, still ? 50 : secs * 1000 + 100);
   });
   document.getElementById('wheelClose').addEventListener('click', closeWheel);

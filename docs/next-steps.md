@@ -1,6 +1,6 @@
 # Next steps (agreed with the owner)
 
-## 1. Prize mystery box (build first)
+## 1. Prize mystery box — DONE (v105)
 - With 2+ spins ready: spin them one after another; each result goes into a "prize pot".
 - Then a gift box appears holding the pot: "Knock to open!"
 - Knocks needed: random 3–6 when 3+ spins were saved, 2–3 for a single spin (every spin uses the box).
