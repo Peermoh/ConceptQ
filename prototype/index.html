@@ -5218,12 +5218,90 @@ button.deck.locked { cursor: default; }
   }
   window.addEventListener('resize', function () { if (!qBud.hidden) qPoint(qBudAt); });
   document.getElementById('quiz').addEventListener('scroll', function () { if (!qBud.hidden) qPoint(qBudAt); }, true);
+  // ---- "Read it to me" in the narrator's own recorded voice (tools/quizvoice). Maths questions are made fresh with
+  // random names and numbers, so each sentence is split into word phrases and numbers, recorded once and joined here.
+  // A sentence with a piece that was never recorded falls back to the phone's voice. ----
+  var QV = { who: null, man: null, loading: null }, qvEl = new Audio(); qvEl.preload = 'auto';
+  function quizVoice() {
+    var who = profile.narrator === 'ryan' ? 'ryan' : 'prabhat';
+    if (QV.who !== who) {
+      QV.who = who; QV.man = null;
+      QV.loading = fetch('audio/quiz/' + who + '.json').then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (m) { if (QV.who === who) QV.man = m; return m; }).catch(function () { return null; });
+    }
+    return QV.loading;
+  }
+  // what the read-aloud says for a question or a choice: symbols become words ("8 + 5 = ?" -> "8 plus 5 equals ?")
+  function quizSay(t) {
+    // the robot's name is the child's own choice, so it is read as "your robot" (that is always recorded)
+    var nm = String(window.CQ_TEACHER || 'Nibb').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    t = speakText(t).replace(new RegExp('\\b(' + nm + '|Nibb)\\b', 'g'), 'your robot')
+      .replace(/⭐+/g, function (m) { var n = m.length; return ' ' + n + (n === 1 ? ' star ' : ' stars '); })
+      .replace(/●(?:\s*●)+/g, ' these dots ').replace(/\|(?:\s*\|)+/g, ' these tally marks ')
+      .replace(/\+/g, ' plus ').replace(/=/g, ' equals ').replace(/·/g, ', ').replace(/…/g, ' ')
+      .replace(/[—⌒▲■▬●⭕|]/g, ' ');
+    return t.replace(/\s+([,.?!])/g, '$1').replace(/\s+/g, ' ').trim();
+  }
+  var QNUM = /\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?/g;
+  function quizPieces(t) { // must match pieces() in tools/quizvoice/build_quiz_voice.py
+    var nums = t.match(QNUM) || [], out = [];
+    t.split(/\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?/).forEach(function (p, i) {
+      p = p.replace(/^[ ,;:]+|[ ,;:]+$/g, '').replace(/^\.+/, '').trim();
+      if (/[A-Za-z0-9]/.test(p)) out.push(p); if (i < nums.length) out.push(nums[i]); // a lone "?" has nothing to say
+    });
+    return out;
+  }
+  // phones only let an element play sound after a tap has started it once: the quiz is opened by a tap
+  function quizAudioUnlock() {
+    [qvEl, phonEl].forEach(function (el) {
+      if (el._unlocked) return;
+      try { el.muted = true; el.src = SILENT_MP3; el._src = null; var pr = el.play();
+        if (pr && pr.then) pr.then(function () { el._unlocked = true; el.pause(); el.muted = false; }).catch(function () { el.muted = false; });
+        else el.muted = false; } catch (e) { el.muted = false; }
+    });
+    quizVoice();
+  }
+  function hearRecorded(q, man, deviceRead) {
+    var who = QV.who, parts = [quizPieces(quizSay(q.text))].concat(q.options.map(function (o, i) { return ['Option ' + 'ABCD'[i] + '.'].concat(quizPieces(quizSay(o))); }));
+    var seq = []; parts.forEach(function (ps, k) { ps.forEach(function (pc, j) { seq.push({ k: k, sg: man[pc], first: j === 0 }); }); });
+    if (!seq.length || seq.some(function (x) { return !x.sg; })) return false;
+    var tok = {}; playPhon.tok = tok; QV.owner = tok; // anything that silences the quiz sounds (an answer, the scratchpad) silences this too
+    try { if (hasTTS) speechSynthesis.cancel(); } catch (e) {}
+    var files = []; seq.forEach(function (x) { if (files.indexOf(x.sg[0]) < 0) files.push(x.sg[0]); });
+    var live = function () { return playPhon.tok === tok && Q[qi] === q && !document.getElementById('quiz').hidden; };
+    var hush = function () { if (QV.owner === tok) qvEl.pause(); }; // a newer reading may own the player now: leave it alone
+    Promise.all(files.map(function (f) { return loadClip('audio/quiz/' + who + '/' + f + '.mp3'); })).then(function (urls) {
+      (function step(i) {
+        if (!live()) { hush(); return; }
+        if (i >= seq.length) { if (answers[qi] === undefined) qPoint(-2); return; }
+        var it = seq[i], u = urls[files.indexOf(it.sg[0])];
+        if (it.first) qPoint(it.k - 1); // the robot goes to what is being read
+        if (qvEl._src !== u) { qvEl.src = u; qvEl._src = u; }
+        function go() {
+          try { qvEl.currentTime = it.sg[1]; } catch (e) {}
+          var pr = qvEl.play(); if (pr && pr.catch) pr.catch(function (e) { if (live() && i === 0 && e && e.name === 'NotAllowedError') deviceRead(); });
+          (function watch() {
+            if (!live()) { hush(); return; }
+            if (qvEl.currentTime >= it.sg[2] || qvEl.ended) { qvEl.pause(); setTimeout(function () { step(i + 1); }, seq[i + 1] && seq[i + 1].first ? 380 : 30); }
+            else requestAnimationFrame(watch);
+          })();
+        }
+        if (qvEl.readyState < 1) qvEl.addEventListener('loadedmetadata', go, { once: true }); else go();
+      })(0);
+    }).catch(function () { if (live()) deviceRead(); });
+    return true;
+  }
   function hearQ(q) {
     if (q.snd) { qPoint(-1); playPhon(q.snd, q.gap); setTimeout(function () { if (Q[qi] === q && answers[qi] === undefined) qPoint(-2); }, 2600); return; }
+    var deviceRead = function () { hearDevice(q); };
+    if (QV.man && QV.who === (profile.narrator === 'ryan' ? 'ryan' : 'prabhat')) { if (hearRecorded(q, QV.man, deviceRead)) return; deviceRead(); return; }
+    quizVoice().then(function (m) { if (Q[qi] !== q) return; if (!(m && hearRecorded(q, m, deviceRead))) deviceRead(); });
+  }
+  function hearDevice(q) {
     if (!hasTTS) return;
     try {
       speechSynthesis.cancel();
-      var v = pickVoice(), parts = [speakText(q.text)].concat(q.options.map(function (o, i) { return 'Option ' + 'ABCD'[i] + '. ' + speakText(o) + '.'; }));
+      var v = pickVoice(), parts = [quizSay(q.text)].concat(q.options.map(function (o, i) { var s = quizSay(o); return 'Option ' + 'ABCD'[i] + '.' + (s ? ' ' + s + '.' : ''); }));
       parts.forEach(function (t, k) { // one sentence at a time, so each option gets its own clear pause
         var u = new SpeechSynthesisUtterance(t); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = profile.narrator === 'ryan' ? 'en-GB' : 'en-IN';
         u.onstart = function () { if (Q[qi] === q) qPoint(k - 1); }; // the robot goes to what is being read
@@ -5286,7 +5364,7 @@ button.deck.locked { cursor: default; }
   scr.el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); scratchClose(); } });
   window.addEventListener('resize', function () { if (!scr.el.hidden) scratchSize(); });
   document.getElementById('qWork').addEventListener('click', scratchOpen);
-  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; scratchReset(); show('quiz'); renderQ(); }
+  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; scratchReset(); if (COURSE !== 'py') quizAudioUnlock(); show('quiz'); renderQ(); }
   function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderQ() {
     var q = Q[qi], done = answers[qi] !== undefined;
