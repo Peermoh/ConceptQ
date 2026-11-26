@@ -255,6 +255,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .wl-step { width: 100%; align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: 14px; animation: wlIn .35s ease-out; }
 .wl-step[hidden] { display: none; }
 #wlCards { max-width: 920px; }
+/* .wl's auto side margins stop it stretching in #welcome (a column flexbox), so it grew to its content: three
+   230px cards side by side, wider than a phone, with the title and "Pick a course" button cut off. Give it the
+   full width (max-width + auto margins still centre it), and let the pick step fill it so the cards wrap. */
+.wl { width: 100%; box-sizing: border-box; }
+#wlPick { align-self: stretch; }
 @keyframes wlIn { from { opacity: 0; transform: translateY(12px); } }
 .wl h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 6vw, 40px); line-height: 1.1; }
 .wl p { margin: 0; font-weight: 700; opacity: .8; font-size: 16px; }
@@ -2208,6 +2213,14 @@ button.deck.locked { cursor: default; }
     });
   }
   var reviewQueue = null, reviewDone = 0;
+  // Only the card topics of the courses this child takes (a Maths learner should not see 'Talking to Python'),
+  // plus any topic they already hold cards in, so nothing they learned disappears.
+  function myCats() {
+    var joined = profile.courses && profile.courses.length ? profile.courses : [COURSE || 'py'];
+    return CATS.filter(function (ct) {
+      return CARDS.some(function (c) { return c.c === ct.id && (joined.indexOf(c.cr || 'py') >= 0 || cardState[c.id]); });
+    });
+  }
   function renderCards() {
     if (typeof checkBadges === 'function' && PY_PACK) setTimeout(checkBadges, 300);
     ensureCards();
@@ -2217,7 +2230,8 @@ button.deck.locked { cursor: default; }
       : 'Finish your first lesson to get your first cards.';
     // filter chips: All, or one category (with how many are due in it)
     var chips = document.getElementById('catChips'); chips.innerHTML = '';
-    [{ id: 'all', name: 'All' }].concat(CATS).forEach(function (c) {
+    var cats = myCats(); if (cardFilter !== 'all' && !cats.some(function (c) { return c.id === cardFilter; })) cardFilter = 'all';
+    [{ id: 'all', name: 'All' }].concat(cats).forEach(function (c) {
       var n = due.filter(function (cd) { return c.id === 'all' || cd.c === c.id; }).length;
       var b = document.createElement('button'); b.className = 'cat-chip'; b.setAttribute('aria-pressed', cardFilter === c.id ? 'true' : 'false');
       if (c.bg) b.style.setProperty('--cc', c.bg);
@@ -2227,7 +2241,7 @@ button.deck.locked { cursor: default; }
     });
     // categories: cards unlocked so far, how many are due, how well each is learned
     var list = document.getElementById('deckList'); list.innerHTML = '';
-    CATS.forEach(function (ct) {
+    cats.forEach(function (ct) {
       var all = CARDS.filter(function (c) { return c.c === ct.id; }), have = all.filter(function (c) { return cardState[c.id]; });
       var dn = have.filter(function (c) { return cardState[c.id].due <= Date.now(); }).length;
       var d = document.createElement('button'); d.className = 'deck' + (have.length ? '' : ' locked'); d.setAttribute('aria-pressed', cardFilter === ct.id ? 'true' : 'false');
