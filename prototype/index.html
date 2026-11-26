@@ -1482,7 +1482,7 @@ button.deck.locked { cursor: default; }
     if (sub) { var bs = document.createElement('span'); bs.textContent = sub; ban.appendChild(bs); }
     root.appendChild(cv); root.appendChild(ban); document.body.appendChild(root);
     var life = big ? 3800 : 2800;
-    if (window.CQCheer) window.CQCheer(); // the fanfare and the firecrackers
+    if (window.CQCheer) window.CQCheer(big); // the pop and the children cheering; each firework below brings its own bang
     setTimeout(function () { root.remove(); }, life);
     if (still) return;
     var dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight, ctx = cv.getContext('2d');
@@ -2775,7 +2775,38 @@ button.deck.locked { cursor: default; }
         mus.t = setTimeout(phrase, (ph.length * beat + 1.6 + Math.random() * 1.2) * 1000);
       })();
     }
-    return { play: play, ambient: ambient, stop: stopAmb, music: music, stopMusic: stopMusic, unlock: function () { tapped = true; if (on()) ac(); } };
+    // Recorded celebration sounds (children cheering and clapping, firework bangs). Loaded once after the first
+    // tap (phones only allow sound after a tap) and played through the same mixer, so "Sounds off" mutes them too.
+    // Until they have loaded, or if a file fails, the synthesized sounds above stand in.
+    var CLIPS = { cheer: 'audio/sfx/cheer.mp3', crack1: 'audio/sfx/crack1.mp3', crack2: 'audio/sfx/crack2.mp3' }, buf = {}, loading = false;
+    function loadClips() {
+      if (loading || !ctx) return; loading = true;
+      Object.keys(CLIPS).forEach(function (k) {
+        fetch(CLIPS[k]).then(function (r) { if (!r.ok) throw new Error(k); return r.arrayBuffer(); })
+          .then(function (ab) { return new Promise(function (res, rej) { var p = ctx.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); }); })
+          .then(function (b) { buf[k] = b; }).catch(function () {});
+      });
+    }
+    // play a clip now; len (seconds) stops it early with a short fade, rate varies the pitch a little
+    function clip(k, vol, len, rate) {
+      if (!on() || !ac() || !buf[k]) return false;
+      var s = ctx.createBufferSource(), g = ctx.createGain(), t = ctx.currentTime;
+      s.buffer = buf[k]; s.playbackRate.value = rate || 1; g.gain.value = vol;
+      s.connect(g); g.connect(master); s.start(t);
+      if (len) { g.gain.setValueAtTime(vol, t + Math.max(0, len - 0.5)); g.gain.linearRampToValueAtTime(0.0001, t + len); s.stop(t + len + 0.05); } // stop only after start
+      return true;
+    }
+    // the start of a celebration: a pop as the confetti appears, then children cheering and clapping
+    function cheer(big) {
+      play('pop');
+      if (!clip('cheer', 0.9, big ? 5 : 3.2)) { play('fanfare'); }
+    }
+    // one firework burst on screen = one bang, at that moment (two recordings, slightly different pitch each time)
+    function boom() {
+      if (!clip(Math.random() < 0.5 ? 'crack1' : 'crack2', 0.75, 0, 0.9 + Math.random() * 0.2)) play('fire');
+    }
+    return { play: play, cheer: cheer, boom: boom, ambient: ambient, stop: stopAmb, music: music, stopMusic: stopMusic,
+      unlock: function () { tapped = true; if (on() && ac()) loadClips(); } };
   })();
   function sceneSound() {
     var where = ['home', 'house'].filter(function (id) { return !document.getElementById(id).hidden; })[0];
@@ -2897,8 +2928,8 @@ button.deck.locked { cursor: default; }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.cta, [data-nav], .topic, .chip, .cq-card, .chip-btn'); if (b && b.id !== 'soundBtn') SFX.play('tap'); });
   renderSoundBtn();
   applyEasy();
-  window.CQBoom = function () { SFX.play('fire'); };
-  window.CQCheer = function () { SFX.play('fanfare'); SFX.play('crackers'); };
+  window.CQBoom = function () { SFX.boom(); };
+  window.CQCheer = function (big) { SFX.cheer(big); };
 
   // ================= Nibb follows you and keeps busy =================
   var buddy = document.getElementById('buddy'), lumiSpot = document.getElementById('lumiSpot'), homeScroll = document.getElementById('homeScroll');
@@ -3304,9 +3335,9 @@ button.deck.locked { cursor: default; }
   window.addEventListener('message', function (e) {
     var f = document.getElementById('houseFrame'); if (!f || e.source !== f.contentWindow || !e.data) return;
     if (e.data.cq === 'home') show('home');
-    if (e.data.cq === 'fire') SFX.play('fire');
+    if (e.data.cq === 'fire') SFX.boom();
     if (e.data.cq === 'solved') bdgCount('puzzle');
-    if (e.data.cq === 'cheer') { SFX.play('fanfare'); SFX.play('crackers'); }
+    if (e.data.cq === 'cheer') SFX.cheer(!!e.data.big);
     // the puzzle asks how many embers there are, and spends some to place a piece
     if (e.data.cq === 'embers?') f.contentWindow.postMessage({ cq: 'embers', n: state.embers }, '*');
     if (e.data.cq === 'spend' && typeof e.data.n === 'number' && e.data.n > 0 && e.data.n <= 100) {
@@ -3460,7 +3491,7 @@ button.deck.locked { cursor: default; }
     var win = mPot[Math.floor(Math.random() * mPot.length)];
     var spans = document.querySelectorAll('#mPot span'), used = false;
     spans.forEach(function (sp) { if (sp.textContent === win && !used) { used = true; return; } sp.classList.add('away'); });
-    g.classList.add('boom'); SFX.play('whoosh'); if (window.CQCheer) CQCheer();
+    g.classList.add('boom'); SFX.play('whoosh'); SFX.boom(); if (window.CQCheer) CQCheer(); // the box bursts with one bang
     rewards.wins.push({ p: win, t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards(); setTimeout(checkBadges, 2500);
     setTimeout(function () {
       document.getElementById('mBox').hidden = true; mOpen = false; mPot = [];
