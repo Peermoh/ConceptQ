@@ -282,7 +282,7 @@ lesson('e2_plural', [
  ('Add s', [T('Add s'), C('dog → dogs · pen → pens · book → books')],
   "For most words, just add s. Dog becomes dogs, pen becomes pens, and book becomes books."),
  ('Add es', [T('Add es'), C('box → boxes · bus → buses · dish → dishes')],
-  "Words ending in x, s, sh or ch add es, so you can hear it. Box becomes boxes, bus becomes buses, and dish becomes dishes."),
+  "Words ending in x, s, sh or ch add the letters e and s, so you can hear the extra sound. Box becomes boxes, bus becomes buses, and dish becomes dishes."),
  ('Special words', [T('Special words'), C('man → men · child → children · mouse → mice')],
   "A few words change in their own way. One man, two men. One child, two children, and one mouse, two mice."),
  ('Count and say', [T('Count and say'), C('3 🍎 → three apples')],
