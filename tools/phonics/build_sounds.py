@@ -7,6 +7,8 @@ D = os.path.dirname(os.path.abspath(__file__)) + '/mk2'
 V = {'ryan': 'en-GB-RyanNeural', 'prabhat': 'en-IN-PrabhatNeural'}
 PX = os.environ.get('HTTPS_PROXY'); SR = 24000
 SRC = json.load(open(os.path.dirname(os.path.abspath(__file__)) + '/srcwords.json'))
+SND = [k for k in SRC if ':' not in k]
+def src(v, snd): return SRC.get(v + ':' + snd, SRC[snd])   # "prabhat:t" overrides the source word for one voice
 async def rec(v, text, path):
     for a in range(6):
         try:
@@ -80,7 +82,8 @@ def hold(seg, target):
 async def main(only=None):
     items, keys = [], []
     for v in V:
-        for snd, (word, k, kind, tail) in SRC.items():
+        for snd in SND:
+            word, k, kind, tail = src(v, snd)
             if only and snd not in only: continue
             items.append((v, f'Listen, {word}, listen.', f'{D}/src-{v}-{word}.mp3')); keys.append((v, snd))
         items.append((v, 'Here it comes, this, is that right?', f'{D}/frame-{v}.mp3')); keys.append((v, '_frame'))
@@ -90,9 +93,9 @@ async def main(only=None):
         fy, _ = librosa.load(f'{D}/frame-{v}.mp3', sr=SR); fb = B[(v, '_frame')]
         ts, te = word_span(fy, fb, 'this')
         pre, post = fy[:int(ts * SR)], fy[int(te * SR):]
-        for snd, (word, k, kind, tail) in SRC.items():
+        for snd in SND:
+            word, k, kind, tail = src(v, snd)
             if only and snd not in only: continue
-            if v == 'prabhat' and snd == 'th': kind, tail = 'stop', 0.07   # Indian English says a dental 'th', a short sound
             y, _ = librosa.load(f'{D}/src-{v}-{word}.mp3', sr=SR)
             seg, sp = cut(y, B[(v, snd)], word, k, kind, tail)
             seg = fade(seg / (np.abs(seg).max() + 1e-9) * 0.6)
