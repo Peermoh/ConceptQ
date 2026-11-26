@@ -290,6 +290,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 /* ---- Me: my courses ---- */
 .my-courses { display: flex; flex-direction: column; gap: 8px; }
 .my-courses .mc, .all-courses .mc { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 16px; background: rgba(255,255,255,.05); }
+/* small phones: the button drops under the course name, instead of squeezing it to one word per line */
+@media (max-width: 400px) { #me .my-courses .mc { flex-wrap: wrap; } #me .my-courses .mc .t { flex: 1 1 calc(100% - 50px); } #me .my-courses .mc > button { margin-left: 50px; } }
 .my-courses .mc .cn-ic, .all-courses .mc .cn-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: linear-gradient(160deg, var(--c1), var(--c2)); flex: 0 0 auto; }
 .my-courses .mc .t, .all-courses .mc .t { flex: 1; min-width: 0; } .my-courses .mc .t b, .all-courses .mc .t b { display: block; } .my-courses .mc .t span, .all-courses .mc .t span { font-size: 13px; opacity: .75; font-weight: 700; }
 /* ---- guided tour: a spotlight on one part of the screen, and the robot explaining it ---- */
@@ -874,7 +876,8 @@ body.windy .sway { animation-duration: 0.8s !important; }
 .prof-row { display: flex; align-items: center; gap: 14px; }
 .avatar.big { width: 64px; height: 64px; font-size: 28px; border-radius: 20px; flex: none; }
 .field { display: flex; flex-direction: column; gap: 6px; flex: 1; font-weight: 800; font-size: 13px; color: var(--muted); }
-.field input, .field select { font: inherit; font-size: 17px; color: var(--cream); background: rgba(0,0,0,0.25); border: 1.5px solid var(--line); border-radius: 12px; min-height: 46px; padding: 0 12px; }
+.field { min-width: 0; } /* inputs have a built-in minimum width; without this the name box ran past the card on small phones */
+.field input, .field select { width: 100%; min-width: 0; box-sizing: border-box; font: inherit; font-size: 17px; color: var(--cream); background: rgba(0,0,0,0.25); border: 1.5px solid var(--line); border-radius: 12px; min-height: 46px; padding: 0 12px; }
 .field select option { color: #2A1330; }
 .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
 .swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; }
@@ -9449,6 +9452,7 @@ button.deck.locked { cursor: default; }
   function startTour() {
     show('home'); document.getElementById('homeScroll') && (document.getElementById('homeScroll').scrollTop = 0);
     var steps = tourSteps().filter(function (st) { var el = document.querySelector('#home ' + st[0]) || document.querySelector(st[0]); return el && el.getClientRects().length; }), k = 0;
+    if (!steps.length) { profile.toured = true; saveProfile(); return; } // nothing on screen to point at: skip instead of crashing on steps[0]
     var ov = document.createElement('div'); ov.className = 'tour'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Tour of the app');
     ov.innerHTML = '<div class="tour-ring"></div><div class="tour-card"><div class="tc-top"><svg viewBox="0 0 120 110" aria-hidden="true">' + lumiSVG('happy') + '</svg><div><h3></h3><p></p></div></div><div class="tc-row"><span class="tc-dots"></span><button class="tc-skip" type="button">Skip</button><button class="tc-next" type="button">Next</button></div></div>';
     document.body.appendChild(ov);
