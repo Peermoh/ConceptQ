@@ -202,7 +202,7 @@ lesson('e2_s3', [
  ('b, f and l', [T('b, f and l'), C('b  🦇 bat · f  🐟 fish'), C('l  🦁 lion')],
   "B says b, like the start of bat. F says fff, like fish. L says lll, like lion."),
  ('Vowels', [T('The five vowels'), C('a  e  i  o  u')],
-  "The sounds a, e, i, o and u are vowels. Almost every word needs at least one vowel."),
+  "The letters a, e, i, o and u are vowels. Almost every word needs at least one vowel."),
 ])
 lesson('e2_blend', [
  ('Push the sounds together', [T('Blending'), C('c · a · t'), C('cat 🐱')],
