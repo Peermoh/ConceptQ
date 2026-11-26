@@ -197,6 +197,28 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 #qOptions .opt.reading { outline: 3px solid #FFE07A; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(255,224,122,.18); transition: outline-color .2s; }
 #qText.reading { text-shadow: 0 0 12px rgba(255,224,122,.45); }
 @media (prefers-reduced-motion: reduce) { .q-buddy { transition: none; } .q-buddy.bob svg { animation: none; } }
+.q-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.q-tools .q-hear { margin: 0; }
+.q-work { border-color: rgba(255,216,102,.55); }
+/* scratchpad: a chalkboard bottom sheet; the question stays visible above it */
+.scratch { position: fixed; inset: 0; z-index: 60; }
+.scratch[hidden] { display: none; }
+.scratch-dim { position: absolute; inset: 0; background: rgba(10,4,14,.45); }
+.scratch-sheet { position: absolute; left: 0; right: 0; bottom: 0; height: min(62vh, 560px); max-width: 760px; margin: 0 auto; display: flex; flex-direction: column;
+  background: #1F3B2E; border-radius: 22px 22px 0 0; border: 3px solid #8A5A2B; border-bottom: 0; box-shadow: 0 -12px 40px rgba(0,0,0,.45); padding-bottom: env(safe-area-inset-bottom); animation: scratchUp .22s ease-out; }
+@keyframes scratchUp { from { transform: translateY(40px); opacity: 0; } }
+.scratch-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+.scratch-bar h2 { margin: 0 auto 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 20px; color: #FFFDF5; }
+.scratch-pens { display: flex; gap: 6px; }
+.scratch .pen { width: 36px; height: 36px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); background: var(--c, #FFFDF5); cursor: pointer; display: grid; place-items: center; font-size: 17px; padding: 0; }
+.scratch .pen[data-pen="#FFD866"] { --c: #FFD866; } .scratch .pen[data-pen="#FF9BC8"] { --c: #FF9BC8; } .scratch .pen.rub { --c: #E9DCC8; }
+.scratch .pen.on { border-color: #FFB547; box-shadow: 0 0 0 3px rgba(255,181,71,.35); }
+.scratch-btn { min-height: 40px; min-width: 44px; padding: 0 12px; border-radius: 12px; border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #FFFDF5; font: inherit; font-weight: 800; cursor: pointer; }
+.scratch-btn.done { background: #FFB547; border-color: #FFB547; color: #2A1330; }
+#scratchCv { flex: 1; width: 100%; min-height: 0; touch-action: none; cursor: crosshair; border-top: 2px dashed rgba(255,255,255,.12); }
+.scratch-hint { position: absolute; left: 0; right: 0; top: 58%; text-align: center; margin: 0; color: rgba(255,253,245,.45); font-weight: 700; pointer-events: none; }
+.scratch-hint[hidden] { display: none; }
+@media (max-width: 380px) { .scratch-bar h2 { font-size: 17px; } .scratch .pen { width: 32px; height: 32px; } .scratch-btn { padding: 0 9px; } }
 .q-hear { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 9px 14px; border-radius: 999px; border: 2px solid var(--line, rgba(255,255,255,.25)); background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
 .course-tabs { display: flex; gap: 8px; margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
 .course-tabs::-webkit-scrollbar { display: none; }
@@ -1392,11 +1414,34 @@ button.deck.locked { cursor: default; }
       <h1 class="qtext" id="qText"></h1>
       <div class="q-pic" id="qPic" hidden></div>
       <div class="code" id="qCode"></div>
-      <button class="q-hear" id="qHear" type="button" hidden>🔊 Read it to me</button>
+      <div class="q-tools">
+        <button class="q-hear" id="qHear" type="button" hidden>🔊 Read it to me</button>
+        <button class="q-hear q-work" id="qWork" type="button" aria-haspopup="dialog" aria-controls="scratch">✏️ Work it out</button>
+      </div>
       <div class="q-buddy" id="qBuddy" aria-hidden="true" hidden><svg viewBox="0 0 120 110"></svg></div>
       <div class="options" id="qOptions" role="group" aria-label="Answers"></div>
     </div>
     <div id="sheetSlot" aria-live="polite"></div>
+    <!-- scratchpad: a chalkboard to work the answer out on; kept per question until a new quiz starts -->
+    <div class="scratch" id="scratch" role="dialog" aria-modal="true" aria-labelledby="scratchH" hidden>
+      <div class="scratch-dim" data-close></div>
+      <div class="scratch-sheet">
+        <div class="scratch-bar">
+          <h2 id="scratchH">Work it out</h2>
+          <div class="scratch-pens" role="group" aria-label="Chalk">
+            <button type="button" class="pen on" data-pen="#FFFDF5" aria-label="White chalk" aria-pressed="true"></button>
+            <button type="button" class="pen" data-pen="#FFD866" aria-label="Yellow chalk" aria-pressed="false"></button>
+            <button type="button" class="pen" data-pen="#FF9BC8" aria-label="Pink chalk" aria-pressed="false"></button>
+            <button type="button" class="pen rub" data-pen="erase" aria-label="Rubber" aria-pressed="false">🧽</button>
+          </div>
+          <button type="button" class="scratch-btn" id="scratchUndo" aria-label="Undo">↩︎</button>
+          <button type="button" class="scratch-btn" id="scratchClear">Clear</button>
+          <button type="button" class="scratch-btn done" data-close>Done</button>
+        </div>
+        <canvas id="scratchCv" aria-label="Scratchpad. Draw with your finger to work out the answer."></canvas>
+        <p class="scratch-hint" id="scratchHint">Draw here with your finger ✍️</p>
+      </div>
+    </div>
   </section>
 
   <div class="wheel-dlg" id="wheelDlg" role="dialog" aria-modal="true" aria-labelledby="wheelH" hidden>
@@ -5143,7 +5188,9 @@ button.deck.locked { cursor: default; }
     qBud.hidden = false; qBudAt = i;
     document.querySelectorAll('#qOptions .opt').forEach(function (o, k) { o.classList.toggle('reading', k === i); });
     document.getElementById('qText').classList.toggle('reading', i === -1);
-    var tgt = i >= 0 ? document.querySelectorAll('#qOptions .opt')[i] : i === -1 ? document.getElementById('qText') : document.getElementById('qHear');
+    // resting: after the last button in the row (Read it to me, Work it out) so it never covers one
+    var rest = [document.getElementById('qWork'), document.getElementById('qHear')].filter(function (b) { return b && !b.hidden && b.offsetParent; })[0];
+    var tgt = i >= 0 ? document.querySelectorAll('#qOptions .opt')[i] : i === -1 ? document.getElementById('qText') : rest;
     if (!tgt) return;
     var r = tgt.getBoundingClientRect(), x, y;
     if (i >= 0) { x = r.right - 58; y = r.top + (r.height - 48) / 2; qBud.style.transform = 'scaleX(-1)'; }      // inside the choice, at its right end, facing it
@@ -5169,7 +5216,60 @@ button.deck.locked { cursor: default; }
     } catch (e) {}
   }
   document.getElementById('qHear').addEventListener('click', function () { if (Q && Q[qi]) hearQ(Q[qi]); });
-  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; show('quiz'); renderQ(); }
+  // ---- scratchpad: draw to work the answer out. Each question keeps its own working (strokes, so it redraws
+  // sharply after a turn of the phone); a new quiz starts clean. ----
+  var scr = { byQ: {}, pen: '#FFFDF5', cur: null, el: document.getElementById('scratch'), cv: document.getElementById('scratchCv') };
+  function scratchStrokes() { return scr.byQ[qi] || (scr.byQ[qi] = []); }
+  function scratchSize() {
+    var r = scr.cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    scr.cv.width = Math.max(1, Math.round(r.width * d)); scr.cv.height = Math.max(1, Math.round(r.height * d));
+    scratchDraw();
+  }
+  function scratchDraw() {
+    var c = scr.cv.getContext('2d'), d = window.devicePixelRatio || 1;
+    c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, scr.cv.width, scr.cv.height);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    scratchStrokes().forEach(function (s) {
+      c.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
+      c.strokeStyle = s.erase ? '#000' : s.c; c.fillStyle = c.strokeStyle; c.lineWidth = s.erase ? 26 : 4.5;
+      if (s.p.length === 1) { c.beginPath(); c.arc(s.p[0][0], s.p[0][1], c.lineWidth / 2, 0, 6.3); c.fill(); return; }
+      c.beginPath(); c.moveTo(s.p[0][0], s.p[0][1]);
+      for (var i = 1; i < s.p.length; i++) c.lineTo(s.p[i][0], s.p[i][1]);
+      c.stroke();
+    });
+    c.globalCompositeOperation = 'source-over';
+    document.getElementById('scratchHint').hidden = scratchStrokes().length > 0;
+  }
+  function scratchOpen() {
+    scr.el.hidden = false; requestAnimationFrame(scratchSize);
+    try { if (hasTTS) speechSynthesis.cancel(); } catch (e) {} playPhon.tok = {}; // quiet while working
+    var on = scr.el.querySelector('.pen.on'); if (on) on.focus({ preventScroll: true });
+  }
+  function scratchClose() {
+    if (scr.el.hidden) return; scr.el.hidden = true; scr.cur = null;
+    var w = document.getElementById('qWork'); if (w && w.offsetParent) w.focus({ preventScroll: true });
+  }
+  function scratchReset() { scr.byQ = {}; scratchClose(); }
+  function scratchPt(e) { var r = scr.cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 10) / 10, Math.round((e.clientY - r.top) * 10) / 10]; }
+  scr.cv.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); try { scr.cv.setPointerCapture(e.pointerId); } catch (x) {}
+    scr.cur = { c: scr.pen, erase: scr.pen === 'erase', p: [scratchPt(e)], id: e.pointerId }; scratchStrokes().push(scr.cur); scratchDraw();
+  });
+  scr.cv.addEventListener('pointermove', function (e) { if (!scr.cur || scr.cur.id !== e.pointerId) return; e.preventDefault(); scr.cur.p.push(scratchPt(e)); scratchDraw(); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (t) { scr.cv.addEventListener(t, function () { scr.cur = null; }); });
+  scr.el.querySelectorAll('.pen').forEach(function (b) {
+    b.addEventListener('click', function () {
+      scr.pen = b.getAttribute('data-pen');
+      scr.el.querySelectorAll('.pen').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('scratchUndo').addEventListener('click', function () { scratchStrokes().pop(); scratchDraw(); });
+  document.getElementById('scratchClear').addEventListener('click', function () { scr.byQ[qi] = []; scratchDraw(); });
+  scr.el.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', scratchClose); });
+  scr.el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); scratchClose(); } });
+  window.addEventListener('resize', function () { if (!scr.el.hidden) scratchSize(); });
+  document.getElementById('qWork').addEventListener('click', scratchOpen);
+  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; scratchReset(); show('quiz'); renderQ(); }
   function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderQ() {
     var q = Q[qi], done = answers[qi] !== undefined;
