@@ -197,6 +197,28 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 #qOptions .opt.reading { outline: 3px solid #FFE07A; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(255,224,122,.18); transition: outline-color .2s; }
 #qText.reading { text-shadow: 0 0 12px rgba(255,224,122,.45); }
 @media (prefers-reduced-motion: reduce) { .q-buddy { transition: none; } .q-buddy.bob svg { animation: none; } }
+.q-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.q-tools .q-hear { margin: 0; }
+.q-work { border-color: rgba(255,216,102,.55); }
+/* scratchpad: a chalkboard bottom sheet; the question stays visible above it */
+.scratch { position: fixed; inset: 0; z-index: 60; }
+.scratch[hidden] { display: none; }
+.scratch-dim { position: absolute; inset: 0; background: rgba(10,4,14,.45); }
+.scratch-sheet { position: absolute; left: 0; right: 0; bottom: 0; height: min(62vh, 560px); max-width: 760px; margin: 0 auto; display: flex; flex-direction: column;
+  background: #1F3B2E; border-radius: 22px 22px 0 0; border: 3px solid #8A5A2B; border-bottom: 0; box-shadow: 0 -12px 40px rgba(0,0,0,.45); padding-bottom: env(safe-area-inset-bottom); animation: scratchUp .22s ease-out; }
+@keyframes scratchUp { from { transform: translateY(40px); opacity: 0; } }
+.scratch-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+.scratch-bar h2 { margin: 0 auto 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 20px; color: #FFFDF5; }
+.scratch-pens { display: flex; gap: 6px; }
+.scratch .pen { width: 36px; height: 36px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); background: var(--c, #FFFDF5); cursor: pointer; display: grid; place-items: center; font-size: 17px; padding: 0; }
+.scratch .pen[data-pen="#FFD866"] { --c: #FFD866; } .scratch .pen[data-pen="#FF9BC8"] { --c: #FF9BC8; } .scratch .pen.rub { --c: #E9DCC8; }
+.scratch .pen.on { border-color: #FFB547; box-shadow: 0 0 0 3px rgba(255,181,71,.35); }
+.scratch-btn { min-height: 40px; min-width: 44px; padding: 0 12px; border-radius: 12px; border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #FFFDF5; font: inherit; font-weight: 800; cursor: pointer; }
+.scratch-btn.done { background: #FFB547; border-color: #FFB547; color: #2A1330; }
+#scratchCv { flex: 1; width: 100%; min-height: 0; touch-action: none; cursor: crosshair; border-top: 2px dashed rgba(255,255,255,.12); }
+.scratch-hint { position: absolute; left: 0; right: 0; top: 58%; text-align: center; margin: 0; color: rgba(255,253,245,.45); font-weight: 700; pointer-events: none; }
+.scratch-hint[hidden] { display: none; }
+@media (max-width: 380px) { .scratch-bar h2 { font-size: 17px; } .scratch .pen { width: 32px; height: 32px; } .scratch-btn { padding: 0 9px; } }
 .q-hear { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 9px 14px; border-radius: 999px; border: 2px solid var(--line, rgba(255,255,255,.25)); background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
 .course-tabs { display: flex; gap: 8px; margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
 .course-tabs::-webkit-scrollbar { display: none; }
@@ -233,6 +255,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .wl-step { width: 100%; align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: 14px; animation: wlIn .35s ease-out; }
 .wl-step[hidden] { display: none; }
 #wlCards { max-width: 920px; }
+/* .wl's auto side margins stop it stretching in #welcome (a column flexbox), so it grew to its content: three
+   230px cards side by side, wider than a phone, with the title and "Pick a course" button cut off. Give it the
+   full width (max-width + auto margins still centre it), and let the pick step fill it so the cards wrap. */
+.wl { width: 100%; box-sizing: border-box; }
+#wlPick { align-self: stretch; }
 @keyframes wlIn { from { opacity: 0; transform: translateY(12px); } }
 .wl h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 6vw, 40px); line-height: 1.1; }
 .wl p { margin: 0; font-weight: 700; opacity: .8; font-size: 16px; }
@@ -263,6 +290,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 /* ---- Me: my courses ---- */
 .my-courses { display: flex; flex-direction: column; gap: 8px; }
 .my-courses .mc, .all-courses .mc { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 16px; background: rgba(255,255,255,.05); }
+/* small phones: the button drops under the course name, instead of squeezing it to one word per line */
+@media (max-width: 400px) { #me .my-courses .mc { flex-wrap: wrap; } #me .my-courses .mc .t { flex: 1 1 calc(100% - 50px); } #me .my-courses .mc > button { margin-left: 50px; } }
 .my-courses .mc .cn-ic, .all-courses .mc .cn-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: linear-gradient(160deg, var(--c1), var(--c2)); flex: 0 0 auto; }
 .my-courses .mc .t, .all-courses .mc .t { flex: 1; min-width: 0; } .my-courses .mc .t b, .all-courses .mc .t b { display: block; } .my-courses .mc .t span, .all-courses .mc .t span { font-size: 13px; opacity: .75; font-weight: 700; }
 /* ---- guided tour: a spotlight on one part of the screen, and the robot explaining it ---- */
@@ -847,7 +876,8 @@ body.windy .sway { animation-duration: 0.8s !important; }
 .prof-row { display: flex; align-items: center; gap: 14px; }
 .avatar.big { width: 64px; height: 64px; font-size: 28px; border-radius: 20px; flex: none; }
 .field { display: flex; flex-direction: column; gap: 6px; flex: 1; font-weight: 800; font-size: 13px; color: var(--muted); }
-.field input, .field select { font: inherit; font-size: 17px; color: var(--cream); background: rgba(0,0,0,0.25); border: 1.5px solid var(--line); border-radius: 12px; min-height: 46px; padding: 0 12px; }
+.field { min-width: 0; } /* inputs have a built-in minimum width; without this the name box ran past the card on small phones */
+.field input, .field select { width: 100%; min-width: 0; box-sizing: border-box; font: inherit; font-size: 17px; color: var(--cream); background: rgba(0,0,0,0.25); border: 1.5px solid var(--line); border-radius: 12px; min-height: 46px; padding: 0 12px; }
 .field select option { color: #2A1330; }
 .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
 .swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; }
@@ -1392,11 +1422,34 @@ button.deck.locked { cursor: default; }
       <h1 class="qtext" id="qText"></h1>
       <div class="q-pic" id="qPic" hidden></div>
       <div class="code" id="qCode"></div>
-      <button class="q-hear" id="qHear" type="button" hidden>🔊 Read it to me</button>
+      <div class="q-tools">
+        <button class="q-hear" id="qHear" type="button" hidden>🔊 Read it to me</button>
+        <button class="q-hear q-work" id="qWork" type="button" aria-haspopup="dialog" aria-controls="scratch">✏️ Work it out</button>
+      </div>
       <div class="q-buddy" id="qBuddy" aria-hidden="true" hidden><svg viewBox="0 0 120 110"></svg></div>
       <div class="options" id="qOptions" role="group" aria-label="Answers"></div>
     </div>
     <div id="sheetSlot" aria-live="polite"></div>
+    <!-- scratchpad: a chalkboard to work the answer out on; kept per question until a new quiz starts -->
+    <div class="scratch" id="scratch" role="dialog" aria-modal="true" aria-labelledby="scratchH" hidden>
+      <div class="scratch-dim" data-close></div>
+      <div class="scratch-sheet">
+        <div class="scratch-bar">
+          <h2 id="scratchH">Work it out</h2>
+          <div class="scratch-pens" role="group" aria-label="Chalk">
+            <button type="button" class="pen on" data-pen="#FFFDF5" aria-label="White chalk" aria-pressed="true"></button>
+            <button type="button" class="pen" data-pen="#FFD866" aria-label="Yellow chalk" aria-pressed="false"></button>
+            <button type="button" class="pen" data-pen="#FF9BC8" aria-label="Pink chalk" aria-pressed="false"></button>
+            <button type="button" class="pen rub" data-pen="erase" aria-label="Rubber" aria-pressed="false">🧽</button>
+          </div>
+          <button type="button" class="scratch-btn" id="scratchUndo" aria-label="Undo">↩︎</button>
+          <button type="button" class="scratch-btn" id="scratchClear">Clear</button>
+          <button type="button" class="scratch-btn done" data-close>Done</button>
+        </div>
+        <canvas id="scratchCv" aria-label="Scratchpad. Draw with your finger to work out the answer."></canvas>
+        <p class="scratch-hint" id="scratchHint">Draw here with your finger ✍️</p>
+      </div>
+    </div>
   </section>
 
   <div class="wheel-dlg" id="wheelDlg" role="dialog" aria-modal="true" aria-labelledby="wheelH" hidden>
@@ -1482,7 +1535,7 @@ button.deck.locked { cursor: default; }
     if (sub) { var bs = document.createElement('span'); bs.textContent = sub; ban.appendChild(bs); }
     root.appendChild(cv); root.appendChild(ban); document.body.appendChild(root);
     var life = big ? 3800 : 2800;
-    if (window.CQCheer) window.CQCheer(); // the fanfare and the firecrackers
+    if (window.CQCheer) window.CQCheer(big); // the pop and the children cheering; each firework below brings its own bang
     setTimeout(function () { root.remove(); }, life);
     if (still) return;
     var dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight, ctx = cv.getContext('2d');
@@ -2163,6 +2216,14 @@ button.deck.locked { cursor: default; }
     });
   }
   var reviewQueue = null, reviewDone = 0;
+  // Only the card topics of the courses this child takes (a Maths learner should not see 'Talking to Python'),
+  // plus any topic they already hold cards in, so nothing they learned disappears.
+  function myCats() {
+    var joined = profile.courses && profile.courses.length ? profile.courses : [COURSE || 'py'];
+    return CATS.filter(function (ct) {
+      return CARDS.some(function (c) { return c.c === ct.id && (joined.indexOf(c.cr || 'py') >= 0 || cardState[c.id]); });
+    });
+  }
   function renderCards() {
     if (typeof checkBadges === 'function' && PY_PACK) setTimeout(checkBadges, 300);
     ensureCards();
@@ -2172,7 +2233,8 @@ button.deck.locked { cursor: default; }
       : 'Finish your first lesson to get your first cards.';
     // filter chips: All, or one category (with how many are due in it)
     var chips = document.getElementById('catChips'); chips.innerHTML = '';
-    [{ id: 'all', name: 'All' }].concat(CATS).forEach(function (c) {
+    var cats = myCats(); if (cardFilter !== 'all' && !cats.some(function (c) { return c.id === cardFilter; })) cardFilter = 'all';
+    [{ id: 'all', name: 'All' }].concat(cats).forEach(function (c) {
       var n = due.filter(function (cd) { return c.id === 'all' || cd.c === c.id; }).length;
       var b = document.createElement('button'); b.className = 'cat-chip'; b.setAttribute('aria-pressed', cardFilter === c.id ? 'true' : 'false');
       if (c.bg) b.style.setProperty('--cc', c.bg);
@@ -2182,7 +2244,7 @@ button.deck.locked { cursor: default; }
     });
     // categories: cards unlocked so far, how many are due, how well each is learned
     var list = document.getElementById('deckList'); list.innerHTML = '';
-    CATS.forEach(function (ct) {
+    cats.forEach(function (ct) {
       var all = CARDS.filter(function (c) { return c.c === ct.id; }), have = all.filter(function (c) { return cardState[c.id]; });
       var dn = have.filter(function (c) { return cardState[c.id].due <= Date.now(); }).length;
       var d = document.createElement('button'); d.className = 'deck' + (have.length ? '' : ' locked'); d.setAttribute('aria-pressed', cardFilter === ct.id ? 'true' : 'false');
@@ -2775,7 +2837,38 @@ button.deck.locked { cursor: default; }
         mus.t = setTimeout(phrase, (ph.length * beat + 1.6 + Math.random() * 1.2) * 1000);
       })();
     }
-    return { play: play, ambient: ambient, stop: stopAmb, music: music, stopMusic: stopMusic, unlock: function () { tapped = true; if (on()) ac(); } };
+    // Recorded celebration sounds (children cheering and clapping, firework bangs). Loaded once after the first
+    // tap (phones only allow sound after a tap) and played through the same mixer, so "Sounds off" mutes them too.
+    // Until they have loaded, or if a file fails, the synthesized sounds above stand in.
+    var CLIPS = { cheer: 'audio/sfx/cheer.mp3', crack1: 'audio/sfx/crack1.mp3', crack2: 'audio/sfx/crack2.mp3' }, buf = {}, loading = false;
+    function loadClips() {
+      if (loading || !ctx) return; loading = true;
+      Object.keys(CLIPS).forEach(function (k) {
+        fetch(CLIPS[k]).then(function (r) { if (!r.ok) throw new Error(k); return r.arrayBuffer(); })
+          .then(function (ab) { return new Promise(function (res, rej) { var p = ctx.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); }); })
+          .then(function (b) { buf[k] = b; }).catch(function () {});
+      });
+    }
+    // play a clip now; len (seconds) stops it early with a short fade, rate varies the pitch a little
+    function clip(k, vol, len, rate) {
+      if (!on() || !ac() || !buf[k]) return false;
+      var s = ctx.createBufferSource(), g = ctx.createGain(), t = ctx.currentTime;
+      s.buffer = buf[k]; s.playbackRate.value = rate || 1; g.gain.value = vol;
+      s.connect(g); g.connect(master); s.start(t);
+      if (len) { g.gain.setValueAtTime(vol, t + Math.max(0, len - 0.5)); g.gain.linearRampToValueAtTime(0.0001, t + len); s.stop(t + len + 0.05); } // stop only after start
+      return true;
+    }
+    // the start of a celebration: a pop as the confetti appears, then children cheering and clapping
+    function cheer(big) {
+      play('pop');
+      if (!clip('cheer', 0.9, big ? 5 : 3.2)) { play('fanfare'); }
+    }
+    // one firework burst on screen = one bang, at that moment (two recordings, slightly different pitch each time)
+    function boom() {
+      if (!clip(Math.random() < 0.5 ? 'crack1' : 'crack2', 0.75, 0, 0.9 + Math.random() * 0.2)) play('fire');
+    }
+    return { play: play, cheer: cheer, boom: boom, ambient: ambient, stop: stopAmb, music: music, stopMusic: stopMusic,
+      unlock: function () { tapped = true; if (on() && ac()) loadClips(); } };
   })();
   function sceneSound() {
     var where = ['home', 'house'].filter(function (id) { return !document.getElementById(id).hidden; })[0];
@@ -2897,8 +2990,8 @@ button.deck.locked { cursor: default; }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.cta, [data-nav], .topic, .chip, .cq-card, .chip-btn'); if (b && b.id !== 'soundBtn') SFX.play('tap'); });
   renderSoundBtn();
   applyEasy();
-  window.CQBoom = function () { SFX.play('fire'); };
-  window.CQCheer = function () { SFX.play('fanfare'); SFX.play('crackers'); };
+  window.CQBoom = function () { SFX.boom(); };
+  window.CQCheer = function (big) { SFX.cheer(big); };
 
   // ================= Nibb follows you and keeps busy =================
   var buddy = document.getElementById('buddy'), lumiSpot = document.getElementById('lumiSpot'), homeScroll = document.getElementById('homeScroll');
@@ -3304,9 +3397,9 @@ button.deck.locked { cursor: default; }
   window.addEventListener('message', function (e) {
     var f = document.getElementById('houseFrame'); if (!f || e.source !== f.contentWindow || !e.data) return;
     if (e.data.cq === 'home') show('home');
-    if (e.data.cq === 'fire') SFX.play('fire');
+    if (e.data.cq === 'fire') SFX.boom();
     if (e.data.cq === 'solved') bdgCount('puzzle');
-    if (e.data.cq === 'cheer') { SFX.play('fanfare'); SFX.play('crackers'); }
+    if (e.data.cq === 'cheer') SFX.cheer(!!e.data.big);
     // the puzzle asks how many embers there are, and spends some to place a piece
     if (e.data.cq === 'embers?') f.contentWindow.postMessage({ cq: 'embers', n: state.embers }, '*');
     if (e.data.cq === 'spend' && typeof e.data.n === 'number' && e.data.n > 0 && e.data.n <= 100) {
@@ -3460,7 +3553,7 @@ button.deck.locked { cursor: default; }
     var win = mPot[Math.floor(Math.random() * mPot.length)];
     var spans = document.querySelectorAll('#mPot span'), used = false;
     spans.forEach(function (sp) { if (sp.textContent === win && !used) { used = true; return; } sp.classList.add('away'); });
-    g.classList.add('boom'); SFX.play('whoosh'); if (window.CQCheer) CQCheer();
+    g.classList.add('boom'); SFX.play('whoosh'); SFX.boom(); if (window.CQCheer) CQCheer(); // the box bursts with one bang
     rewards.wins.push({ p: win, t: Date.now() }); rewards.wins = rewards.wins.slice(-30); saveRewards(); setTimeout(checkBadges, 2500);
     setTimeout(function () {
       document.getElementById('mBox').hidden = true; mOpen = false; mPot = [];
@@ -5073,19 +5166,32 @@ button.deck.locked { cursor: default; }
       })();
     }).catch(function () {});
   }
-  // the clearest voice on this device: the narrator's own (Microsoft Prabhat / Ryan, on Edge and Windows), else another
-  // natural Indian or British English voice, else any English voice
+  // The ONE device voice for the whole app (quiz read-aloud, and the lesson fallback when a recording fails).
+  // It must sound like the recorded narrator, who is male: so match the narrator's accent (Ryan: British,
+  // Prabhat: Indian), prefer voices known to be male, and avoid voices known to be female. Without this,
+  // phones that list a female US voice first read every quiz in a woman's voice after a man taught the lesson.
+  var MALE_VOICE = /prabhat|ryan|rishi|daniel|arthur|oliver|aaron|fred|alex\b|tom\b|george|ravi|hemant|guy|david|mark|davis|thomas|male|en-gb-x-rjs|en-gb-x-gbd|en-in-x-ene|en-us-x-tpd|en-us-x-iom/i;
+  var FEMALE_VOICE = /female|samantha|karen|moira|tessa|veena|fiona|serena|kate|martha|susan|hazel|heera|neerja|zira|libby|sonia|jenny|aria|victoria|allison|ava|nicky|catherine|kalpana|lekha|isha|swara|en-gb-x-gba|en-gb-x-gbc|en-in-x-ena|en-in-x-enc|en-us-x-sfg|en-us-x-iob/i;
+  var voiceMemo = { key: '', v: null };
   function pickVoice() {
     if (!hasTTS) return null;
-    var vs = speechSynthesis.getVoices() || [], want = profile.narrator === 'ryan' ? 'ryan' : 'prabhat', lang = want === 'ryan' ? 'en-GB' : 'en-IN';
-    function f(test) { for (var i = 0; i < vs.length; i++) if (test(vs[i])) return vs[i]; return null; }
-    return f(function (v) { return v.name.toLowerCase().indexOf(want) >= 0; }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang && /natural|online|neural/i.test(v.name); }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang && /google/i.test(v.name); }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang; }) ||
-      f(function (v) { return /^en[-_](IN|GB)/.test(v.lang) && /natural|online|google/i.test(v.name); }) ||
-      f(function (v) { return /^en/.test(v.lang); });
+    var vs = (speechSynthesis.getVoices() || []).filter(function (v) { return /^en/i.test(v.lang); });
+    var want = profile.narrator === 'ryan' ? 'ryan' : 'prabhat', lang = want === 'ryan' ? 'en-GB' : 'en-IN';
+    var key = want + '|' + vs.length; if (voiceMemo.key === key) return voiceMemo.v; // same voice every time
+    var best = null, top = -1e9;
+    vs.forEach(function (v, i) {
+      var n = v.name + ' ' + (v.voiceURI || ''), l = v.lang.replace('_', '-'), s = 0;
+      if (n.toLowerCase().indexOf(want) >= 0) s += 100;                 // the narrator's own voice (Edge, Windows)
+      if (l === lang) s += 30; else if (/^en-(GB|IN)/i.test(l)) s += 12;  // the narrator's accent, else the other one
+      if (MALE_VOICE.test(n)) s += 25;
+      if (FEMALE_VOICE.test(n)) s -= 60;
+      if (/natural|neural|online|enhanced|premium/i.test(n)) s += 6;     // clearer voices
+      if (s > top || (s === top && v.localService && !best.localService)) { top = s; best = v; }
+    });
+    voiceMemo = { key: key, v: best };
+    return best;
   }
+  function voiceLang() { return profile.narrator === 'ryan' ? 'en-GB' : 'en-IN'; }
   function speakText(t) { return t.replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu, '').replace(/_+/g, ' blank ').replace(/₹\s?1\b/g, '1 rupee').replace(/₹\s?(\d+)/g, '$1 rupees').replace(/×/g, ' times ').replace(/÷/g, ' shared by ').replace(/−/g, ' minus ').replace(/\s+/g, ' ').trim(); }
   var qBud = document.getElementById('qBuddy'), qBudAt = -2;
   function qBuddyMood(m) { qBud.querySelector('svg').innerHTML = lumiSVG(m || 'happy'); }
@@ -5099,7 +5205,9 @@ button.deck.locked { cursor: default; }
     qBud.hidden = false; qBudAt = i;
     document.querySelectorAll('#qOptions .opt').forEach(function (o, k) { o.classList.toggle('reading', k === i); });
     document.getElementById('qText').classList.toggle('reading', i === -1);
-    var tgt = i >= 0 ? document.querySelectorAll('#qOptions .opt')[i] : i === -1 ? document.getElementById('qText') : document.getElementById('qHear');
+    // resting: after the last button in the row (Read it to me, Work it out) so it never covers one
+    var rest = [document.getElementById('qWork'), document.getElementById('qHear')].filter(function (b) { return b && !b.hidden && b.offsetParent; })[0];
+    var tgt = i >= 0 ? document.querySelectorAll('#qOptions .opt')[i] : i === -1 ? document.getElementById('qText') : rest;
     if (!tgt) return;
     var r = tgt.getBoundingClientRect(), x, y;
     if (i >= 0) { x = r.right - 58; y = r.top + (r.height - 48) / 2; qBud.style.transform = 'scaleX(-1)'; }      // inside the choice, at its right end, facing it
@@ -5125,7 +5233,60 @@ button.deck.locked { cursor: default; }
     } catch (e) {}
   }
   document.getElementById('qHear').addEventListener('click', function () { if (Q && Q[qi]) hearQ(Q[qi]); });
-  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; show('quiz'); renderQ(); }
+  // ---- scratchpad: draw to work the answer out. Each question keeps its own working (strokes, so it redraws
+  // sharply after a turn of the phone); a new quiz starts clean. ----
+  var scr = { byQ: {}, pen: '#FFFDF5', cur: null, el: document.getElementById('scratch'), cv: document.getElementById('scratchCv') };
+  function scratchStrokes() { return scr.byQ[qi] || (scr.byQ[qi] = []); }
+  function scratchSize() {
+    var r = scr.cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    scr.cv.width = Math.max(1, Math.round(r.width * d)); scr.cv.height = Math.max(1, Math.round(r.height * d));
+    scratchDraw();
+  }
+  function scratchDraw() {
+    var c = scr.cv.getContext('2d'), d = window.devicePixelRatio || 1;
+    c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, scr.cv.width, scr.cv.height);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    scratchStrokes().forEach(function (s) {
+      c.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
+      c.strokeStyle = s.erase ? '#000' : s.c; c.fillStyle = c.strokeStyle; c.lineWidth = s.erase ? 26 : 4.5;
+      if (s.p.length === 1) { c.beginPath(); c.arc(s.p[0][0], s.p[0][1], c.lineWidth / 2, 0, 6.3); c.fill(); return; }
+      c.beginPath(); c.moveTo(s.p[0][0], s.p[0][1]);
+      for (var i = 1; i < s.p.length; i++) c.lineTo(s.p[i][0], s.p[i][1]);
+      c.stroke();
+    });
+    c.globalCompositeOperation = 'source-over';
+    document.getElementById('scratchHint').hidden = scratchStrokes().length > 0;
+  }
+  function scratchOpen() {
+    scr.el.hidden = false; requestAnimationFrame(scratchSize);
+    try { if (hasTTS) speechSynthesis.cancel(); } catch (e) {} playPhon.tok = {}; // quiet while working
+    var on = scr.el.querySelector('.pen.on'); if (on) on.focus({ preventScroll: true });
+  }
+  function scratchClose() {
+    if (scr.el.hidden) return; scr.el.hidden = true; scr.cur = null;
+    var w = document.getElementById('qWork'); if (w && w.offsetParent) w.focus({ preventScroll: true });
+  }
+  function scratchReset() { scr.byQ = {}; scratchClose(); }
+  function scratchPt(e) { var r = scr.cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 10) / 10, Math.round((e.clientY - r.top) * 10) / 10]; }
+  scr.cv.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); try { scr.cv.setPointerCapture(e.pointerId); } catch (x) {}
+    scr.cur = { c: scr.pen, erase: scr.pen === 'erase', p: [scratchPt(e)], id: e.pointerId }; scratchStrokes().push(scr.cur); scratchDraw();
+  });
+  scr.cv.addEventListener('pointermove', function (e) { if (!scr.cur || scr.cur.id !== e.pointerId) return; e.preventDefault(); scr.cur.p.push(scratchPt(e)); scratchDraw(); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (t) { scr.cv.addEventListener(t, function () { scr.cur = null; }); });
+  scr.el.querySelectorAll('.pen').forEach(function (b) {
+    b.addEventListener('click', function () {
+      scr.pen = b.getAttribute('data-pen');
+      scr.el.querySelectorAll('.pen').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('scratchUndo').addEventListener('click', function () { scratchStrokes().pop(); scratchDraw(); });
+  document.getElementById('scratchClear').addEventListener('click', function () { scr.byQ[qi] = []; scratchDraw(); });
+  scr.el.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', scratchClose); });
+  scr.el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); scratchClose(); } });
+  window.addEventListener('resize', function () { if (!scr.el.hidden) scratchSize(); });
+  document.getElementById('qWork').addEventListener('click', scratchOpen);
+  function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; scratchReset(); show('quiz'); renderQ(); }
   function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderQ() {
     var q = Q[qi], done = answers[qi] !== undefined;
@@ -8922,12 +9083,6 @@ button.deck.locked { cursor: default; }
   }
   var lesson = { step: 0, playing: false, token: 0, voice: true, captions: true, seen: [false, false, false] };
   var hasTTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
-  function pickVoice() {
-    if (!hasTTS) return null;
-    var vs = speechSynthesis.getVoices().filter(function (v) { return /^en/i.test(v.lang); });
-    var pref = vs.filter(function (v) { return /Daniel|Alex|Fred|Google UK English Male|Guy|Davis|Aaron|Rishi/i.test(v.name); });
-    return pref[0] || vs[0] || null;
-  }
   function sleep(ms, tok) { return new Promise(function (r) { setTimeout(function () { r(tok === lesson.token); }, ms); }); }
   // The board follows the voice. lesson.clock says which kind of voice is playing:
   //  'audio'  - the recorded clip: time is voiceEl.currentTime and cues use the recorded times (step.at)
@@ -8958,12 +9113,15 @@ button.deck.locked { cursor: default; }
       voiceEl._end = done;
       function deviceVoice() {
         if (finished) return;
+        // the child already moved on (next step, pause, left the lesson): a late clip failure must not read
+        // this old step aloud on top of whatever plays now
+        if (tok !== lesson.token) { done(); return; }
         if (!lesson.voice || !hasTTS) { setTimeout(done, est); return; }
         try {
           speechSynthesis.cancel();
           var chBase = resume && resume.ch > 0 ? resume.ch : 0;
           var u = new SpeechSynthesisUtterance(text.slice(chBase));
-          var v = pickVoice(); if (v) u.voice = v;
+          var v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = voiceLang();
           u.rate = 0.98; u.pitch = 1.0;
           u.onend = done; u.onerror = done;
           u.onstart = function () { lesson.clock = { mode: 'tts', ch: chBase, chBase: chBase, ttsStart: performance.now(), start: lesson.clock ? lesson.clock.start : performance.now() }; };
@@ -9294,6 +9452,7 @@ button.deck.locked { cursor: default; }
   function startTour() {
     show('home'); document.getElementById('homeScroll') && (document.getElementById('homeScroll').scrollTop = 0);
     var steps = tourSteps().filter(function (st) { var el = document.querySelector('#home ' + st[0]) || document.querySelector(st[0]); return el && el.getClientRects().length; }), k = 0;
+    if (!steps.length) { profile.toured = true; saveProfile(); return; } // nothing on screen to point at: skip instead of crashing on steps[0]
     var ov = document.createElement('div'); ov.className = 'tour'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Tour of the app');
     ov.innerHTML = '<div class="tour-ring"></div><div class="tour-card"><div class="tc-top"><svg viewBox="0 0 120 110" aria-hidden="true">' + lumiSVG('happy') + '</svg><div><h3></h3><p></p></div></div><div class="tc-row"><span class="tc-dots"></span><button class="tc-skip" type="button">Skip</button><button class="tc-next" type="button">Next</button></div></div>';
     document.body.appendChild(ov);

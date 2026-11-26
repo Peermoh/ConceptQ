@@ -9,9 +9,12 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--deep); color: var(--text); font-family: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
 #top { position: absolute; left: 0; right: 0; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 12px 16px 8px; pointer-events: none; }
-#top .t { flex: 1; min-width: 0; }
-#top b { display: block; font-size: 17px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
-#top span { display: block; font-size: 13px; color: var(--muted); text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+#top .t { flex: 1; min-width: 0; padding: 5px 12px; border-radius: 14px; background: rgba(0,0,0,.38); } /* readable on any sky */
+#top b { display: block; font-size: 17px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#top span { display: block; font-size: 13px; color: rgba(255,255,255,.88); text-shadow: 0 1px 2px rgba(0,0,0,.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#top #count { color: inherit; } /* the count keeps its own pill */
+/* phones: Lessons and the count on top, the place name on its own row below, so it is never cut short */
+@media (max-width: 560px) { #top { flex-wrap: wrap; row-gap: 6px; } #top .t { order: 3; flex: 1 1 100%; text-align: center; } #count { margin-left: auto; } }
 #back { pointer-events: auto; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px 8px 8px; border-radius: 999px; border: 0; background: rgba(0,0,0,.4); color: var(--text); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
 #count { pointer-events: auto; flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; background: rgba(0,0,0,.35); font-weight: 800; font-size: 13px; }
 #street { position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
@@ -65,7 +68,7 @@ html, body { margin: 0; height: 100%; background: var(--deep); color: var(--text
   if (window.parent !== window) { var bk = document.getElementById('back'); bk.hidden = false; bk.addEventListener('click', function () { window.parent.postMessage({ cq: 'home' }, '*'); }); }
   document.getElementById('ttl').textContent = C.place;
   document.getElementById('sub').textContent = ((C.items[Math.max(0, Math.min(v, C.items.length) - 1)] || {}).street || C.street) + ' · ' + (C.items[Math.max(0, v - 1)] && /Garden/.test(C.items[Math.max(0, v - 1)].street) ? 'Grade 3' : C.grade.replace('Grades 2–3', 'Grade 2'));
-  document.getElementById('count').textContent = v + ' of ' + C.items.length + ' built';
+  document.getElementById('count').textContent = (window.innerWidth < 360 ? v + '/' + C.items.length : v + ' of ' + C.items.length) + ' built'; // short on small phones so the title fits
   if (course === 'english') document.getElementById('hint').textContent = 'Swipe along the room · tap what you built';
 
   // ---- time of day and weather: the same setting as the Learn page ----
