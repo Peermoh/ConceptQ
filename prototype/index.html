@@ -5073,19 +5073,32 @@ button.deck.locked { cursor: default; }
       })();
     }).catch(function () {});
   }
-  // the clearest voice on this device: the narrator's own (Microsoft Prabhat / Ryan, on Edge and Windows), else another
-  // natural Indian or British English voice, else any English voice
+  // The ONE device voice for the whole app (quiz read-aloud, and the lesson fallback when a recording fails).
+  // It must sound like the recorded narrator, who is male: so match the narrator's accent (Ryan: British,
+  // Prabhat: Indian), prefer voices known to be male, and avoid voices known to be female. Without this,
+  // phones that list a female US voice first read every quiz in a woman's voice after a man taught the lesson.
+  var MALE_VOICE = /prabhat|ryan|rishi|daniel|arthur|oliver|aaron|fred|alex\b|tom\b|george|ravi|hemant|guy|david|mark|davis|thomas|male|en-gb-x-rjs|en-gb-x-gbd|en-in-x-ene|en-us-x-tpd|en-us-x-iom/i;
+  var FEMALE_VOICE = /female|samantha|karen|moira|tessa|veena|fiona|serena|kate|martha|susan|hazel|heera|neerja|zira|libby|sonia|jenny|aria|victoria|allison|ava|nicky|catherine|kalpana|lekha|isha|swara|en-gb-x-gba|en-gb-x-gbc|en-in-x-ena|en-in-x-enc|en-us-x-sfg|en-us-x-iob/i;
+  var voiceMemo = { key: '', v: null };
   function pickVoice() {
     if (!hasTTS) return null;
-    var vs = speechSynthesis.getVoices() || [], want = profile.narrator === 'ryan' ? 'ryan' : 'prabhat', lang = want === 'ryan' ? 'en-GB' : 'en-IN';
-    function f(test) { for (var i = 0; i < vs.length; i++) if (test(vs[i])) return vs[i]; return null; }
-    return f(function (v) { return v.name.toLowerCase().indexOf(want) >= 0; }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang && /natural|online|neural/i.test(v.name); }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang && /google/i.test(v.name); }) ||
-      f(function (v) { return v.lang.replace('_', '-') === lang; }) ||
-      f(function (v) { return /^en[-_](IN|GB)/.test(v.lang) && /natural|online|google/i.test(v.name); }) ||
-      f(function (v) { return /^en/.test(v.lang); });
+    var vs = (speechSynthesis.getVoices() || []).filter(function (v) { return /^en/i.test(v.lang); });
+    var want = profile.narrator === 'ryan' ? 'ryan' : 'prabhat', lang = want === 'ryan' ? 'en-GB' : 'en-IN';
+    var key = want + '|' + vs.length; if (voiceMemo.key === key) return voiceMemo.v; // same voice every time
+    var best = null, top = -1e9;
+    vs.forEach(function (v, i) {
+      var n = v.name + ' ' + (v.voiceURI || ''), l = v.lang.replace('_', '-'), s = 0;
+      if (n.toLowerCase().indexOf(want) >= 0) s += 100;                 // the narrator's own voice (Edge, Windows)
+      if (l === lang) s += 30; else if (/^en-(GB|IN)/i.test(l)) s += 12;  // the narrator's accent, else the other one
+      if (MALE_VOICE.test(n)) s += 25;
+      if (FEMALE_VOICE.test(n)) s -= 60;
+      if (/natural|neural|online|enhanced|premium/i.test(n)) s += 6;     // clearer voices
+      if (s > top || (s === top && v.localService && !best.localService)) { top = s; best = v; }
+    });
+    voiceMemo = { key: key, v: best };
+    return best;
   }
+  function voiceLang() { return profile.narrator === 'ryan' ? 'en-GB' : 'en-IN'; }
   function speakText(t) { return t.replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu, '').replace(/_+/g, ' blank ').replace(/₹\s?1\b/g, '1 rupee').replace(/₹\s?(\d+)/g, '$1 rupees').replace(/×/g, ' times ').replace(/÷/g, ' shared by ').replace(/−/g, ' minus ').replace(/\s+/g, ' ').trim(); }
   var qBud = document.getElementById('qBuddy'), qBudAt = -2;
   function qBuddyMood(m) { qBud.querySelector('svg').innerHTML = lumiSVG(m || 'happy'); }
@@ -8922,12 +8935,6 @@ button.deck.locked { cursor: default; }
   }
   var lesson = { step: 0, playing: false, token: 0, voice: true, captions: true, seen: [false, false, false] };
   var hasTTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
-  function pickVoice() {
-    if (!hasTTS) return null;
-    var vs = speechSynthesis.getVoices().filter(function (v) { return /^en/i.test(v.lang); });
-    var pref = vs.filter(function (v) { return /Daniel|Alex|Fred|Google UK English Male|Guy|Davis|Aaron|Rishi/i.test(v.name); });
-    return pref[0] || vs[0] || null;
-  }
   function sleep(ms, tok) { return new Promise(function (r) { setTimeout(function () { r(tok === lesson.token); }, ms); }); }
   // The board follows the voice. lesson.clock says which kind of voice is playing:
   //  'audio'  - the recorded clip: time is voiceEl.currentTime and cues use the recorded times (step.at)
@@ -8958,12 +8965,15 @@ button.deck.locked { cursor: default; }
       voiceEl._end = done;
       function deviceVoice() {
         if (finished) return;
+        // the child already moved on (next step, pause, left the lesson): a late clip failure must not read
+        // this old step aloud on top of whatever plays now
+        if (tok !== lesson.token) { done(); return; }
         if (!lesson.voice || !hasTTS) { setTimeout(done, est); return; }
         try {
           speechSynthesis.cancel();
           var chBase = resume && resume.ch > 0 ? resume.ch : 0;
           var u = new SpeechSynthesisUtterance(text.slice(chBase));
-          var v = pickVoice(); if (v) u.voice = v;
+          var v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = voiceLang();
           u.rate = 0.98; u.pitch = 1.0;
           u.onend = done; u.onerror = done;
           u.onstart = function () { lesson.clock = { mode: 'tts', ch: chBase, chBase: chBase, ttsStart: performance.now(), start: lesson.clock ? lesson.clock.start : performance.now() }; };
