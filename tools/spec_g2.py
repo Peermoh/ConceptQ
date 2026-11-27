@@ -401,7 +401,8 @@ ENGLISH = dict(id='english', name='English', place='Story Library', grade='Grade
         Q('One child, two ___', '🧒🧒', 3, ('children', 'Child is a special word: children.'), ('childs', 'Child changes in its own way.'), ('childes', 'Child becomes children.'))],
   gen=[("""function () { var P = [['dog', 'dogs', 'doges'], ['pen', 'pens', 'penes'], ['book', 'books', 'bookes'], ['box', 'boxes', 'boxs'], ['bus', 'buses', 'buss'], ['dish', 'dishes', 'dishs'], ['bench', 'benches', 'benchs'], ['fox', 'foxes', 'foxs'], ['man', 'men', 'mans'], ['mouse', 'mice', 'mouses'], ['child', 'children', 'childs'], ['tree', 'trees', 'treees'], ['tooth', 'teeth', 'tooths']], x = pickOne(P);
         var why = /es$/.test(x[1]) ? x[0] + ' ends in ' + x[0].slice(-2).replace(/^[^sc]/, '') + ', so we add es.' : /s$/.test(x[1]) ? 'Most words just add s.' : x[0] + ' is a special word: ' + x[1] + '.';
-        return mq('One ' + x[0] + ', two ___', '', [[x[1], why], [x[2], 'Not quite: we write ' + x[1] + '.'], [x[0], 'For more than one, the word changes.']]); }""", 2)],
+        var q = mq('One ' + x[0] + ', two ___', '', [[x[1], why], [x[2], 'Not quite: we write ' + x[1] + '.'], [x[0], 'For more than one, the word changes.']]);
+        q.spell = true; return q; }""", 2)],  # read aloud letter by letter: said aloud, boxs sounds just like boxes
   cards=[('When do you add es?', 'After s, x, sh or ch: boxes, buses, dishes.'), ('One mouse, two…', 'mice'), ('One child, two…', 'children')]),
 
  dict(key='e2_sentence', title='Capitals, full stops and a poem', part='poem cushion', icon='tx:A.', bg='#FFC861',

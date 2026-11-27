@@ -4934,7 +4934,8 @@ button.deck.locked { cursor: default; }
   GEN.e2_plural = [
     function () { var P = [['dog', 'dogs', 'doges'], ['pen', 'pens', 'penes'], ['book', 'books', 'bookes'], ['box', 'boxes', 'boxs'], ['bus', 'buses', 'buss'], ['dish', 'dishes', 'dishs'], ['bench', 'benches', 'benchs'], ['fox', 'foxes', 'foxs'], ['man', 'men', 'mans'], ['mouse', 'mice', 'mouses'], ['child', 'children', 'childs'], ['tree', 'trees', 'treees'], ['tooth', 'teeth', 'tooths']], x = pickOne(P);
         var why = /es$/.test(x[1]) ? x[0] + ' ends in ' + x[0].slice(-2).replace(/^[^sc]/, '') + ', so we add es.' : /s$/.test(x[1]) ? 'Most words just add s.' : x[0] + ' is a special word: ' + x[1] + '.';
-        return mq('One ' + x[0] + ', two ___', '', [[x[1], why], [x[2], 'Not quite: we write ' + x[1] + '.'], [x[0], 'For more than one, the word changes.']]); },
+        var q = mq('One ' + x[0] + ', two ___', '', [[x[1], why], [x[2], 'Not quite: we write ' + x[1] + '.'], [x[0], 'For more than one, the word changes.']]);
+        q.spell = true; return q; }, // read aloud letter by letter: said aloud, boxs sounds just like boxes
     function () { var P = [['cat', 'cats'], ['hen', 'hens'], ['box', 'boxes'], ['bus', 'buses'], ['man', 'men'], ['child', 'children'], ['mouse', 'mice'], ['dish', 'dishes'], ['cup', 'cups']], x = pickOne(P), many1 = pickOne([true, false]), other = shuffled(P.filter(function (y) { return y !== x; })).slice(0, 2);
         return mq('Which word means more than one?', '', [[x[1], x[1] + ' is more than one ' + x[0] + '.']].concat(other.map(function (y) { return [y[0], y[0] + ' is just one.']; }))); }
   ];
@@ -5121,7 +5122,7 @@ button.deck.locked { cursor: default; }
     return all.map(function (q) {
       var order = shuffled(q.options.map(function (o, i) { return i; }));
       var st = typeof q.step === 'number' ? q.step : (Q_STEPS[ld.key] || [])[ld.quiz.indexOf(q)];
-      return { text: q.text, code: q.code, pic: q.pic, snd: q.snd, gap: q.gap, level: q.level, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
+      return { text: q.text, code: q.code, pic: q.pic, snd: q.snd, gap: q.gap, level: q.level, spell: q.spell, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
     });
   }
   function makeQuiz(ld) {
@@ -5146,7 +5147,7 @@ button.deck.locked { cursor: default; }
     return shuffled(fixed.concat(made)).map(function (q) {
       var order = shuffled(q.options.map(function (o, i) { return i; }));
       var st = typeof q.step === 'number' ? q.step : (Q_STEPS[ld.key] || [])[ld.quiz.indexOf(q)];
-      return { text: q.text, code: q.code, pic: q.pic, snd: q.snd, gap: q.gap, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
+      return { text: q.text, code: q.code, pic: q.pic, snd: q.snd, gap: q.gap, spell: q.spell, options: order.map(function (i) { return q.options[i]; }), why: order.map(function (i) { return q.why[i]; }), answer: order.indexOf(q.answer), step: st };
     });
   }
   // ---- the quiz: one answer per question, Back to look at earlier ones, and a pass only when every answer is right ----
@@ -5242,6 +5243,8 @@ button.deck.locked { cursor: default; }
       .replace(/[—⌒▲■▬●⭕|]/g, ' ');
     return t.replace(/\s+([,.?!])/g, '$1').replace(/\s+/g, ' ').trim();
   }
+  // a spelling question's choices are spelled out: said aloud, "boxs" sounds just like "boxes"
+  function quizOptSay(q, o) { return q.spell ? String(o).replace(/[^A-Za-z]/g, '').split('').join(', ') : quizSay(o); }
   var QNUM = /\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?/g;
   function quizPieces(t) { // must match pieces() in tools/quizvoice/build_quiz_voice.py
     var nums = t.match(QNUM) || [], out = [];
@@ -5262,7 +5265,7 @@ button.deck.locked { cursor: default; }
     quizVoice();
   }
   function hearRecorded(q, man, deviceRead) {
-    var who = QV.who, parts = [quizPieces(quizSay(q.text))].concat(q.options.map(function (o, i) { return ['Option ' + 'ABCD'[i] + '.'].concat(quizPieces(quizSay(o))); }));
+    var who = QV.who, parts = [quizPieces(quizSay(q.text))].concat(q.options.map(function (o, i) { return ['Option ' + 'ABCD'[i] + '.'].concat(quizPieces(quizOptSay(q, o))); }));
     var seq = []; parts.forEach(function (ps, k) { ps.forEach(function (pc, j) { seq.push({ k: k, sg: man[pc], first: j === 0 }); }); });
     if (!seq.length || seq.some(function (x) { return !x.sg; })) return false;
     var tok = {}; playPhon.tok = tok; QV.owner = tok; // anything that silences the quiz sounds (an answer, the scratchpad) silences this too
@@ -5301,7 +5304,7 @@ button.deck.locked { cursor: default; }
     if (!hasTTS) return;
     try {
       speechSynthesis.cancel();
-      var v = pickVoice(), parts = [quizSay(q.text)].concat(q.options.map(function (o, i) { var s = quizSay(o); return 'Option ' + 'ABCD'[i] + '.' + (s ? ' ' + s + '.' : ''); }));
+      var v = pickVoice(), parts = [quizSay(q.text)].concat(q.options.map(function (o, i) { var s = quizOptSay(q, o); return 'Option ' + 'ABCD'[i] + '.' + (s ? ' ' + s + '.' : ''); }));
       parts.forEach(function (t, k) { // one sentence at a time, so each option gets its own clear pause
         var u = new SpeechSynthesisUtterance(t); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = profile.narrator === 'ryan' ? 'en-GB' : 'en-IN';
         u.onstart = function () { if (Q[qi] === q) qPoint(k - 1); }; // the robot goes to what is being read
