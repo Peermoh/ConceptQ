@@ -33,6 +33,13 @@ const { check, finish, open, onboard } = require('./lib');
   check(/4 \/ 4 \/ 4 on the plates/.test(await read()), 'deal out shares 12 counters into 3 plates of 4 (' + (await read()) + ')');
   await fits('counters');
 
+  t = await pad('m2_groups', '3 children each hold up one hand. How many fingers?');
+  check((await p.textContent('#scratchTool .tl-num')) === '3' && await p.isVisible('#scratchTool button:has-text("+1 in each")') && !(await p.isVisible('#scratchTool button:has-text("Deal out")')),
+    'an "each" question: 3 groups (one per child) and a "+1 in each" button');
+  for (let i = 0; i < 5; i++) await p.click('#scratchTool button:has-text("+1 in each")');
+  check(/3 groups of 5 = 15 in all/.test(await read()), 'tapping "+1 in each" 5 times (one per finger) shows 3 groups of 5 = 15 (' + (await read()) + ')');
+  await fits('counters in groups');
+
   t = await pad('m3_shapes', 'How many sides does a hexagon have?');
   const dot = async (x, y) => { const bb = await p.locator('#scratchTool svg').boundingBox(); await p.mouse.click(bb.x + (25 + x * 50) / 450 * bb.width, bb.y + (25 + y * 50) / 300 * bb.height); };
   await dot(1, 1); await dot(3, 1); await dot(3, 3); await dot(1, 1);

@@ -90,24 +90,38 @@
 
   // ---------- counters and plates: tap to add, drag to move, drag to the bin to remove, plates count what they hold ----------
   function counters(host, st, ctx) {
-    if (!st.init) { st.init = true; st.items = []; st.plates = ctx.plates || 0; }
-    var wrap = el('div', 'tl-col'), top = row(), area = el('div', 'tl-area'), out = el('p', 'tl-read'), bin = el('div', 'tl-bin', '🗑️');
+    // two ways to use it: "groups" (3 hands with 5 fingers each: fill every group the same) and "share" (12 laddoos
+    // between 3 children: deal them out). The question decides which one it starts in.
+    if (!st.init) { st.init = true; st.items = []; st.plates = ctx.plates || 0; st.mode = ctx.share ? 'share' : 'groups'; }
+    var share = st.mode === 'share', wrap = el('div', 'tl-col'), top = row(), area = el('div', 'tl-area'), out = el('p', 'tl-read'), bin = el('div', 'tl-bin', '🗑️');
+    var tip = el('p', 'tl-tip', share ? 'Tap +1, +5 or +10 for the things to share, then Deal out: each plate gets one in turn.'
+      : 'Each plate is one group. Tap "+1 in each" and count as you go, until every group is full. Then count them all.');
     bin.setAttribute('aria-hidden', 'true');
     function addN(n) { for (var i = 0; i < n; i++) { var k = st.items.length; st.items.push({ x: 6 + (k % 10) * 9, y: 8 + Math.floor(k / 10) % 4 * 13 }); } draw(); }
     top.appendChild(btn('+1', function () { addN(1); }, '', 'Add 1 counter'));
     top.appendChild(btn('+5', function () { addN(5); }, '', 'Add 5 counters'));
     top.appendChild(btn('+10', function () { addN(10); }, '', 'Add 10 counters'));
-    top.appendChild(el('span', 'tl-lab', 'Plates'));
+    if (!share) top.appendChild(btn('+1 in each', function () { // one more counter in every group, like counting fingers on each hand
+      if (!st.plates) st.plates = 1; var P = plates(), have = P.map(function () { return 0; });
+      st.items.forEach(function (c) { var i = plateOf(c, P); if (i >= 0) have[i]++; });
+      P.forEach(function (p, i) { var c = {}; place(c, p, have[i]); st.items.push(c); }); draw();
+    }, 'tl-go', 'Add one counter to every group'));
+    top.appendChild(el('span', 'tl-lab', share ? 'Plates' : 'Groups'));
     top.appendChild(btn('−', function () { st.plates = Math.max(0, st.plates - 1); draw(); }, '', 'One plate fewer'));
     var pn = el('b', 'tl-num'); top.appendChild(pn);
     top.appendChild(btn('+', function () { st.plates = Math.min(10, st.plates + 1); draw(); }, '', 'One more plate'));
-    top.appendChild(btn('Deal out', function () { // one at a time into each plate in turn, like sharing by hand
+    if (share) top.appendChild(btn('Deal out', function () { // one at a time into each plate in turn, like sharing by hand
       if (!st.plates) return; var P = plates(), k = 0;
       var have = P.map(function () { return 0; }); st.items.forEach(function (c) { var i = plateOf(c, P); if (i >= 0) have[i]++; });
-      st.items.forEach(function (c) { if (plateOf(c, P) < 0) { var i = k % P.length, j = have[i]++, p = P[i], per = Math.max(1, Math.floor((p.r - p.l) / 7)); c.x = p.l + 4 + (j % per) * 7; c.y = 66 + Math.floor(j / per) % 4 * 8; k++; } }); draw();
+      st.items.forEach(function (c) { if (plateOf(c, P) < 0) { var i = k % P.length; place(c, P[i], have[i]++); k++; } }); draw();
     }, 'tl-go', 'Deal the loose counters into the plates'));
     // plates: trays across the bottom of the area (x from l to r, y below 58%)
     function plates() { var P = [], n = st.plates, w = 100 / Math.max(1, n); for (var i = 0; i < n; i++) P.push({ l: i * w + 1, r: (i + 1) * w - 1, x: (i + 0.5) * w }); return P; }
+    // the j-th counter on plate p: spaced by the counter's real size, in rows from the top of the plate
+    function place(c, p, j) {
+      var W = area.getBoundingClientRect().width || 340, H = area.getBoundingClientRect().height || 220, sx = 26 / W * 100, sy = 26 / H * 100;
+      var per = Math.max(1, Math.floor((p.r - p.l - 2) / sx)); c.x = p.l + 1 + sx * 0.55 + (j % per) * sx; c.y = 58 + sy * 0.6 + Math.floor(j / per) % 4 * sy;
+    }
     function plateOf(c, P) { if (c.y < 58) return -1; for (var i = 0; i < P.length; i++) if (c.x >= P[i].l && c.x <= P[i].r) return i; return -1; }
     function draw() {
       area.innerHTML = ''; area.appendChild(bin); pn.textContent = st.plates; var P = plates(), cnt = P.map(function () { return 0; });
@@ -119,7 +133,9 @@
       });
       P.forEach(function (p, i) { var n = el('span', 'tl-pc', cnt[i]); n.style.left = p.x + '%'; area.appendChild(n); });
       var loose = st.items.length - cnt.reduce(function (a, b) { return a + b; }, 0);
-      out.textContent = st.items.length + ' counter' + (st.items.length === 1 ? '' : 's') + (st.plates ? ' · ' + cnt.join(' / ') + ' on the plates' + (loose ? ' · ' + loose + ' left over' : '') : '');
+      var n = st.items.length, same = st.plates > 1 && cnt[0] > 0 && cnt.every(function (x) { return x === cnt[0]; }) && !loose;
+      out.textContent = same && !share ? st.plates + ' groups of ' + cnt[0] + ' = ' + n + ' in all'
+        : n + ' counter' + (n === 1 ? '' : 's') + (st.plates ? ' · ' + cnt.join(' / ') + (share ? ' on the plates' : ' in the groups') + (loose ? ' · ' + loose + ' left over' : '') : '');
     }
     function drag(e, c, d) {
       var r = area.getBoundingClientRect(); d.setPointerCapture && d.setPointerCapture(e.pointerId);
@@ -132,7 +148,7 @@
       d.addEventListener('pointermove', mv); d.addEventListener('pointerup', up);
     }
     area.addEventListener('pointerdown', function (e) { if (e.target !== area) return; var r = area.getBoundingClientRect(); st.items.push({ x: (e.clientX - r.left) / r.width * 100, y: (e.clientY - r.top) / r.height * 100 }); draw(); });
-    wrap.appendChild(top); wrap.appendChild(area); wrap.appendChild(out); host.appendChild(wrap); draw();
+    wrap.appendChild(tip); wrap.appendChild(top); wrap.appendChild(out); wrap.appendChild(area); host.appendChild(wrap); draw(); // the total sits above the counters, always in view
   }
 
   // ---------- dot grid: tap dot to dot to draw straight sides; a mirror line for symmetry ----------
@@ -332,7 +348,9 @@
   function numbersIn(text) { return (String(text || '').replace(/<[^>]+>/g, ' ').replace(/,(?=\d{2})/g, '').match(/\d+(?:\.\d+)?/g) || []).map(Number); }
   function mount(id, host, st, q) {
     host.innerHTML = ''; var text = String((q && q.text) || '').replace(/<[^>]+>/g, ' ');
-    var ctx = { text: text, nums: numbersIn(text), plates: (text.match(/(\d+)\s+(?:children|friends|plates|bags|boxes|groups|kids)/i) || [])[1] | 0 };
+    // how many groups or plates: the number before a group word ("3 children", "4 baskets", "in 7 bundles")
+    var G = /(\d+)\s+(?:[a-z]+\s+)?(?:children|friends|kids|people|plates|bags|boxes|groups|baskets|bundles|crates|rows|hands|packets|jars|trays|tables|cars|vans|buses|bunches|pairs|teams|shelves|boats)\b/i;
+    var ctx = { text: text, nums: numbersIn(text), plates: Math.min(10, (text.match(G) || [])[1] | 0), share: /\bshar|equally|between|divid|÷|left over/i.test(text) };
     TOOLS[id].build(host, st, ctx);
   }
   var css = '\
@@ -357,8 +375,8 @@
 .tl-cell.sel{border-color:#FFB547;box-shadow:0 0 0 3px rgba(255,181,71,.35)}\
 .tl-op{font-size:22px}.tl-line{height:3px;background:#FFFDF5;border-radius:2px}\
 .tl-pad{justify-content:center}.tl-key{min-width:44px;min-height:44px;font-size:18px}\
-.tl-area{position:relative;flex:1;min-height:200px;border-radius:14px;background:rgba(255,255,255,.04);touch-action:none;overflow:hidden}\
-.tl-ctr{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF9BA0,#E0473F);box-shadow:0 2px 0 rgba(0,0,0,.35);cursor:grab;touch-action:none}\
+.tl-area{position:relative;flex:1;min-height:170px;border-radius:14px;background:rgba(255,255,255,.04);touch-action:none;overflow:hidden}\
+.tl-ctr{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF9BA0,#E0473F);box-shadow:0 2px 0 rgba(0,0,0,.35);cursor:grab;touch-action:none}\
 .tl-plate{position:absolute;top:58%;bottom:4%;border-radius:18px;background:rgba(255,253,245,.1);border:3px solid rgba(255,253,245,.5);pointer-events:none}\
 .tl-pc{position:absolute;bottom:4px;transform:translateX(-50%);font-weight:800;color:#FFD866}\
 .tl-bin{position:absolute;right:6px;top:6px;font-size:26px;opacity:.75;pointer-events:none}\
