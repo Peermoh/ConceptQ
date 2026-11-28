@@ -1,2 +1,7 @@
 cache/
 qtexts.json
+cache/
+cache_g4/
+qtexts.json
+qpieces.json
+build.log

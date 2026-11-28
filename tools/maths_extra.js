@@ -120,7 +120,7 @@
   });
 
   // 🌟 challenge questions: several steps; one ends every Maths quiz (a bonus: it never stops a pass)
-  var CHALLENGE = { 2: [], 3: [], 4: [] };
+  var CHALLENGE = { 2: [], 3: [], 4: typeof G4CHAL !== 'undefined' ? G4CHAL : [] }; // Grade 4's are in maths_g4_gens.js
   function addChal(g, f) { CHALLENGE[g].push(f); }
   addChal(2, function () { var b = ri(2, 4), l = ri(3, 9), g = ri(5, b * 10 + l - 5), r = b * 10 + l - g;
     return mq('Asha has ' + b + ' boxes of 10 crayons and ' + l + ' loose crayons. She gives ' + g + ' to her brother. How many are left?', grp(b, 10, '🖍️', '📦'), [[r, b + ' tens and ' + l + ' ones = ' + (b * 10 + l) + '. ' + (b * 10 + l) + ' − ' + g + ' = ' + r + '.'], [b * 10 + l, 'She gave ' + g + ' away.'], [b + l + 10 - g > 0 && b + l + 10 - g !== r ? b + l + 10 - g : r + 10, 'Each box holds 10.']]); });
