@@ -215,6 +215,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--amber); outline
 .scratch .pen.on { border-color: #FFB547; box-shadow: 0 0 0 3px rgba(255,181,71,.35); }
 .scratch-btn { min-height: 40px; min-width: 44px; padding: 0 12px; border-radius: 12px; border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #FFFDF5; font: inherit; font-weight: 800; cursor: pointer; }
 .scratch-btn.done { background: #FFB547; border-color: #FFB547; color: #2A1330; }
+.scratch-pens[hidden], .scratch-btn[hidden], #scratchCv[hidden] { display: none; }
 #scratchCv { flex: 1; width: 100%; min-height: 0; touch-action: none; cursor: crosshair; border-top: 2px dashed rgba(255,255,255,.12); }
 .scratch-hint { position: absolute; left: 0; right: 0; top: 58%; text-align: center; margin: 0; color: rgba(255,253,245,.45); font-weight: 700; pointer-events: none; }
 .scratch-hint[hidden] { display: none; }
@@ -1446,7 +1447,9 @@ button.deck.locked { cursor: default; }
           <button type="button" class="scratch-btn" id="scratchClear">Clear</button>
           <button type="button" class="scratch-btn done" data-close>Done</button>
         </div>
+        <div class="scratch-tabs" id="scratchTabs" role="tablist" aria-label="Tools" hidden></div>
         <canvas id="scratchCv" aria-label="Scratchpad. Draw with your finger to work out the answer."></canvas>
+        <div class="scratch-tool" id="scratchTool" role="tabpanel" hidden></div>
         <p class="scratch-hint" id="scratchHint">Draw here with your finger ✍️</p>
       </div>
     </div>
@@ -1608,6 +1611,7 @@ button.deck.locked { cursor: default; }
   if (document.body) apply(); else document.addEventListener('DOMContentLoaded', apply);
 })();
 </script>
+<script src="scratchtools.js"></script>
 <script>
 (function () {
   // lessons 0-8 build the ground floor, 9-20 the second floor (set first: code below runs before the lesson list)
@@ -5338,8 +5342,30 @@ button.deck.locked { cursor: default; }
     c.globalCompositeOperation = 'source-over';
     document.getElementById('scratchHint').hidden = scratchStrokes().length > 0;
   }
+  // Maths: tools that fit the question's lesson sit beside the chalk (scratchtools.js). Each question keeps its own.
+  scr.tools = {};
+  function scratchTools() {
+    var list = COURSE === 'maths' && window.CQTools && LD ? CQTools.forLesson(LD.key, Q[qi] && Q[qi].text) : [];
+    var t = scr.tools[qi]; if (!t) t = scr.tools[qi] = { on: list[0] || 'chalk', st: {} };
+    return { list: list, t: t };
+  }
+  function scratchShow() {
+    var s = scratchTools(), tabs = document.getElementById('scratchTabs'), pane = document.getElementById('scratchTool'), chalk = s.t.on === 'chalk';
+    tabs.hidden = !s.list.length; tabs.innerHTML = '';
+    if (s.list.length) ['chalk'].concat(s.list).forEach(function (id) {
+      var b = document.createElement('button'), T = id === 'chalk' ? { icon: '✏️', label: 'Chalk' } : CQTools.TOOLS[id];
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', id === s.t.on ? 'true' : 'false'); b.textContent = T.icon + ' ' + T.label;
+      b.addEventListener('click', function () { s.t.on = id; scratchShow(); });
+      tabs.appendChild(b);
+    });
+    scr.cv.hidden = !chalk; pane.hidden = chalk;
+    scr.el.querySelector('.scratch-pens').hidden = !chalk; document.getElementById('scratchUndo').hidden = !chalk;
+    document.getElementById('scratchClear').textContent = chalk ? 'Clear' : 'Reset';
+    if (chalk) { document.getElementById('scratchHint').hidden = scratchStrokes().length > 0; scratchSize(); } // redraw now: this question's chalk, not the last one's
+    else { document.getElementById('scratchHint').hidden = true; var st = s.t.st[s.t.on] || (s.t.st[s.t.on] = {}); CQTools.mount(s.t.on, pane, st, Q[qi]); }
+  }
   function scratchOpen() {
-    scr.el.hidden = false; requestAnimationFrame(scratchSize);
+    scr.el.hidden = false; scratchShow();
     try { if (hasTTS) speechSynthesis.cancel(); } catch (e) {} playPhon.tok = {}; // quiet while working
     var on = scr.el.querySelector('.pen.on'); if (on) on.focus({ preventScroll: true });
   }
@@ -5347,7 +5373,7 @@ button.deck.locked { cursor: default; }
     if (scr.el.hidden) return; scr.el.hidden = true; scr.cur = null;
     var w = document.getElementById('qWork'); if (w && w.offsetParent) w.focus({ preventScroll: true });
   }
-  function scratchReset() { scr.byQ = {}; scratchClose(); }
+  function scratchReset() { scr.byQ = {}; scr.tools = {}; scratchClose(); }
   function scratchPt(e) { var r = scr.cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 10) / 10, Math.round((e.clientY - r.top) * 10) / 10]; }
   scr.cv.addEventListener('pointerdown', function (e) {
     e.preventDefault(); try { scr.cv.setPointerCapture(e.pointerId); } catch (x) {}
@@ -5362,10 +5388,12 @@ button.deck.locked { cursor: default; }
     });
   });
   document.getElementById('scratchUndo').addEventListener('click', function () { scratchStrokes().pop(); scratchDraw(); });
-  document.getElementById('scratchClear').addEventListener('click', function () { scr.byQ[qi] = []; scratchDraw(); });
+  document.getElementById('scratchClear').addEventListener('click', function () {
+    var t = scr.tools[qi]; if (t && t.on !== 'chalk') { t.st[t.on] = {}; scratchShow(); return; } // Reset: the tool starts again
+    scr.byQ[qi] = []; scratchDraw(); });
   scr.el.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', scratchClose); });
   scr.el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); scratchClose(); } });
-  window.addEventListener('resize', function () { if (!scr.el.hidden) scratchSize(); });
+  window.addEventListener('resize', function () { if (!scr.el.hidden && !scr.cv.hidden) scratchSize(); });
   document.getElementById('qWork').addEventListener('click', scratchOpen);
   function startQuiz() { Q = makeQuiz(LD); qi = 0; firstTry = 0; earned = 0; answers = []; scratchReset(); if (COURSE !== 'py') quizAudioUnlock(); show('quiz'); renderQ(); }
   function esc2(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
