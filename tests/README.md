@@ -13,6 +13,9 @@ Each test prints `ok` / `FAIL` lines; the run ends with a PASS/FAIL list and exi
 | `english-lesson` | The first English lesson plays to the end with the board and caption following, and the quiz button is ready. |
 | `backup-voice` | If a lesson recording cannot load, the phone voice reads the sound lines in words (never "ess ess ess"). |
 | `voice-picker` | On iPhone, Windows, Chrome and Android voice lists, the phone voice chosen is male and matches the narrator's accent. |
+| `scratch-tools` | The Maths pad offers the tools that fit each lesson (column sum, number line, counters and plates, dot grid, fractions, clock, money, ruler, tally, blocks) and each one works on a phone. |
+| `maths-quiz` | Maths quizzes go easy to hard, number answers can be typed on a pad, and a bonus 🌟 challenge ends each quiz without blocking a pass. |
+| `maths-grade4` | A 10-year-old starts at Grade 4 (no badges for skipped lessons), its lesson plays, the town has Market Square, and a 7-year-old still starts at Grade 2. |
 | `scratchpad` | The "Work it out" pad: drawing, undo, eraser, clear, closing, and a separate pad per question. |
 | `celebrations` | The cheer starts with the banner and every firework burst gets a bang at the same moment. |
 

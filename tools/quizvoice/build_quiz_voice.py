@@ -2,7 +2,7 @@
 # like a different person from the lesson. Maths questions are made fresh with random names and numbers, so
 # sentences are split into word phrases and numbers (the same split as quizPieces() in index.html), each
 # recorded once and joined when played.
-#   node dump_quiz_texts.js 1500      (prototype served on :8765) -> qtexts.json: every text the quizzes can say
+#   node dump_quiz_texts.js 1500      (prototype served on :8765) -> qpieces.json: every piece the quizzes can say
 #   python3 build_quiz_voice.py       -> prototype/audio/quiz/<voice>/*.mp3 and prototype/audio/quiz/<voice>.json
 import asyncio, os, re, json, subprocess, sys, hashlib, certifi, numpy as np, soundfile as sf, librosa
 certifi.where = lambda: '/root/.ccr/ca-bundle.crt'   # this environment's proxy CA
@@ -10,20 +10,12 @@ import edge_tts
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(H, '..', '..', 'prototype', 'audio', 'quiz')
 CACHE = os.path.join(H, 'cache'); SR = 24000; GAP = 0.25
 V = {'ryan': 'en-GB-RyanNeural', 'prabhat': 'en-IN-PrabhatNeural'}; PX = os.environ.get('HTTPS_PROXY')
-NUM = re.compile(r'\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?')
-def pieces(t):  # must match quizPieces() in index.html
-    out, nums = [], NUM.findall(t)
-    for i, part in enumerate(NUM.split(t)):
-        p = part.strip(' ,;:').lstrip('.').strip()
-        if re.search(r'[A-Za-z0-9]', p): out.append(p)   # a lone "?" has nothing to say
-        if i < len(nums): out.append(nums[i])
-    return out
-texts = json.load(open(os.path.join(H, 'qtexts.json')))
-words = set(f'Option {c}.' for c in 'ABCD'); nums = set(str(n) for n in range(0, 1501))
-for course, per in texts.items():
-    for lesson, ts in per.items():
-        for t in ts:
-            for p in pieces(t): (nums if NUM.fullmatch(p) else words).add(p)
+# the pieces come from the app itself (dump_quiz_texts.js), so the split always matches quizPieces() in index.html
+pieces = json.load(open(os.path.join(H, 'qpieces.json')))
+words = set(f'Option {c}.' for c in 'ABCD'); nums = set(str(n) for n in range(0, 1000))
+for course, per in pieces.items():
+    for lesson, ps in per.items():
+        for p in ps: (nums if p.isdigit() else words).add(p)
 items = sorted(words) + sorted(nums, key=lambda x: (len(x), x))
 print(len(words), 'phrases,', len(nums), 'numbers')
 async def rec(v, text, path):
@@ -50,17 +42,16 @@ asyncio.run(record_all())
 # Pack the pieces so a question downloads little: each lesson's own phrases together, phrases many lessons share
 # in "common", numbers in groups of 50 by value. Every file is cached for the rest of the quiz once fetched.
 use = {}
-for course, per in texts.items():
+for course, per in pieces.items():
     for lesson in sorted(per):
-        for t in per[lesson]:
-            for p in pieces(t):
-                if not NUM.fullmatch(p): use.setdefault(p, []).append(lesson)
+        for p in per[lesson]:
+            if not p.isdigit(): use.setdefault(p, []).append(lesson)
 groups = {}
 for w in sorted(words):
     ls = sorted(set(use.get(w, [])))
     groups.setdefault('common' if not ls or len(ls) >= 3 else ls[0], []).append(w)
-for n in sorted(nums, key=lambda x: float(x.replace(',', ''))):
-    groups.setdefault('n%d' % (int(float(n.replace(',', ''))) // 50), []).append(n)
+for n in sorted(nums, key=int):
+    groups.setdefault('n%d' % (int(n) // 50), []).append(n)
 files = []
 for g, ps in groups.items():
     k = 25 if g.startswith('n') else 10   # numbers are short; question phrases can be long sentences
